@@ -149,9 +149,8 @@ const GetAlbumsSchema = z
       .describe('Filter by shared status: true = only shared, false = not shared, undefined = no filter'),
     assetId: z.uuidv4().optional().describe('Filter albums containing this asset ID (ignores other parameters)'),
     parentId: z
-      .union([z.uuidv4(), z.literal('null')])
+      .union([z.uuidv4(), z.literal('null').transform(() => null)])
       .optional()
-      .transform((value) => (value === 'null' ? null : value))
       .describe(
         'Parent album ID filter. Set to a parent album ID to list its children, ' +
           'or the literal string "null" to list root albums only. Omit for no filtering.',

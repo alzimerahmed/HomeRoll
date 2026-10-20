@@ -96,7 +96,9 @@ export const buildAlbumTreeView = (allAlbums: AlbumResponseDto[], visibleAlbums:
   const contextIds = new Set<string>();
 
   const prune = (node: AlbumTreeNode): AlbumTreeNode | undefined => {
-    const children = node.children.map((child) => prune(child)).filter((child): child is AlbumTreeNode => child !== undefined);
+    const children = node.children
+      .map((child) => prune(child))
+      .filter((child): child is AlbumTreeNode => child !== undefined);
     if (visibleIds.has(node.album.id)) {
       return { ...node, children };
     }
