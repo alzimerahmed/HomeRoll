@@ -1,0 +1,162 @@
+name: Regenerate Artifacts
+
+# Why this workflow exists: HomeRoll is CI-only (Windows dev host, no local
+# toolchain). Generated artifacts — the OpenAPI spec + TypeScript SDK, and the
+# sql-tools query/schema dumps — are committed to the repo and checked for drift
+# by test.yml (generated-api-up-to-date, sql-schema-up-to-date). Any change to
+# server API decorators or schema entities makes those checks go red with no
+# local way to regenerate. This workflow mirrors the check jobs exactly, but
+# instead of verifying the artifacts it regenerates them and pushes the diff
+# back to the target branch. Trigger manually:
+#   gh workflow run regen.yml -f ref=<branch>
+#
+# Note: commits pushed by GITHUB_TOKEN do NOT retrigger workflows — after this
+# run pushes, re-run the failed CI jobs manually (Actions UI → "Re-run jobs").
+#
+# Mirrors: .github/workflows/test.yml (jobs: generated-api-up-to-date,
+# sql-schema-up-to-date). Keep step-for-step parity with that file.
+
+on:
+  workflow_dispatch:
+    inputs:
+      # `choice` — not free-text `string`: a hostile branch could ship a malicious
+      # mise.toml/install script and this workflow runs it with a contents:write
+      # token. Restrict to allowlisted refs; add branches explicitly if ever needed.
+      ref:
+        description: 'Branch to regenerate artifacts on (checked out and pushed to)'
+        required: true
+        type: choice
+        default: main
+        options:
+          - main
+
+# Serialize runs per target branch; inputs.ref is the real target (github.ref is
+# only the branch the dispatch was triggered from, which can differ).
+concurrency:
+  group: regen-${{ inputs.ref || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  # Mirror of test.yml job `generated-api-up-to-date` (checkout + mise +
+  # `pnpm --filter homeroll install --frozen-lockfile` + `mise //:open-api`),
+  # with the drift verification steps replaced by a commit+push.
+  regen-openapi:
+    name: Regenerate OpenAPI clients
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: true
+          token: ${{ github.token }}
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Install server dependencies
+        run: pnpm --filter homeroll install --frozen-lockfile
+
+      - name: Run API generation
+        run: mise //:open-api
+        working-directory: open-api
+
+      # Only commits if the regeneration produced a diff (add-and-commit
+      # no-ops on a clean tree). `mobile/generated` is gitignored, so the
+      # Dart SDK output does not need committing.
+      - name: Commit and push regenerated clients
+        uses: EndBug/add-and-commit@cc9c08ba6c8df3b93a8f2db63e89b98368ae2ae8 # v11.1.1
+        with:
+          default_author: github_actions
+          message: 'chore: regenerate API clients'
+          add: 'packages/sdk open-api/immich-openapi-specs.json'
+
+  # Mirror of test.yml job `sql-schema-up-to-date` (postgres service + checkout
+  # + mise + `pnpm install --frozen-lockfile` + plugins/server build + migration
+  # replay + `mise //:sql`), with the drift verification steps replaced by a
+  # commit+push. Runs after regen-openapi so the two push steps cannot race
+  # (both push to the same branch).
+  regen-sql:
+    name: Regenerate SQL artifacts
+    needs: regen-openapi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    services:
+      postgres:
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:dbf18b3ffea4a81434c65b71e20d27203baf903a0275f4341e4c16dfd901fd67
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: immich
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: true
+          token: ${{ github.token }}
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@caac7f7e4298458a14238959504f411fc6cc7f06 # use-mise-action-v3.2.3
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Install server dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build plugins
+        run: mise //:plugins
+
+      - name: Build the app
+        run: mise //server:build
+
+      - name: Run existing migrations
+        run: pnpm --filter homeroll migrations:run
+
+      # Named differently from test.yml ("Test npm run schema:reset command
+      # works") — here it is a real step, not a smoke test: it rebuilds the DB
+      # from migrations so sync-sql sees a clean schema.
+      - name: Reset schema from migrations
+        run: pnpm --filter homeroll schema:reset
+
+      # Drift probe, same as the check job: if entity definitions have diverged
+      # from the migration chain, sql-tools emits a *-TestMigration.ts file.
+      # A real migration must be authored by a developer — regen cannot create
+      # one — so fail loudly instead of committing queries generated from an
+      # unmigrated schema.
+      - name: Generate new migrations (drift probe)
+        continue-on-error: true
+        run: pnpm --filter homeroll migrations:generate src/TestMigration
+
+      - name: Fail on schema drift
+        run: |
+          if [ -n "$(git status --porcelain -- server/src)" ]; then
+            echo 'ERROR: Schema drift detected — migrations:generate produced files.'
+            echo 'Entity/schema changes require a hand-authored migration; commit one and re-run this workflow.'
+            git status --porcelain -- server/src
+            cat ./server/src/*-TestMigration.ts || true
+            exit 1
+          fi
+
+      - name: Run SQL generation
+        run: mise //:sql
+        env:
+          DB_URL: postgres://postgres:postgres@localhost:5432/immich
+
+      - name: Commit and push regenerated SQL artifacts
+        uses: EndBug/add-and-commit@cc9c08ba6c8df3b93a8f2db63e89b98368ae2ae8 # v11.1.1
+        with:
+          default_author: github_actions
+          message: 'chore: regenerate SQL artifacts'
+          add: 'server/src/queries'
