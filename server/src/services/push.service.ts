@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { Selectable } from 'kysely';
 import type { ArgOf } from 'src/repositories/event.repository.js';
 import { OnEvent } from 'src/decorators.js';
@@ -23,6 +23,53 @@ import {
 
 /** Web Push TTL: keep undelivered notifications for 4 weeks (RFC 8030 max suggestion). */
 const PUSH_TTL_SECONDS = 2_419_200;
+
+/** Outbound push POST timeout — a slow endpoint must not wedge event fan-out. */
+const PUSH_TIMEOUT_MS = 10_000;
+
+/** Max subscriptions per user — bounds table growth and fan-out cost. */
+const MAX_PUSH_SUBSCRIPTIONS_PER_USER = 10;
+
+/**
+ * SSRF guard (defense in depth on top of the https-only DTO refine): reject
+ * endpoints pointing at loopback/private/link-local/reserved hosts so a
+ * self-hosted server never POSTs into the operator's LAN.
+ */
+const isPrivatePushHost = (hostname: string): boolean => {
+  const host = hostname.replace(/^\[|]$/g, '').toLowerCase();
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) {
+    return true;
+  }
+  const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host);
+  if (ipv4) {
+    const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
+    return (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      a >= 224 ||
+      (a === 100 && b >= 64 && b <= 127) ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 0 && b <= 2) ||
+      (a === 192 && b === 168) ||
+      (a === 198 && (b === 18 || b === 19))
+    );
+  }
+  if (host.includes(':')) {
+    return (
+      host === '::' ||
+      host === '::1' ||
+      host.startsWith('fe8') ||
+      host.startsWith('fe9') ||
+      host.startsWith('fea') ||
+      host.startsWith('feb') ||
+      host.startsWith('fc') ||
+      host.startsWith('fd')
+    );
+  }
+  return false;
+};
 
 const mapSubscription = (subscription: Selectable<PushSubscriptionTable>): PushSubscriptionResponseDto => ({
   id: subscription.id,
@@ -74,6 +121,15 @@ export class PushService extends BaseService {
     dto: PushSubscriptionCreateDto,
     userAgent?: string,
   ): Promise<PushSubscriptionResponseDto> {
+    if (isPrivatePushHost(new URL(dto.endpoint).hostname)) {
+      throw new BadRequestException('Push endpoint host is not allowed');
+    }
+
+    const existing = await this.pushRepository.getByUserId(auth.user.id);
+    if (existing.length >= MAX_PUSH_SUBSCRIPTIONS_PER_USER && !existing.some((s) => s.endpoint === dto.endpoint)) {
+      throw new BadRequestException(`At most ${MAX_PUSH_SUBSCRIPTIONS_PER_USER} push subscriptions per user`);
+    }
+
     const subscription = await this.pushRepository.upsert({
       userId: auth.user.id,
       endpoint: dto.endpoint,
@@ -121,7 +177,8 @@ export class PushService extends BaseService {
           await this.send(subscription, vapid, payload);
           delivered++;
         } catch (error: Error | any) {
-          this.logger.warn(`Failed to send push notification to ${subscription.endpoint}: ${error?.message}`);
+          // endpoint is a bearer-capability URL — log origin only
+          this.logger.warn(`Failed to send push notification to ${new URL(subscription.endpoint).origin}: ${error?.message}`);
         }
       }),
     );
@@ -137,6 +194,7 @@ export class PushService extends BaseService {
     const body = encryptWebPushPayload(JSON.stringify(payload), subscription);
     const response = await fetch(subscription.endpoint, {
       method: 'POST',
+      signal: AbortSignal.timeout(PUSH_TIMEOUT_MS),
       headers: {
         'Content-Type': 'application/octet-stream',
         'Content-Encoding': 'aes128gcm',

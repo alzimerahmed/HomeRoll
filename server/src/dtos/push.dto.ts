@@ -2,6 +2,12 @@ import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 import { isoDatetimeToDate } from 'src/validation.js';
 
+/** Push endpoints are browser-vendor push services — https only (SSRF guard). */
+const PushEndpointSchema = z
+  .url()
+  .describe('Push service endpoint URL')
+  .refine((value) => new URL(value).protocol === 'https:', { message: 'Push endpoint must use https' });
+
 const PushSubscriptionKeysSchema = z
   .object({
     p256dh: z.string().describe('Subscriber P-256 public key (base64url)'),
@@ -11,14 +17,14 @@ const PushSubscriptionKeysSchema = z
 
 const PushSubscriptionCreateSchema = z
   .object({
-    endpoint: z.url().describe('Push service endpoint URL'),
+    endpoint: PushEndpointSchema,
     keys: PushSubscriptionKeysSchema,
   })
   .meta({ id: 'PushSubscriptionCreateDto' });
 
 const PushSubscriptionDeleteSchema = z
   .object({
-    endpoint: z.url().describe('Push service endpoint URL'),
+    endpoint: PushEndpointSchema,
   })
   .meta({ id: 'PushSubscriptionDeleteDto' });
 

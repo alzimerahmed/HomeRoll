@@ -136,6 +136,7 @@ export class SharedLinkRepository {
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .select([
         'asset.id',
+        'asset.type',
         'asset.originalFileName',
         'asset.fileCreatedAt',
         'asset.createdAt',

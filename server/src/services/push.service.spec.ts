@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { vitest } from 'vitest';
 import { UserMetadataKey } from 'src/enum.js';
 import { PushRepository } from 'src/repositories/push.repository.js';
@@ -42,6 +43,7 @@ describe(PushService.name, () => {
     fetchMock.mockReset();
     vitest.stubGlobal('fetch', fetchMock);
     mocks.config.getEnv.mockReturnValue(vapidEnv);
+    pushRepository.getByUserId.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -93,6 +95,42 @@ describe(PushService.name, () => {
         auth: subscription.auth,
         userAgent: 'agent/1.0',
       });
+    });
+
+    it('rejects endpoints on private/loopback hosts', async () => {
+      const dto = {
+        endpoint: 'https://169.254.169.254/latest',
+        keys: { p256dh: subscription.p256dh, auth: subscription.auth },
+      };
+      await expect(sut.subscribe(auth, dto, 'agent/1.0')).rejects.toBeInstanceOf(BadRequestException);
+      expect(pushRepository.upsert).not.toHaveBeenCalled();
+    });
+
+    it('enforces the per-user subscription cap', async () => {
+      pushRepository.getByUserId.mockResolvedValue(
+        Array.from({ length: 10 }, () => ({ ...subscription, endpoint: `https://push.example.com/${factory.uuid()}` })),
+      );
+
+      const dto = {
+        endpoint: 'https://push.example.com/new-endpoint',
+        keys: { p256dh: subscription.p256dh, auth: subscription.auth },
+      };
+      await expect(sut.subscribe(auth, dto, 'agent/1.0')).rejects.toBeInstanceOf(BadRequestException);
+      expect(pushRepository.upsert).not.toHaveBeenCalled();
+    });
+
+    it('allows re-subscribing an existing endpoint when at the cap', async () => {
+      pushRepository.getByUserId.mockResolvedValue(
+        Array.from({ length: 10 }, (_, i) => ({
+          ...subscription,
+          endpoint: i === 0 ? subscription.endpoint : `https://push.example.com/${factory.uuid()}`,
+        })),
+      );
+      pushRepository.upsert.mockResolvedValue(subscription);
+
+      const dto = { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } };
+      await expect(sut.subscribe(auth, dto, 'agent/1.0')).resolves.toBeDefined();
+      expect(pushRepository.upsert).toHaveBeenCalled();
     });
   });
 

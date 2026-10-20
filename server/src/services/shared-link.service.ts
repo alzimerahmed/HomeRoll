@@ -19,7 +19,7 @@ import {
   SharedLinkSearchDto,
   mapSharedLink,
 } from 'src/dtos/shared-link.dto.js';
-import { Permission, SharedLinkType } from 'src/enum.js';
+import { AssetType, Permission, SharedLinkType } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { FeedFormat, FeedItem, buildAtomFeed, buildRssFeed } from 'src/utils/feed.js';
@@ -271,6 +271,7 @@ export class SharedLinkService extends BaseService {
   private async getFeedItems(sharedLink: SharedLink, domain: string, keyParam: string): Promise<FeedItem[]> {
     const toItem = (asset: {
       id: string;
+      type: AssetType;
       originalFileName: string;
       fileCreatedAt: Date | string;
       updatedAt?: Date | string | null;
@@ -279,10 +280,16 @@ export class SharedLinkService extends BaseService {
     }): FeedItem => {
       const thumbnailUrl = `${domain}/api/assets/${asset.id}/thumbnail?key=${keyParam}`;
       const description = sharedLink.showExif && asset.description ? String(asset.description) : undefined;
+      // `showExif=false` must strip originalFileName too (isMetadataHidden contract) — generic title
+      const title = sharedLink.showExif
+        ? String(asset.description || asset.originalFileName)
+        : asset.type === AssetType.Video
+          ? 'Video'
+          : 'Photo';
 
       return {
         id: asset.id,
-        title: sharedLink.showExif && asset.description ? String(asset.description) : asset.originalFileName,
+        title,
         link: sharedLink.allowDownload ? `${domain}/api/assets/${asset.id}/original?key=${keyParam}` : thumbnailUrl,
         publishedAt: new Date(asset.fileCreatedAt),
         updatedAt: new Date(asset.updatedAt ?? asset.fileCreatedAt),
