@@ -184,7 +184,7 @@ describe('archive utils', () => {
 
     it('should skip directory entries', async () => {
       const tar = Buffer.concat([
-        tarEntry('folder/', 0, { type: '5' }),
+        tarEntry('folder/', Buffer.alloc(0), { type: '5' }),
         tarEntry('folder/file.txt', Buffer.from('x')),
         tarEnd,
       ]);
