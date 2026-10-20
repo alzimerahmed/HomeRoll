@@ -80,12 +80,12 @@ services:
       IMMICH_REPOSITORY: alzimerahmed/HomeRoll
       IMMICH_REPOSITORY_URL: https://github.com/alzimerahmed/HomeRoll
       IMMICH_SOURCE_REF: local
-      IMMICH_SOURCE_COMMIT: af2efbdbbddc27cd06142f22253ccbbbbeec1f55
-      IMMICH_SOURCE_URL: https://github.com/alzimerahmed/HomeRoll/commit/af2efbdbbddc27cd06142f22253ccbbbbeec1f55
-      IMMICH_BUILD: '9654404849'
-      IMMICH_BUILD_URL: https://github.com/alzimerahmed/HomeRoll/actions/runs/9654404849
+      IMMICH_SOURCE_COMMIT: ""
+      IMMICH_SOURCE_URL: ""
+      IMMICH_BUILD: ''
+      IMMICH_BUILD_URL: ""
       IMMICH_BUILD_IMAGE: development
-      IMMICH_BUILD_IMAGE_URL: https://github.com/alzimerahmed/HomeRoll/pkgs/container/immich-server
+      IMMICH_BUILD_IMAGE_URL: https://github.com/alzimerahmed/HomeRoll/pkgs/container/homeroll-server
       IMMICH_THIRD_PARTY_SOURCE_URL: https://github.com/alzimerahmed/HomeRoll/
       IMMICH_THIRD_PARTY_BUG_FEATURE_URL: https://github.com/alzimerahmed/HomeRoll/issues
       IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://github.com/alzimerahmed/HomeRoll

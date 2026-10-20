@@ -115,7 +115,7 @@ jobs:
         run: |
           gh api graphql \
             -f prId="$NODE_ID" \
-            -f body="Thanks for your contribution! All translations are done through [Weblate](https://hosted.weblate.org/projects/immich/immich/), as editing the translation files directly causes merge conflicts. Please make your changes there instead." \
+            -f body="Thanks for your contribution! Only `i18n/en.json` is edited directly in this repo — all other locale files are managed by our translation pipeline. Please make your changes in `en.json` only or leave translations to the pipeline." \
             -f query='
               mutation CommentAndClosePR($prId: ID!, $body: String!) {
                 addComment(input: {

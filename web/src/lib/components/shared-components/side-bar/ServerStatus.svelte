@@ -17,7 +17,7 @@
   const info = $derived(aboutQuery.data);
   const historyQuery = createQuery(getVersionHistoryQuery);
   const versions = $derived(historyQuery.data ?? []);
-  let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
+  let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'alzimerahmed/HomeRoll');
   let version = $derived($serverVersion ? semverToName($serverVersion) : null);
 
   const getReleaseInfo = (release?: ReleaseEventV1) => {
