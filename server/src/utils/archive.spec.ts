@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
-import { createGunzip, crc32, deflateRawSync, gzipSync } from 'node:zlib';
+import { crc32, createGunzip, deflateRawSync, gzipSync } from 'node:zlib';
 import {
   ArchiveFormat,
   ArchiveLimitError,
