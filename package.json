@@ -1,7 +1,7 @@
 {
-  "name": "immich-monorepo",
+  "name": "homeroll-monorepo",
   "version": "3.3.0-rc.0",
-  "description": "Monorepo for Immich",
+  "description": "Monorepo for HomeRoll",
   "type": "module",
   "private": true,
   "scripts": {

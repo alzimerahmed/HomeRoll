@@ -32,19 +32,19 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immi
 FROM plugin-sdk AS server
 
 COPY ./server/package.json ./server/package.json
-RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter homeroll install --frozen-lockfile
 
 COPY ./server ./server/
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
-  pnpm --filter immich build && \
-  pnpm --filter immich --prod --no-optional deploy /output/server-pruned
+  pnpm --filter homeroll build && \
+  pnpm --filter homeroll --prod --no-optional deploy /output/server-pruned
 RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false --dir /output/server-pruned/node_modules/sharp exec npm run build
 
 FROM sdk AS web
 
 COPY ./web/package.json ./web/package.json
-RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich-web install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter homeroll-web install --frozen-lockfile
 
 COPY ./i18n ./i18n/
 COPY ./web ./web/
@@ -52,7 +52,7 @@ COPY ./web ./web/
 ARG BUILD_ID
 ENV IMMICH_BUILD=${BUILD_ID}
 
-RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich-web build
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter homeroll-web build
 
 FROM sdk AS cli
 
@@ -111,14 +111,14 @@ ARG BUILD_SOURCE_REF
 ARG BUILD_SOURCE_COMMIT
 
 ENV IMMICH_BUILD=${BUILD_ID}
-ENV IMMICH_BUILD_URL=https://github.com/immich-app/immich/actions/runs/${BUILD_ID}
+ENV IMMICH_BUILD_URL=https://github.com/alzimerahmed/HomeRoll/actions/runs/${BUILD_ID}
 ENV IMMICH_BUILD_IMAGE=${BUILD_IMAGE}
-ENV IMMICH_BUILD_IMAGE_URL=https://github.com/immich-app/immich/pkgs/container/immich-server
-ENV IMMICH_REPOSITORY=immich-app/immich
-ENV IMMICH_REPOSITORY_URL=https://github.com/immich-app/immich
+ENV IMMICH_BUILD_IMAGE_URL=https://github.com/alzimerahmed/HomeRoll/pkgs/container/immich-server
+ENV IMMICH_REPOSITORY=alzimerahmed/HomeRoll
+ENV IMMICH_REPOSITORY_URL=https://github.com/alzimerahmed/HomeRoll
 ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
-ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
+ENV IMMICH_SOURCE_URL=https://github.com/alzimerahmed/HomeRoll/commit/${BUILD_SOURCE_COMMIT}
 
 VOLUME /data
 EXPOSE 2283

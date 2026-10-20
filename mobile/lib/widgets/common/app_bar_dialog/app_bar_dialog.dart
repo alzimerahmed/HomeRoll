@@ -200,7 +200,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               onTap: () {
                 ContextHelper(context).pop();
                 unawaited(
-                  launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication),
+                  launchUrl(Uri.parse('https://github.com/alzimerahmed/HomeRoll'), mode: LaunchMode.externalApplication),
                 );
               },
               child: Text(context.t.profile_drawer_github, style: context.textTheme.bodySmall),

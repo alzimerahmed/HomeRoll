@@ -1,9 +1,9 @@
 #
-# WARNING: To install Immich, follow our guide: https://docs.immich.app/install/docker-compose
+# WARNING: To install HomeRoll, follow our guide: https://github.com/alzimerahmed/HomeRoll
 #
 # Make sure to use the docker-compose.yml of the current release:
 #
-# https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+# https://github.com/alzimerahmed/HomeRoll/releases/latest/download/docker-compose.yml
 #
 # The compose file on main may not be compatible with the latest release.
 

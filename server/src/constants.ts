@@ -11,13 +11,13 @@ import {
   VideoCodec,
 } from 'src/enum.js';
 
-export const IMMICH_SERVER_START = 'Immich Server is listening';
+export const IMMICH_SERVER_START = 'HomeRoll Server is listening';
 
 export const ErrorMessages = {
   InconsistentMediaLocation:
-    'Detected an inconsistent media location. For more information, see https://docs.immich.app/errors#inconsistent-media-location',
-  SchemaDrift: `Detected schema drift. For more information, see https://docs.immich.app/errors#schema-drift`,
-  TypeOrmUpgrade: 'Invalid upgrade path. For more information, see https://docs.immich.app/errors/#typeorm-upgrade',
+    'Detected an inconsistent media location. For more information, see https://github.com/alzimerahmed/HomeRoll',
+  SchemaDrift: `Detected schema drift. For more information, see https://github.com/alzimerahmed/HomeRoll`,
+  TypeOrmUpgrade: 'Invalid upgrade path. For more information, see https://github.com/alzimerahmed/HomeRoll',
 };
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';

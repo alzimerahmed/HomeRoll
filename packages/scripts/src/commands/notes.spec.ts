@@ -21,7 +21,7 @@ const bob = { login: 'bob', bot: false };
 const bot = { login: 'immich-push-o-matic', bot: true };
 
 const link = (number: number) =>
-  `https://github.com/immich-app/immich/pull/${number}`;
+  `https://github.com/alzimerahmed/HomeRoll/pull/${number}`;
 const fix = (number: number, author = alice) =>
   `* fix: change ${number} by @${author.login}${author.bot ? '[bot]' : ''} in ${link(number)}`;
 
@@ -30,7 +30,7 @@ const changelog = (...lines: string[]) =>
     "## What's Changed",
     ...lines,
     '',
-    '**Full Changelog**: https://github.com/immich-app/immich/compare/v3.2.4...v3.3.0',
+    '**Full Changelog**: https://github.com/alzimerahmed/HomeRoll/compare/v3.2.4...v3.3.0',
     '',
   ].join('\n');
 
@@ -113,9 +113,9 @@ describe(NotesService.name, () => {
     expect(body(notes)).toMatchInlineSnapshot(`
       "## What's Changed
       ### 🐛 Bug fixes
-      * fix: change 1 by @alice in https://github.com/immich-app/immich/pull/1
+      * fix: change 1 by @alice in https://github.com/alzimerahmed/HomeRoll/pull/1
 
-      **Full Changelog**: https://github.com/immich-app/immich/compare/v3.2.4...v3.3.0
+      **Full Changelog**: https://github.com/alzimerahmed/HomeRoll/compare/v3.2.4...v3.3.0
       "
     `);
   });
@@ -231,12 +231,12 @@ describe(NotesService.name, () => {
     expect(body(notes)).toMatchInlineSnapshot(`
       "## What's Changed
       ### 🐛 Bug fixes
-      * fix: change 1 by @alice in https://github.com/immich-app/immich/pull/1
+      * fix: change 1 by @alice in https://github.com/alzimerahmed/HomeRoll/pull/1
 
       ## New Contributors
-      * @alice made their first contribution in https://github.com/immich-app/immich/pull/1
+      * @alice made their first contribution in https://github.com/alzimerahmed/HomeRoll/pull/1
 
-      **Full Changelog**: https://github.com/immich-app/immich/compare/v3.2.4...v3.3.0
+      **Full Changelog**: https://github.com/alzimerahmed/HomeRoll/compare/v3.2.4...v3.3.0
       "
     `);
   });

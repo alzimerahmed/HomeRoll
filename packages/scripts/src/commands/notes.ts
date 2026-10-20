@@ -10,7 +10,7 @@ const findRoot = (dir: string): string =>
 
 const root = findRoot(dirname(fileURLToPath(import.meta.url)));
 
-const REPO = 'immich-app/immich';
+const REPO = 'alzimerahmed/HomeRoll';
 
 const Files = {
   Config: join(root, '.github/release.yml'),

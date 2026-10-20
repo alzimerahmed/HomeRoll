@@ -2,7 +2,7 @@
   import { type ServerAboutResponseDto } from '@immich/sdk';
   import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
-  import { type SimpleIcon, siDiscord } from 'simple-icons';
+  import { type SimpleIcon } from 'simple-icons';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -29,17 +29,15 @@
     <p>{$t('official_immich_resources')}</p>
     <div class="mt-5 flex flex-col gap-2">
       {@render link(
-        `https://docs.${info.version}.archive.immich.app/overview/introduction`,
+        'https://github.com/alzimerahmed/HomeRoll',
         mdiInformationOutline,
         $t('documentation'),
       )}
 
-      {@render link('https://github.com/immich-app/immich/', mdiGithub, $t('source'))}
-
-      {@render link('https://discord.immich.app', siDiscord, $t('discord'))}
+      {@render link('https://github.com/alzimerahmed/HomeRoll', mdiGithub, $t('source'))}
 
       {@render link(
-        'https://github.com/immich-app/immich/issues/new/choose',
+        'https://github.com/alzimerahmed/HomeRoll/issues/new/choose',
         mdiBugOutline,
         $t('bugs_and_feature_requests'),
       )}

@@ -257,7 +257,7 @@
     {#if duplicates && duplicates.length > 0}
       <Text size="small" color="muted" class="mb-4">
         {$t('duplicates_description')}
-        <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" />
+        <LinkToDocs href="https://github.com/alzimerahmed/HomeRoll" />
       </Text>
 
       {#key duplicates[duplicatesIndex].duplicateId}

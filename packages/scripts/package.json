@@ -7,7 +7,7 @@
   "license": "GNU Affero General Public License version 3",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/immich-app/immich.git",
+    "url": "git+https://github.com/alzimerahmed/HomeRoll.git",
     "directory": "packages/scripts"
   },
   "scripts": {

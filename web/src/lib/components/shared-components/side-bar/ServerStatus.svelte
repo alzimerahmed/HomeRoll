@@ -32,7 +32,7 @@
       return;
     }
 
-    return { availableVersion, releaseUrl: `https://github.com/immich-app/immich/releases/tag/${availableVersion}` };
+    return { availableVersion, releaseUrl: `https://github.com/alzimerahmed/HomeRoll/releases/tag/${availableVersion}` };
   };
 
   const releaseInfo = $derived(getReleaseInfo(releaseManager.value));

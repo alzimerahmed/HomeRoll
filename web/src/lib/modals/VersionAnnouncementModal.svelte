@@ -24,7 +24,7 @@
     {#snippet children({ tag, message })}
       {#if tag === 'link'}
         <span class="font-medium underline">
-          <a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/alzimerahmed/HomeRoll/releases/latest" target="_blank" rel="noopener noreferrer">
             {message}
           </a>
         </span>
