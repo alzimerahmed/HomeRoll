@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { TakeoutImportResponseDto, TakeoutImportStatusDto, TakeoutUploadDto } from 'src/dtos/takeout.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';

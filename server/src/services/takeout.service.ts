@@ -480,8 +480,7 @@ export class TakeoutService extends BaseService {
       case 'waiting':
       case 'waiting-children':
       case 'delayed':
-      case 'prioritized':
-      case 'created': {
+      case 'prioritized': {
         status = cancelled ? TakeoutImportState.Cancelled : TakeoutImportState.Queued;
         break;
       }

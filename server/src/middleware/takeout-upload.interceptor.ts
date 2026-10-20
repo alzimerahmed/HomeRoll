@@ -49,10 +49,12 @@ export class TakeoutUploadInterceptor implements NestInterceptor {
         },
         destination: (request: AuthRequest, _file, callback) => {
           try {
-            const folder = join(
-              StorageCore.getFolderLocation(StorageFolder.Upload, request.user.user.id),
-              'takeout',
-            );
+            const ownerId = request.user?.user.id;
+            if (!ownerId) {
+              callback(new BadRequestException('Missing authenticated user'), '');
+              return;
+            }
+            const folder = join(StorageCore.getFolderLocation(StorageFolder.Upload, ownerId), 'takeout');
             this.storageRepository.mkdirSync(folder);
             callback(null, folder);
           } catch (error) {
