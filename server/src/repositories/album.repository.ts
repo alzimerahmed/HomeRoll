@@ -496,7 +496,7 @@ export class AlbumRepository {
    * Mirrors the search filters of `searchAssetBuilderLegacy`; locked, hidden and
    * trashed assets are never included in smart album membership.
    */
-  @GenerateSql({ params: [DummyValue.UUID, { isFavorite: true }] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { isFavorite: true }] })
   getSmartAlbumAssetIds(albumId: string, ownerId: string, rules: SmartAlbumRules) {
     const { takenAfter, takenBefore, rating, isNotInAlbum, ...rest } = rules;
     return searchAssetBuilderLegacy(this.db, {
