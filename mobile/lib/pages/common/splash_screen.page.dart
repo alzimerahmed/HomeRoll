@@ -168,7 +168,10 @@ class _BottomPanelState extends State<_BottomPanel> {
             _ActionLink(
               icon: Icons.chat_bubble_outline,
               label: context.t.discord,
-              onTap: () => launchUrl(Uri.parse('https://github.com/alzimerahmed/HomeRoll/issues'), mode: LaunchMode.externalApplication),
+              onTap: () => launchUrl(
+                Uri.parse('https://github.com/alzimerahmed/HomeRoll/issues'),
+                mode: LaunchMode.externalApplication,
+              ),
             ),
             _ActionLink(
               icon: Icons.bug_report_outlined,

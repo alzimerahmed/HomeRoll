@@ -191,7 +191,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             InkWell(
               onTap: () {
                 ContextHelper(context).pop();
-                unawaited(launchUrl(Uri.parse('https://github.com/alzimerahmed/HomeRoll'), mode: LaunchMode.externalApplication));
+                unawaited(
+                  launchUrl(
+                    Uri.parse('https://github.com/alzimerahmed/HomeRoll'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                );
               },
               child: Text(context.t.documentation, style: context.textTheme.bodySmall),
             ),
@@ -200,7 +205,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               onTap: () {
                 ContextHelper(context).pop();
                 unawaited(
-                  launchUrl(Uri.parse('https://github.com/alzimerahmed/HomeRoll'), mode: LaunchMode.externalApplication),
+                  launchUrl(
+                    Uri.parse('https://github.com/alzimerahmed/HomeRoll'),
+                    mode: LaunchMode.externalApplication,
+                  ),
                 );
               },
               child: Text(context.t.profile_drawer_github, style: context.textTheme.bodySmall),
