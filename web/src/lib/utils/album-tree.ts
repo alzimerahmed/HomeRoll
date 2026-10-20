@@ -52,10 +52,11 @@ export const buildAlbumTree = (albums: AlbumResponseDto[]): AlbumTreeNode[] => {
     visit(root);
   }
   for (const node of nodes.values()) {
-    if (!reachable.has(node.album.id)) {
-      roots.push(node);
-      visit(node);
+    if (reachable.has(node.album.id)) {
+      continue;
     }
+    roots.push(node);
+    visit(node);
   }
 
   return roots;
@@ -95,7 +96,7 @@ export const buildAlbumTreeView = (allAlbums: AlbumResponseDto[], visibleAlbums:
   const contextIds = new Set<string>();
 
   const prune = (node: AlbumTreeNode): AlbumTreeNode | undefined => {
-    const children = node.children.map(prune).filter((child): child is AlbumTreeNode => child !== undefined);
+    const children = node.children.map((child) => prune(child)).filter((child): child is AlbumTreeNode => child !== undefined);
     if (visibleIds.has(node.album.id)) {
       return { ...node, children };
     }
@@ -107,7 +108,7 @@ export const buildAlbumTreeView = (allAlbums: AlbumResponseDto[], visibleAlbums:
   };
 
   const roots = buildAlbumTree(allAlbums)
-    .map(prune)
+    .map((node) => prune(node))
     .filter((node): node is AlbumTreeNode => node !== undefined);
   return { roots, contextIds };
 };

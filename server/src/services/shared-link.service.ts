@@ -279,10 +279,10 @@ export class SharedLinkService extends BaseService {
       description?: string | null;
     }): FeedItem => {
       const thumbnailUrl = `${domain}/api/assets/${asset.id}/thumbnail?key=${keyParam}`;
-      const description = sharedLink.showExif && asset.description ? String(asset.description) : undefined;
+      const description = sharedLink.showExif && asset.description ? asset.description : undefined;
       // `showExif=false` must strip originalFileName too (isMetadataHidden contract) — generic title
       const title = sharedLink.showExif
-        ? String(asset.description || asset.originalFileName)
+        ? asset.description || asset.originalFileName
         : asset.type === AssetType.Video
           ? 'Video'
           : 'Photo';
@@ -301,13 +301,13 @@ export class SharedLinkService extends BaseService {
 
     if (sharedLink.type === SharedLinkType.Album && sharedLink.albumId) {
       const assets = await this.sharedLinkRepository.getFeedAssets(sharedLink.albumId, SHARED_LINK_FEED_ITEM_LIMIT);
-      return assets.map(toItem);
+      return assets.map((asset) => toItem(asset));
     }
 
     // individual links: assets come back ordered by fileCreatedAt asc — take the newest N
     return sharedLink.assets
       .slice(-SHARED_LINK_FEED_ITEM_LIMIT)
-      .reverse()
+      .toReversed()
       .map((asset) => toItem({ ...asset, description: asset.exifInfo?.description }));
   }
 

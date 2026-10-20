@@ -16,11 +16,11 @@ export const load = (async ({ params, url }) => {
 
   try {
     firstPage = await getBrowseLabelAssets({ key });
-  } catch (e) {
-    if (isHttpError(e) && e.status === 404) {
+  } catch (error_) {
+    if (isHttpError(error_) && error_.status === 404) {
       error(404, `Unknown browse label '${key}'`);
     }
-    if (isHttpError(e) && e.status === 400) {
+    if (isHttpError(error_) && error_.status === 400) {
       loadError = 'disabled';
     } else if (isHttpError(e) && e.status === 503) {
       loadError = 'unreachable';
@@ -35,7 +35,8 @@ export const load = (async ({ params, url }) => {
   let label: string | undefined;
   if (firstPage) {
     try {
-      label = (await getBrowseLabels()).find((item) => item.key === key)?.label;
+      const labels = await getBrowseLabels();
+      label = labels.find((item) => item.key === key)?.label;
     } catch {
       // keep the fallback title
     }

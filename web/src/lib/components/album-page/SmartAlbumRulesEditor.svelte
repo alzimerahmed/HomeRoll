@@ -12,7 +12,7 @@
     smartRuleFields,
     type SmartRuleField,
   } from '$lib/utils/smart-album';
-  import { AssetType, getAllPeople, type PersonResponseDto, type SmartAlbumRulesDto } from '@immich/sdk';
+  import { AssetTypeEnum, getAllPeople, type PersonResponseDto, type SmartAlbumRulesDto } from '@immich/sdk';
   import { Button, DatePicker, Icon, IconButton, Input, modalManager, Select, type SelectOption } from '@immich/ui';
   import { mdiClose, mdiPlus } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -24,7 +24,7 @@
     valid?: boolean;
   };
 
-  let { rules = $bindable({}), valid = $bindable(false) }: Props = $props();
+  let { rules = $bindable({}), valid = $bindable() }: Props = $props();
 
   /**
    * `fields` = the enabled rule rows (each field may appear at most once, the
@@ -44,7 +44,8 @@
 
   onMount(async () => {
     try {
-      people = (await getAllPeople({ withHidden: false })).people;
+      const response = await getAllPeople({ withHidden: false });
+      people = response.people;
     } catch (error) {
       handleError(error, $t('get_people_error'));
     }
@@ -106,9 +107,9 @@
     { label: $t('rating_any'), value: -1 },
   ]);
 
-  const typeOptions = $derived<SelectOption<AssetType>[]>([
-    { label: $t('image'), value: AssetType.Image },
-    { label: $t('video'), value: AssetType.Video },
+  const typeOptions = $derived<SelectOption<AssetTypeEnum>[]>([
+    { label: $t('image'), value: AssetTypeEnum.Image },
+    { label: $t('video'), value: AssetTypeEnum.Video },
   ]);
 
   const booleanOptions = (field: 'isFavorite' | 'isNotInAlbum') =>
@@ -156,7 +157,7 @@
           <Select value={values.rating ?? 1} options={ratingOptions} onChange={(value) => (values.rating = value)} />
         {:else if meta.kind === 'type'}
           <Select
-            value={values.type ?? AssetType.Image}
+            value={values.type ?? AssetTypeEnum.Image}
             options={typeOptions}
             onChange={(value) => (values.type = value)}
           />

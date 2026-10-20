@@ -294,7 +294,7 @@
       case AssetAction.SET_VISIBILITY_HIDDEN: {
         const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
         const index = assets.findIndex((currentAsset) => currentAsset.id === action.asset.id);
-        if (index >= 0) {
+        if (index !== -1) {
           assets.splice(index, 1);
         }
         if (assets.length === 0) {

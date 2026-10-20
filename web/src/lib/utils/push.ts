@@ -7,14 +7,14 @@ import { browser } from '$app/environment';
  */
 export const isPushSupported = (): boolean =>
   browser &&
-  globalThis.isSecureContext === true &&
+  isSecureContext &&
   'serviceWorker' in navigator &&
-  'PushManager' in window &&
-  'Notification' in window;
+  'PushManager' in globalThis &&
+  'Notification' in globalThis;
 
 /** Current notification permission, or `undefined` when unsupported/SSR. */
 export const getNotificationPermission = (): NotificationPermission | undefined => {
-  if (!browser || !('Notification' in window)) {
+  if (!browser || !('Notification' in globalThis)) {
     return;
   }
   return Notification.permission;
@@ -27,7 +27,7 @@ export const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   const rawData = atob(base64);
   const bytes = new Uint8Array(rawData.length);
   for (const [index, character] of [...rawData].entries()) {
-    bytes[index] = character.charCodeAt(0);
+    bytes[index] = character.codePointAt(0) ?? 0;
   }
   return bytes;
 };
@@ -37,7 +37,7 @@ export const arrayBufferToBase64Url = (buffer: ArrayBuffer): string => {
   const bytes = new Uint8Array(buffer);
   let binary = '';
   for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
+    binary += String.fromCodePoint(byte);
   }
   return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 };

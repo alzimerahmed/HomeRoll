@@ -12,6 +12,20 @@ import { getForSharedLink } from 'test/mappers.js';
 import { factory } from 'test/small.factory.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
+const authRow = (overrides: Record<string, unknown> = {}) =>
+  ({
+    id: 'link-1',
+    userId: 'user-1',
+    albumId: null,
+    expiresAt: null,
+    password: null,
+    showExif: true,
+    allowUpload: true,
+    allowDownload: true,
+    user: { id: 'user-1' },
+    ...overrides,
+  }) as never;
+
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
   let mocks: ServiceMocks;
@@ -23,6 +37,9 @@ describe(SharedLinkService.name, () => {
   it('should work', () => {
     expect(sut).toBeDefined();
   });
+
+  const feedCall = (key = 'link-key', format = 'atom') =>
+    sut.getFeed(key, { format } as never, 'https://homeroll.test');
 
   describe('getAll', () => {
     it('should return all shared links for a user', async () => {
@@ -397,23 +414,6 @@ describe(SharedLinkService.name, () => {
   });
 
   describe('getFeed', () => {
-    const authRow = (overrides: Record<string, unknown> = {}) =>
-      ({
-        id: 'link-1',
-        userId: 'user-1',
-        albumId: null,
-        expiresAt: null,
-        password: null,
-        showExif: true,
-        allowUpload: true,
-        allowDownload: true,
-        user: { id: 'user-1' },
-        ...overrides,
-      }) as never;
-
-    const feedCall = (key = 'link-key', format = 'atom') =>
-      sut.getFeed(key, { format } as never, 'https://homeroll.test');
-
     it('404s when the key is unknown', async () => {
       mocks.sharedLink.getByKey.mockResolvedValue(undefined);
 

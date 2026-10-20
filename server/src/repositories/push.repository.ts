@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import type { Insertable, Kysely } from 'kysely';
 import { DB } from 'src/schema/index.js';
 import { PushSubscriptionTable } from 'src/schema/tables/push-subscription.table.js';
 

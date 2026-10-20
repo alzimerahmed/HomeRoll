@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import type { SmartAlbumRules } from 'src/dtos/smart-album.dto.js';
 import {
   AddUsersDto,
   AlbumResponseDto,
@@ -15,7 +16,6 @@ import {
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
-import type { SmartAlbumRules } from 'src/dtos/smart-album.dto.js';
 import { AlbumType, AlbumUserRole, Permission } from 'src/enum.js';
 import { AlbumAssetCount } from 'src/repositories/album.repository.js';
 import { BaseService } from 'src/services/base.service.js';

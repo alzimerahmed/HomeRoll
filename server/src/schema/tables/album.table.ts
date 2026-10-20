@@ -9,8 +9,8 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import type { SmartAlbumRules } from 'src/dtos/smart-album.dto.js';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AlbumType, AssetOrder } from 'src/enum.js';
 import { album_type_enum } from 'src/schema/enums.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';

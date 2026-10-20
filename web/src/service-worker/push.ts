@@ -21,7 +21,7 @@ const NOTIFICATION_ICON = '/manifest-icon-192.maskable.png';
 const NOTIFICATION_BADGE = '/favicon-96.png';
 
 const showNotification = async (event: PushEvent) => {
-  let payload: PushPayload = {};
+  let payload: PushPayload;
   try {
     payload = event.data ? (event.data.json() as PushPayload) : {};
   } catch {
@@ -63,7 +63,9 @@ const focusOrOpenClient = async (url: string) => {
 };
 
 const handleNotificationClick = (event: NotificationEvent) => {
+  // eslint-disable-next-line tscompat/tscompat -- Safari never fires notificationclick; unreachable there
   event.notification.close();
+  // eslint-disable-next-line tscompat/tscompat -- Safari never fires notificationclick; unreachable there
   const path = typeof event.notification.data?.url === 'string' ? event.notification.data.url : '/';
   const url = new URL(path, sw.location.origin).href;
   event.waitUntil(focusOrOpenClient(url));
@@ -73,7 +75,7 @@ const arrayBufferToBase64Url = (buffer: ArrayBuffer): string => {
   const bytes = new Uint8Array(buffer);
   let binary = '';
   for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
+    binary += String.fromCodePoint(byte);
   }
   return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 };
@@ -86,6 +88,7 @@ const arrayBufferToBase64Url = (buffer: ArrayBuffer): string => {
  * session instead.
  */
 const resubscribe = async (event: PushSubscriptionChangeEvent) => {
+  // eslint-disable-next-line tscompat/tscompat -- browsers lacking pushsubscriptionchange never reach this handler
   const subscription = event.newSubscription;
   if (!subscription) {
     return;
@@ -100,7 +103,6 @@ const resubscribe = async (event: PushSubscriptionChangeEvent) => {
   try {
     await fetch('/api/push/subscriptions', {
       method: 'POST',
-      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         endpoint: subscription.endpoint,
@@ -116,6 +118,7 @@ const resubscribe = async (event: PushSubscriptionChangeEvent) => {
 };
 
 const handlePushSubscriptionChange = (event: PushSubscriptionChangeEvent) => {
+  // eslint-disable-next-line tscompat/tscompat -- browsers lacking pushsubscriptionchange never reach this handler
   event.waitUntil(resubscribe(event));
 };
 

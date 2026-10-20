@@ -19,7 +19,7 @@
 
   let albumName = $state(album?.albumName ?? '');
   let parentId = $state<string | null>(album?.parentId ?? null);
-  let rules = $state<SmartAlbumRulesDto>({ ...(album?.rules ?? {}) });
+  let rules = $state<SmartAlbumRulesDto>({ ...album?.rules });
   let rulesValid = $state(false);
 
   const canSubmit = $derived(albumName.trim().length > 0 && rulesValid);

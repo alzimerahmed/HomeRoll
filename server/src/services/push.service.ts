@@ -31,7 +31,7 @@ const MAX_PUSH_SUBSCRIPTIONS_PER_USER = 10;
  * self-hosted server never POSTs into the operator's LAN.
  */
 const isPrivatePushHost = (hostname: string): boolean => {
-  const host = hostname.replace(/^\[|]$/g, '').toLowerCase();
+  const host = hostname.replaceAll(/^\[|]$/g, '').toLowerCase();
   if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) {
     return true;
   }
@@ -54,7 +54,7 @@ const isPrivatePushHost = (hostname: string): boolean => {
   if (host.includes(':')) {
     if (host.startsWith('::ffff:')) {
       // IPv4-mapped IPv6 — evaluate the embedded IPv4 octets
-      const mapped = host.slice(7).replace(/\./g, '.');
+      const mapped = host.slice(7).replaceAll('.', '.');
       const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(mapped);
       if (ipv4) {
         const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
@@ -129,7 +129,7 @@ export class PushService extends BaseService {
 
   async getSubscriptions(auth: AuthDto): Promise<PushSubscriptionResponseDto[]> {
     const subscriptions = await this.pushRepository.getByUserId(auth.user.id);
-    return subscriptions.map(mapSubscription);
+    return subscriptions.map((subscription) => mapSubscription(subscription));
   }
 
   async subscribe(
@@ -142,7 +142,7 @@ export class PushService extends BaseService {
     }
 
     const existing = await this.pushRepository.getByUserId(auth.user.id);
-    if (existing.length >= MAX_PUSH_SUBSCRIPTIONS_PER_USER && !existing.some((s) => s.endpoint === dto.endpoint)) {
+    if (existing.length >= MAX_PUSH_SUBSCRIPTIONS_PER_USER && existing.every((s) => s.endpoint !== dto.endpoint)) {
       throw new BadRequestException(`At most ${MAX_PUSH_SUBSCRIPTIONS_PER_USER} push subscriptions per user`);
     }
 
@@ -217,7 +217,7 @@ export class PushService extends BaseService {
       headers: {
         'Content-Type': 'application/octet-stream',
         'Content-Encoding': 'aes128gcm',
-        TTL: `${PUSH_TTL_SECONDS}`,
+        TTL: String(PUSH_TTL_SECONDS),
         Urgency: 'normal',
         Authorization: buildVapidAuthorization(subscription.endpoint, vapid),
       },

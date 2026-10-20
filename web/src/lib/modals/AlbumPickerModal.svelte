@@ -30,7 +30,8 @@
   let { onClose, selectedItemsCount }: Props = $props();
 
   onMount(async () => {
-    albums = (await getAllAlbums({})).filter((album) => !isSmartAlbum(album));
+    const allAlbums = await getAllAlbums({});
+    albums = allAlbums.filter((album) => !isSmartAlbum(album));
     recentAlbums = [...albums].sort((a, b) => (new Date(a.updatedAt) > new Date(b.updatedAt) ? -1 : 1)).slice(0, 3);
     loading = false;
   });

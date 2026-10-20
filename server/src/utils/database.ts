@@ -789,10 +789,10 @@ function orientationPredicates(
     predicates.push(eb.not(orientationClause(filter.ne)));
   }
   if (filter.in !== undefined) {
-    predicates.push(eb.or(filter.in.map(orientationClause)));
+    predicates.push(eb.or(filter.in.map((value) => orientationClause(value))));
   }
   if (filter.notIn !== undefined) {
-    predicates.push(eb.not(eb.or(filter.notIn.map(orientationClause))));
+    predicates.push(eb.not(eb.or(filter.notIn.map((value) => orientationClause(value)))));
   }
   return predicates;
 }

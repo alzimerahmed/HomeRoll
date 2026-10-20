@@ -94,7 +94,7 @@ export class ApiService {
       }
 
       if (meta) {
-        const shareUrl = new URL(request.url.split('?')[0], defaultDomain || 'http://localhost:2283').href;
+        const shareUrl = new URL(request.url.split('?', 1)[0], defaultDomain || 'http://localhost:2283').href;
         html = render(index, meta, shareUrl);
       }
 

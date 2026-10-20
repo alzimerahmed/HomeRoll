@@ -21,8 +21,8 @@ const decryptWebPushPayload = (body: Buffer, subscriber: { privateKey: Buffer; p
   const contentEncryptionKey = hkdf(ikm, salt, 'Content-Encoding: aes128gcm\0', 16);
   const nonce = hkdf(ikm, salt, 'Content-Encoding: nonce\0', 12);
 
-  const tag = ciphertext.subarray(ciphertext.length - 16);
-  const encrypted = ciphertext.subarray(0, ciphertext.length - 16);
+  const tag = ciphertext.subarray(-16);
+  const encrypted = ciphertext.subarray(0, -16);
   const decipher = createDecipheriv('aes-128-gcm', contentEncryptionKey, nonce);
   decipher.setAuthTag(tag);
   const plaintext = Buffer.concat([decipher.update(encrypted), decipher.final()]);
@@ -68,8 +68,8 @@ describe('web-push', () => {
 
       const { plaintext } = decryptWebPushPayload(body, subscriber, auth);
       // trailing delimiter octet per RFC 8188
-      expect(plaintext.subarray(plaintext.length - 1)).toEqual(Buffer.from([0x02]));
-      expect(plaintext.subarray(0, plaintext.length - 1).toString()).toBe(payload);
+      expect(plaintext.subarray(-1)).toEqual(Buffer.from([0x02]));
+      expect(plaintext.subarray(0, -1).toString()).toBe(payload);
     });
 
     it('matches the RFC 8291 worked example', () => {
@@ -109,7 +109,7 @@ describe('web-push', () => {
       expect(authorization.endsWith(`, k=${vapid.publicKey}`)).toBe(true);
 
       const jwt = authorization.slice('vapid t='.length, authorization.lastIndexOf(','));
-      const [header, body, signature] = jwt.split('.');
+      const [header, body, signature] = jwt.split('.', 3);
 
       expect(JSON.parse(Buffer.from(header, 'base64url').toString())).toEqual({ typ: 'JWT', alg: 'ES256' });
       expect(JSON.parse(Buffer.from(body, 'base64url').toString())).toEqual({
@@ -125,7 +125,7 @@ describe('web-push', () => {
       const keys = generateVapidKeys();
       const authorization = buildVapidAuthorization('https://push.example.com/', keys);
       const jwt = authorization.slice('vapid t='.length, authorization.lastIndexOf(','));
-      const [header, body, signature] = jwt.split('.');
+      const [header, body, signature] = jwt.split('.', 3);
 
       const publicKeyBytes = Buffer.from(keys.publicKey, 'base64url');
       const publicKey = createPublicKey({

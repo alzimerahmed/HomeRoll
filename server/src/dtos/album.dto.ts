@@ -68,7 +68,7 @@ const CreateAlbumSchema = z
       'Smart album membership rules. Required when albumType is smart; not allowed when albumType is manual.',
     ),
   })
-  .refine((data) => !(data.albumType === AlbumType.Manual && data.rules !== undefined), {
+  .refine((data) => data.albumType !== AlbumType.Manual || data.rules === undefined, {
     error: 'Cannot set rules on a manual album',
     path: ['rules'],
   })

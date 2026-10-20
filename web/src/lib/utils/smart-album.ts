@@ -1,4 +1,4 @@
-import { AlbumType, AssetType, type AlbumResponseDto, type SmartAlbumRulesDto } from '@immich/sdk';
+import { AlbumType, AssetTypeEnum, type AlbumResponseDto, type SmartAlbumRulesDto } from '@immich/sdk';
 
 /**
  * FG-06 — smart album helpers. `SmartAlbumRulesDto` is a flat object of
@@ -71,7 +71,7 @@ export const defaultSmartRuleValue = (field: SmartRuleField): SmartAlbumRulesDto
       return 1;
     }
     case 'type': {
-      return AssetType.Image;
+      return AssetTypeEnum.Image;
     }
     case 'personIds':
     case 'tagIds': {
@@ -84,7 +84,7 @@ export const defaultSmartRuleValue = (field: SmartRuleField): SmartAlbumRulesDto
 };
 
 export const hasSmartRuleValue = (value: unknown): boolean => {
-  if (value === undefined || value === null || value === '') {
+  if ([undefined, null, ''].includes(value as undefined)) {
     return false;
   }
   return !(Array.isArray(value) && value.length === 0);

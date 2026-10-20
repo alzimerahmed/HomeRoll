@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { type ExpressionBuilder, type Insertable, type Kysely, type Updateable, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import type { SmartAlbumRules } from 'src/dtos/smart-album.dto.js';
 import { columns } from 'src/database.js';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
 import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto.js';
-import type { SmartAlbumRules } from 'src/dtos/smart-album.dto.js';
+
 import { AlbumUserRole, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';

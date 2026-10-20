@@ -1,6 +1,5 @@
 {
   "background_color": "#16130F",
-  "theme_color": "#16130F",
   "description": "Self-hosted photo and video backup solution directly from your mobile phone.",
   "dir": "auto",
   "display": "standalone",
@@ -41,5 +40,6 @@
       "url": "/map"
     }
   ],
-  "start_url": "/"
+  "start_url": "/",
+  "theme_color": "#16130F"
 }

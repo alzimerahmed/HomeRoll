@@ -14,7 +14,7 @@ import {
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns, LockableProperty, Stack } from 'src/database.js';
+import { LockableProperty, Stack, columns } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
 import { type AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import {

@@ -5,6 +5,7 @@
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onMount } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -35,7 +36,7 @@
   });
 
   const options = $derived.by((): ComboBoxOption[] => {
-    const excludedIds = excludeAlbum ? getAlbumDescendantIds(excludeAlbum.id, albums) : new Set<string>();
+    const excludedIds = excludeAlbum ? getAlbumDescendantIds(excludeAlbum.id, albums) : new SvelteSet<string>();
     if (excludeAlbum) {
       excludedIds.add(excludeAlbum.id);
     }
@@ -43,13 +44,14 @@
     const result: ComboBoxOption[] = [{ label: $t('album_parent_none'), value: NO_PARENT_VALUE }];
     const flatten = (nodes: AlbumTreeNode[], depth: number) => {
       for (const node of nodes) {
-        if (!excludedIds.has(node.album.id)) {
-          result.push({
-            label: `${'— '.repeat(depth)}${node.album.albumName || $t('unnamed_album')}`,
-            value: node.album.id,
-          });
-          flatten(node.children, depth + 1);
+        if (excludedIds.has(node.album.id)) {
+          continue;
         }
+        result.push({
+          label: `${'— '.repeat(depth)}${node.album.albumName || $t('unnamed_album')}`,
+          value: node.album.id,
+        });
+        flatten(node.children, depth + 1);
       }
     };
     flatten(buildAlbumTree(albums), 0);
