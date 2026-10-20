@@ -146,7 +146,7 @@ export class WebDavService extends BaseService {
   }
 
   private assertSafeSegments(segments: string[]) {
-    if (segments.some((segment) => segment === '..' || segment.includes('\u0000'))) {
+    if (segments.some((segment) => segment === '..' || segment.includes('\u{0}'))) {
       throw new BadRequestException('Invalid path');
     }
   }
@@ -175,20 +175,16 @@ export class WebDavService extends BaseService {
    *   scope as `albumRepository.getAll(ownerId)`.
    */
   private async listCollections(auth: AuthDto, root: DavRoot): Promise<DavCollectionEntry[]> {
-    const raw: { id: string; name: string; item: DatedItem }[] =
-      root === DAV_LIBRARIES
-        ? (await this.libraryRepository.getAll())
-            .filter((library) => library.ownerId === auth.user.id)
-            .map((library) => ({
-              id: library.id,
-              name: library.name,
-              item: library,
-            }))
-        : (await this.albumRepository.getAll(auth.user.id)).map((album) => ({
-            id: album.id,
-            name: album.albumName,
-            item: album,
-          }));
+    let raw: { id: string; name: string; item: DatedItem }[];
+    if (root === DAV_LIBRARIES) {
+      const libraries = await this.libraryRepository.getAll();
+      raw = libraries
+        .filter((library) => library.ownerId === auth.user.id)
+        .map((library) => ({ id: library.id, name: library.name, item: library }));
+    } else {
+      const albums = await this.albumRepository.getAll(auth.user.id);
+      raw = albums.map((album) => ({ id: album.id, name: album.albumName, item: album }));
+    }
 
     return assignDavNames(raw).map(({ item, name }) => ({ id: item.id, name, item: item.item }));
   }
@@ -211,7 +207,7 @@ export class WebDavService extends BaseService {
       segments: [root, collectionName, name],
       name,
       isCollection: false,
-      size: asset.fileSize == null ? undefined : Number(asset.fileSize),
+      size: asset.fileSize === null || asset.fileSize === undefined ? undefined : Number(asset.fileSize),
       mimeType: mimeTypes.lookup(asset.originalPath),
       etag: asset.checksum?.toString('hex'),
       createdAt: asDate(asset.fileCreatedAt),

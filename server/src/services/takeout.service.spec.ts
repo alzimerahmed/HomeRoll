@@ -12,7 +12,7 @@ import { AssetFactory } from 'test/factories/asset.factory.js';
 import { UserFactory } from 'test/factories/user.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { newUuid } from 'test/small.factory.js';
-import { newTestService, ServiceMocks } from 'test/utils.js';
+import { ServiceMocks, newTestService } from 'test/utils.js';
 
 vitest.mock('src/utils/archive.js', async (importOriginal) => {
   const mod = await importOriginal<typeof import('src/utils/archive.js')>();
@@ -29,6 +29,14 @@ const entry = (path: string, contents: string, mtime?: Date): ArchiveFile => ({
   mtime,
   open: () => Readable.from([Buffer.from(contents)]),
 });
+
+const archiveGenerator = (files: ArchiveFile[]): AsyncGenerator<ArchiveFile> =>
+  // eslint-disable-next-line @typescript-eslint/require-await -- mock generator only yields, nothing to await
+  (async function* () {
+    for (const file of files) {
+      yield file;
+    }
+  })();
 
 const jobOf = (overrides: Partial<JobOf<JobName.TakeoutImport>> = {}): JobOf<JobName.TakeoutImport> => ({
   importId: newUuid(),
@@ -54,7 +62,7 @@ describe(TakeoutService.name, () => {
   let sut: TakeoutService;
   let mocks: ServiceMocks;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     ({ sut, mocks } = newTestService(TakeoutService));
 
     mocks.storage.createWriteStream.mockImplementation(
@@ -75,7 +83,7 @@ describe(TakeoutService.name, () => {
     mocks.job.getJob.mockResolvedValue(bullJob({ ownerId: authStub.user1.user.id }) as any);
     mocks.job.searchJobs.mockResolvedValue([]);
     mocks.storage.readdir.mockResolvedValue([]);
-    readArchive.mockReturnValue((async function* () {})());
+    readArchive.mockReturnValue(archiveGenerator([]));
   });
 
   describe('uploadArchive', () => {
@@ -144,12 +152,7 @@ describe(TakeoutService.name, () => {
           people: [{ name: 'Alice' }],
         }),
       );
-      readArchive.mockReturnValue(
-        (async function* () {
-          yield media;
-          yield sidecar;
-        })(),
-      );
+      readArchive.mockReturnValue(archiveGenerator([media, sidecar]));
 
       const job = jobOf();
       const status = await sut.handleTakeoutImport(job);
@@ -189,11 +192,7 @@ describe(TakeoutService.name, () => {
 
     it('should skip duplicate media files', async () => {
       mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue('existing-asset-id');
-      readArchive.mockReturnValue(
-        (async function* () {
-          yield entry('Takeout/dup.jpg', 'duplicate-content');
-        })(),
-      );
+      readArchive.mockReturnValue(archiveGenerator([entry('Takeout/dup.jpg', 'duplicate-content')]));
 
       const status = await sut.handleTakeoutImport(jobOf());
 
@@ -204,10 +203,10 @@ describe(TakeoutService.name, () => {
 
     it('should skip non-media entries and oversized sidecars', async () => {
       readArchive.mockReturnValue(
-        (async function* () {
-          yield entry('Takeout/archive_browser.html', '<html></html>');
-          yield { ...entry('Takeout/big.json', 'x'), size: 8 * 1024 * 1024 };
-        })(),
+        archiveGenerator([
+          entry('Takeout/archive_browser.html', '<html></html>'),
+          { ...entry('Takeout/big.json', 'x'), size: 8 * 1024 * 1024 },
+        ]),
       );
 
       const status = await sut.handleTakeoutImport(jobOf());
@@ -219,14 +218,14 @@ describe(TakeoutService.name, () => {
 
     it('should count entry failures without aborting the import', async () => {
       readArchive.mockReturnValue(
-        (async function* () {
-          yield {
+        archiveGenerator([
+          {
             path: 'Takeout/broken.jpg',
             size: 1,
             open: () => Promise.reject(new Error('cannot read entry')),
-          };
-          yield entry('Takeout/good.jpg', 'good-bytes');
-        })(),
+          },
+          entry('Takeout/good.jpg', 'good-bytes'),
+        ]),
       );
 
       const status = await sut.handleTakeoutImport(jobOf());
@@ -247,11 +246,9 @@ describe(TakeoutService.name, () => {
       mocks.job.getJob.mockResolvedValue(bullJob({ ownerId: authStub.user1.user.id, cancelled: true }) as any);
 
       readArchive.mockReturnValue(
-        (async function* () {
-          for (let index = 0; index < 100; index++) {
-            yield entry(`Takeout/file-${index}.jpg`, `content-${index}`);
-          }
-        })(),
+        archiveGenerator(
+          Array.from({ length: 100 }, (_, index) => entry(`Takeout/file-${index}.jpg`, `content-${index}`)),
+        ),
       );
 
       const status = await sut.handleTakeoutImport(jobOf());
@@ -265,10 +262,7 @@ describe(TakeoutService.name, () => {
         UserFactory.create({ id: authStub.user1.user.id, quotaSizeInBytes: 9, quotaUsageInBytes: 0 }),
       );
       readArchive.mockReturnValue(
-        (async function* () {
-          yield entry('Takeout/fits.jpg', '12345');
-          yield entry('Takeout/too-big.jpg', '123456');
-        })(),
+        archiveGenerator([entry('Takeout/fits.jpg', '12345'), entry('Takeout/too-big.jpg', '123456')]),
       );
 
       const status = await sut.handleTakeoutImport(jobOf());
@@ -286,10 +280,7 @@ describe(TakeoutService.name, () => {
         .mockResolvedValueOnce(newUuid()) // first entry is a duplicate
         .mockResolvedValue(undefined); // subsequent entries are new
       readArchive.mockReturnValue(
-        (async function* () {
-          yield entry('Takeout/dup.jpg', '12345');
-          yield entry('Takeout/new.jpg', '6789');
-        })(),
+        archiveGenerator([entry('Takeout/dup.jpg', '12345'), entry('Takeout/new.jpg', '6789')]),
       );
 
       const status = await sut.handleTakeoutImport(jobOf());
@@ -302,11 +293,7 @@ describe(TakeoutService.name, () => {
     it('should update job progress with the result counts', async () => {
       const job = bullJob({ ownerId: authStub.user1.user.id });
       mocks.job.getJob.mockResolvedValue(job as any);
-      readArchive.mockReturnValue(
-        (async function* () {
-          yield entry('Takeout/a.jpg', 'a');
-        })(),
-      );
+      readArchive.mockReturnValue(archiveGenerator([entry('Takeout/a.jpg', 'a')]));
 
       await sut.handleTakeoutImport(jobOf());
 

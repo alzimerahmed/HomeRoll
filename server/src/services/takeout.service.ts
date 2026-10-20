@@ -27,7 +27,7 @@ import { ArchiveFile, ArchiveFormat, detectArchiveFormat, readArchive } from 'sr
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import { getFilenameExtension } from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { findSidecarJson, parseTakeoutJson, TakeoutMetadata } from 'src/utils/takeout-json.js';
+import { TakeoutMetadata, findSidecarJson, parseTakeoutJson } from 'src/utils/takeout-json.js';
 
 /** Maximum size of a JSON sidecar that will be buffered for metadata pairing (4 MiB). */
 const MAX_SIDECAR_BYTES = 4 * 1024 * 1024;
@@ -90,9 +90,12 @@ export class TakeoutService extends BaseService {
     }
 
     // strip control characters — the name lands in logs and API responses
-    const fileName = Buffer.from(file.originalname, 'latin1')
-      .toString('utf8')
-      .replaceAll(/[\x00-\x1f\x7f]/g, '_');
+    const fileName = [...Buffer.from(file.originalname, 'latin1').toString('utf8')]
+      .map((char) => {
+        const code = char.codePointAt(0)!;
+        return code < 32 || code === 127 ? '_' : char;
+      })
+      .join('');
 
     try {
       // the queue is serial — bound each user's staged backlog so archives can't pile up on disk

@@ -10,8 +10,8 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
-import type { NextFunction, Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
+import type { NextFunction, Request, Response } from 'express';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Permission } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';

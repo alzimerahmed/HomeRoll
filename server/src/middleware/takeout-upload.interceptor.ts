@@ -1,7 +1,7 @@
 import { BadRequestException, CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
-import { NextFunction } from 'express';
-import multer from 'multer';
+import type { NextFunction } from 'express';
+import multer, { diskStorage } from 'multer';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { Observable } from 'rxjs';
@@ -42,7 +42,7 @@ export class TakeoutUploadInterceptor implements NestInterceptor {
     this.logger.setContext(TakeoutUploadInterceptor.name);
 
     this.handler = multer({
-      storage: multer.diskStorage({
+      storage: diskStorage({
         filename: (_request, file, callback) => {
           const extension = sanitize(getFilenameExtension(file.originalname));
           callback(null, `${randomUUID()}${extension}`);

@@ -2,10 +2,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
-import { crc32, deflateRawSync, gzipSync } from 'node:zlib';
-import { createGunzip } from 'node:zlib';
+import { createGunzip, crc32, deflateRawSync, gzipSync } from 'node:zlib';
 import {
-  ArchiveError,
   ArchiveFormat,
   ArchiveLimitError,
   UnsafeArchivePathError,
@@ -143,7 +141,7 @@ describe('archive utils', () => {
   describe('sanitizeEntryPath', () => {
     it('should normalize paths', () => {
       expect(sanitizeEntryPath('Takeout/Google Photos/IMG.jpg')).toBe('Takeout/Google Photos/IMG.jpg');
-      expect(sanitizeEntryPath('a\\b\\c.jpg')).toBe('a/b/c.jpg');
+      expect(sanitizeEntryPath(String.raw`a\b\c.jpg`)).toBe('a/b/c.jpg');
       expect(sanitizeEntryPath('./a/./b.jpg')).toBe('a/b.jpg');
     });
 
@@ -155,13 +153,13 @@ describe('archive utils', () => {
     it('should reject path traversal', () => {
       expect(() => sanitizeEntryPath('../evil.txt')).toThrow(UnsafeArchivePathError);
       expect(() => sanitizeEntryPath('a/../../evil.txt')).toThrow(UnsafeArchivePathError);
-      expect(() => sanitizeEntryPath('a\\..\\evil.txt')).toThrow(UnsafeArchivePathError);
+      expect(() => sanitizeEntryPath(String.raw`a\..\evil.txt`)).toThrow(UnsafeArchivePathError);
     });
 
     it('should reject absolute paths and drive letters', () => {
       expect(() => sanitizeEntryPath('/etc/passwd')).toThrow(UnsafeArchivePathError);
       expect(() => sanitizeEntryPath('C:/Windows/evil.exe')).toThrow(UnsafeArchivePathError);
-      expect(() => sanitizeEntryPath('c:\\evil.exe')).toThrow(UnsafeArchivePathError);
+      expect(() => sanitizeEntryPath(String.raw`c:\evil.exe`)).toThrow(UnsafeArchivePathError);
     });
   });
 
@@ -221,7 +219,8 @@ describe('archive utils', () => {
 
       for await (const entry of readTarArchive(Readable.from(tar))) {
         expect(entry.path).toBe(longName);
-        expect((await streamToBuffer(entry.open())).toString()).toBe('data');
+        const contents = await streamToBuffer(entry.open());
+        expect(contents.toString()).toBe('data');
       }
     });
 
@@ -239,7 +238,8 @@ describe('archive utils', () => {
       const stream = Readable.from(gzipSync(tar)).pipe(createGunzip());
 
       for await (const entry of readTarArchive(stream)) {
-        expect((await streamToBuffer(entry.open())).toString()).toBe('content');
+        const contents = await streamToBuffer(entry.open());
+        expect(contents.toString()).toBe('content');
       }
     });
 
@@ -447,7 +447,7 @@ describe('archive utils', () => {
       extra.writeUInt16LE(24, 2);
       extra.writeBigUInt64LE(BigInt(data.length), 4); // uncompressed size
       extra.writeBigUInt64LE(BigInt(data.length), 12); // compressed size
-      extra.writeBigUInt64LE(BigInt(0), 20); // local header offset
+      extra.writeBigUInt64LE(0n, 20); // local header offset
 
       const central = Buffer.alloc(46 + nameBuffer.length + extra.length);
       central.writeUInt32LE(0x02_01_4b_50, 0);

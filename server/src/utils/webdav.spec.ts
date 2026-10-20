@@ -116,7 +116,7 @@ describe('webdav utils', () => {
 
   describe('sanitizeDavName', () => {
     it('should replace filesystem-hostile characters', () => {
-      expect(sanitizeDavName('a/b\\c:d*e?f"g<h>i|j')).toBe('a_b_c_d_e_f_g_h_i_j');
+      expect(sanitizeDavName(String.raw`a/b\c:d*e?f"g<h>i|j`)).toBe('a_b_c_d_e_f_g_h_i_j');
     });
 
     it('should strip trailing dots and spaces', () => {

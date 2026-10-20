@@ -104,8 +104,8 @@ export const detectArchiveFormat = (header: Buffer): ArchiveFormat | null => {
     header.length >= 4 &&
     header[0] === 0x50 &&
     header[1] === 0x4b &&
-    (header[2] === 0x03 || header[2] === 0x05 || header[2] === 0x07) &&
-    (header[3] === 0x04 || header[3] === 0x06 || header[3] === 0x08)
+    [0x03, 0x05, 0x07].includes(header[2]) &&
+    [0x04, 0x06, 0x08].includes(header[3])
   ) {
     return ArchiveFormat.Zip;
   }
@@ -137,7 +137,7 @@ export const sanitizeEntryPath = (name: string): string | null => {
   }
 
   const segments = normalized.split('/').filter((segment) => segment !== '.' && segment !== '');
-  if (segments.some((segment) => segment === '..')) {
+  if (segments.includes('..')) {
     throw new UnsafeArchivePathError(`Unsafe archive entry path (path traversal): ${name}`);
   }
 
@@ -331,7 +331,7 @@ async function* readTarArchiveEntries(stream: Readable, limits: ArchiveLimits): 
 
     const size = parseTarNumber(header, 124, 12);
     const mtimeSeconds = parseTarNumber(header, 136, 12);
-    const typeFlag = String.fromCharCode(header[156]);
+    const typeFlag = String.fromCodePoint(header[156]);
     const paddedSize = Math.ceil(size / TAR_BLOCK_SIZE) * TAR_BLOCK_SIZE;
 
     switch (typeFlag) {
@@ -340,7 +340,8 @@ async function* readTarArchiveEntries(stream: Readable, limits: ArchiveLimits): 
         if (size > TAR_MAX_METADATA_BYTES) {
           throw new ArchiveError('Oversized tar longname entry');
         }
-        longName = (await reader.readBytes(size)).toString('utf8').split('\0', 1)[0];
+        const nameData = await reader.readBytes(size);
+        longName = nameData.toString('utf8').split('\0', 1)[0];
         await reader.skipBytes(paddedSize - size);
         continue;
       }
@@ -350,10 +351,10 @@ async function* readTarArchiveEntries(stream: Readable, limits: ArchiveLimits): 
         if (size > TAR_MAX_METADATA_BYTES) {
           throw new ArchiveError('Oversized tar PAX header');
         }
-        const data = await reader.readBytes(size);
+        const paxData = await reader.readBytes(size);
         await reader.skipBytes(paddedSize - size);
         if (typeFlag === 'x') {
-          longName = parsePaxPath(data) ?? longName;
+          longName = parsePaxPath(paxData) ?? longName;
         }
         continue;
       }
@@ -469,7 +470,7 @@ const findEndOfCentralDirectory = async (
     }
 
     let entryCount = scan.readUInt16LE(index + 10);
-    let size = scan.readUInt32LE(index + 12);
+    const size = scan.readUInt32LE(index + 12);
     let offset = scan.readUInt32LE(index + 16);
     const eocdOffset = fileSize - scanLength + index;
 
@@ -485,7 +486,6 @@ const findEndOfCentralDirectory = async (
         throw new ArchiveError('Invalid zip64 end of central directory');
       }
       entryCount = Number(zip64.readBigUInt64LE(32));
-      size = Number(zip64.readBigUInt64LE(40));
       offset = Number(zip64.readBigUInt64LE(48));
     }
 
@@ -588,7 +588,8 @@ export async function* readZipArchive(filePath: string, limits: ArchiveLimits = 
       const extraLength = header.readUInt16LE(30);
       const commentLength = header.readUInt16LE(32);
 
-      const name = (await readAt(handle, position + ZIP_CENTRAL_HEADER_SIZE, nameLength)).toString('utf8');
+      const nameBuffer = await readAt(handle, position + ZIP_CENTRAL_HEADER_SIZE, nameLength);
+      const name = nameBuffer.toString('utf8');
       const extra =
         extraLength > 0 ? await readAt(handle, position + ZIP_CENTRAL_HEADER_SIZE + nameLength, extraLength) : null;
       position += ZIP_CENTRAL_HEADER_SIZE + nameLength + extraLength + commentLength;

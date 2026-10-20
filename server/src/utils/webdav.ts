@@ -45,7 +45,7 @@ const XML_ESCAPE_MAP: Record<string, string> = {
 };
 
 /** Escape the five XML predefined entities. */
-export const escapeXml = (value: string): string => value.replace(/[&<>"']/g, (char) => XML_ESCAPE_MAP[char]);
+export const escapeXml = (value: string): string => value.replaceAll(/[&<>"']/g, (char) => XML_ESCAPE_MAP[char]);
 
 /** Percent-encode a single href segment, then XML-escape the result. */
 export const encodeDavSegment = (segment: string): string => escapeXml(encodeURIComponent(segment));
@@ -55,8 +55,8 @@ export const encodeDavSegment = (segment: string): string => escapeXml(encodeURI
  * (e.g. `/api/webdav`). Collection hrefs get a trailing slash.
  */
 export const buildDavHref = (baseHref: string, segments: string[], isCollection: boolean): string => {
-  const base = baseHref.replace(/\/+$/, '');
-  const path = segments.map(encodeDavSegment).join('/');
+  const base = baseHref.replaceAll(/\/+$/, '');
+  const path = segments.map((segment) => encodeDavSegment(segment)).join('/');
   const href = path ? `${base}/${path}` : base;
   return isCollection ? `${href}/` : href;
 };
@@ -101,7 +101,8 @@ export const getDavSegments = (param: string | string[] | undefined): string[] =
 
 // Characters that are illegal in file names on common mount targets
 // (Windows in particular) or unsafe in DAV hrefs: / \ : * ? " < > | and control chars.
-const ILLEGAL_NAME_CHARACTERS = /[\x5c\x2f:*?"<>|\x00-\x1f]/g;
+// eslint-disable-next-line no-control-regex -- stripping control characters is the intent
+const ILLEGAL_NAME_CHARACTERS = /[\u{5C}\u{2F}:*?"<>|\u{0}-\u{1F}]/gu;
 
 /**
  * Convert an arbitrary display name (library name, album name, original file name)
@@ -109,12 +110,12 @@ const ILLEGAL_NAME_CHARACTERS = /[\x5c\x2f:*?"<>|\x00-\x1f]/g;
  */
 export const sanitizeDavName = (name: string): string => {
   const sanitized = name
-    .replace(ILLEGAL_NAME_CHARACTERS, '_')
+    .replaceAll(ILLEGAL_NAME_CHARACTERS, '_')
     .trim()
     .replace(/[.\s]+$/, ''); // Windows forbids trailing dots and spaces
   // '.' and '..' are legal names but dangerous DAV segments — some clients normalize them
   // into traversal; a resource named that is unreachable anyway (path safety rejects it)
-  return sanitized === '' || sanitized === '.' || sanitized === '..' ? 'untitled' : sanitized;
+  return ['', '.', '..'].includes(sanitized) ? 'untitled' : sanitized;
 };
 
 const shortId = (id: string) => id.replaceAll('-', '').slice(0, 8);
@@ -143,7 +144,7 @@ export const assignDavNames = <T extends { id: string; name: string }>(items: T[
     // Defensive: a suffixed name could still collide with an existing file name.
     let counter = 1;
     while (used.has(name)) {
-      name = `${name}-${counter++}`;
+      name += `-${counter++}`;
     }
 
     used.add(name);
@@ -194,9 +195,7 @@ export const buildMultistatus = (baseHref: string, resources: DavResource[]): st
       '</D:response>',
   );
 
-  return (
-    '<?xml version="1.0" encoding="utf-8"?>' + `<D:multistatus xmlns:D="DAV:">${responses.join('')}</D:multistatus>`
-  );
+  return `<?xml version="1.0" encoding="utf-8"?><D:multistatus xmlns:D="DAV:">${responses.join('')}</D:multistatus>`;
 };
 
 /**

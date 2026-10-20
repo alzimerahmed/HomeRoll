@@ -6,6 +6,14 @@ import { WebDavService } from 'src/services/webdav.service.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
 
+const file = () =>
+  new ImmichFileResponse({
+    path: import.meta.filename,
+    fileName: 'webdav.controller.spec.ts',
+    contentType: 'text/plain',
+    cacheControl: CacheControl.PrivateWithCache,
+  });
+
 describe(WebDavController.name, () => {
   let ctx: ControllerContext;
   const service = mockBaseService(WebDavService);
@@ -99,14 +107,6 @@ describe(WebDavController.name, () => {
   });
 
   describe('GET/HEAD', () => {
-    const file = () =>
-      new ImmichFileResponse({
-        path: import.meta.filename,
-        fileName: 'webdav.controller.spec.ts',
-        contentType: 'text/plain',
-        cacheControl: CacheControl.PrivateWithCache,
-      });
-
     it('should stream a file', async () => {
       service.getFile.mockResolvedValue(file());
       const { status, headers } = await request(ctx.getHttpServer()).get('/webdav/Libraries/My%20Library/a.txt');
