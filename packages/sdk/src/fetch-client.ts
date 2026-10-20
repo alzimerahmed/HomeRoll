@@ -1,5 +1,5 @@
 /**
- * Immich
+ * HomeRoll
  * 3.3.0-rc.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
@@ -176,6 +176,7 @@ export type AdminConfigJobDto = {
     search: AdminConfigJobSettingsDto;
     sidecar: AdminConfigJobSettingsDto;
     smartSearch: AdminConfigJobSettingsDto;
+    takeout: AdminConfigJobSettingsDto;
     thumbnailGeneration: AdminConfigJobSettingsDto;
     videoConversion: AdminConfigJobSettingsDto;
     workflow: AdminConfigJobSettingsDto;
@@ -545,14 +546,6 @@ export type TestEmailResponseDto = {
     /** Email message ID */
     messageId: string;
 };
-export type UserLicense = {
-    /** Activation date */
-    activatedAt: string;
-    /** Activation key */
-    activationKey: string;
-    /** License key (format: /^IM(SV|CL)(-[\dA-Za-z]{4}){8}$/) */
-    licenseKey: string;
-};
 export type UserAdminResponseDto = {
     avatarColor: UserAvatarColor;
     /** Cluster group the user is a member of */
@@ -567,7 +560,6 @@ export type UserAdminResponseDto = {
     id: string;
     /** Is admin user */
     isAdmin: boolean;
-    license: (UserLicense) | null;
     /** User name */
     name: string;
     /** OAuth ID */
@@ -1289,7 +1281,7 @@ export type TagResponseDto = {
 export type AssetResponseDto = {
     /** Base64 encoded SHA1 hash */
     checksum: string;
-    /** The UTC timestamp when the asset was originally uploaded to Immich. */
+    /** The UTC timestamp when the asset was originally uploaded to HomeRoll. */
     createdAt: string;
     /** Duplicate group ID */
     duplicateId?: string | null;
@@ -1789,6 +1781,7 @@ export type QueuesResponseLegacyDto = {
     sidecar: QueueResponseLegacyDto;
     smartSearch: QueueResponseLegacyDto;
     storageTemplateMigration: QueueResponseLegacyDto;
+    takeout: QueueResponseLegacyDto;
     thumbnailGeneration: QueueResponseLegacyDto;
     videoConversion: QueueResponseLegacyDto;
     workflow: QueueResponseLegacyDto;
@@ -2757,8 +2750,6 @@ export type ServerAboutResponseDto = {
     imagemagick?: string;
     /** libvips version */
     libvips?: string;
-    /** Whether the server is licensed */
-    licensed: boolean;
     /** Node.js version */
     nodejs?: string;
     /** Repository name */
@@ -2855,12 +2846,6 @@ export type ServerFeaturesDto = {
     smartSearch: boolean;
     /** Whether trash feature is enabled */
     trash: boolean;
-};
-export type LicenseKeyDto = {
-    /** Activation key */
-    activationKey: string;
-    /** License key (format: /^IM(SV|CL)(-[\dA-Za-z]{4}){8}$/) */
-    licenseKey: string;
 };
 export type ServerMediaTypesResponseDto = {
     /** Supported image MIME types */
@@ -3150,12 +3135,48 @@ export type TagUpdateDto = {
     /** Tag name */
     name?: string;
 };
+export type TakeoutImportProgressDto = {
+    /** Media files skipped because they already exist */
+    duplicates: number;
+    /** Entries that failed to import */
+    errors: number;
+    /** Media files imported as new assets */
+    imported: number;
+    /** Archive entries processed so far */
+    processed: number;
+    /** Entries skipped (non-media files, oversized sidecars, quota limits) */
+    skipped: number;
+};
+export type TakeoutImportStatusDto = {
+    /** Job creation timestamp (epoch milliseconds) */
+    createdAt: number;
+    /** Failure reason when the import failed */
+    error?: string;
+    /** Uploaded archive file name */
+    fileName: string;
+    /** Import ID */
+    id: string;
+    /** Import progress and result counts */
+    progress?: TakeoutImportProgressDto;
+    status: TakeoutImportState;
+};
+export type TakeoutUploadDto = {
+    /** Google Takeout archive (.zip, .tar, .tar.gz, .tgz) */
+    file: Blob;
+};
+export type TakeoutImportResponseDto = {
+    /** Uploaded archive file name */
+    fileName: string;
+    /** Import ID (same as the BullMQ job ID) */
+    id: string;
+    status: TakeoutImportState;
+};
 export type TimeBucketAssetResponseDto = {
     /** Array of city names extracted from EXIF GPS data */
     city?: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country?: (string | null)[];
-    /** Array of UTC timestamps when each asset was originally uploaded to Immich */
+    /** Array of UTC timestamps when each asset was originally uploaded to HomeRoll */
     createdAt: string[];
     /** Array of video/gif durations in milliseconds (null for static images) */
     duration: (number | null)[];
@@ -3327,7 +3348,6 @@ export type WorkflowShareResponseDto = {
     /** Workflow trigger type */
     trigger: WorkflowTrigger;
 };
-export type LicenseResponseDto = UserLicense;
 export type ReleaseEventV1 = {
     /** When the server last checked for a latest version. As an ISO timestamp */
     checkedAt: string;
@@ -3586,7 +3606,7 @@ export type SyncAssetOcrV1 = {
 export type SyncAssetV1 = {
     /** Checksum */
     checksum: string;
-    /** Uploaded to Immich at */
+    /** Uploaded to HomeRoll at */
     createdAt: string | null;
     /** Deleted at */
     deletedAt: string | null;
@@ -3626,7 +3646,7 @@ export type SyncAssetV1 = {
 export type SyncAssetV2 = {
     /** Checksum */
     checksum: string;
-    /** Uploaded to Immich at */
+    /** Uploaded to HomeRoll at */
     createdAt: string | null;
     /** Deleted at */
     deletedAt: string | null;
@@ -6801,43 +6821,6 @@ export function getServerFeatures(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Delete server product key
- */
-export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/server/license", {
-        ...opts,
-        method: "DELETE"
-    }));
-}
-/**
- * Get product key
- */
-export function getServerLicense(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserLicense;
-    } | {
-        status: 404;
-    }>("/server/license", {
-        ...opts
-    }));
-}
-/**
- * Set server product key
- */
-export function setServerLicense({ licenseKeyDto }: {
-    licenseKeyDto: LicenseKeyDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserLicense;
-    }>("/server/license", oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: licenseKeyDto
-    })));
-}
-/**
  * Get supported media types
  */
 export function getSupportedMediaTypes(opts?: Oazapfts.RequestOpts) {
@@ -7491,6 +7474,59 @@ export function tagAssets({ id, bulkIdsDto }: {
     })));
 }
 /**
+ * List takeout imports
+ */
+export function getTakeoutImports(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TakeoutImportStatusDto[];
+    }>("/takeout", {
+        ...opts
+    }));
+}
+/**
+ * Import a Google Takeout archive
+ */
+export function uploadTakeoutArchive({ takeoutUploadDto }: {
+    takeoutUploadDto: TakeoutUploadDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: TakeoutImportResponseDto;
+    }>("/takeout", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: takeoutUploadDto
+    })));
+}
+/**
+ * Cancel a takeout import
+ */
+export function cancelTakeoutImport({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TakeoutImportStatusDto;
+    }>(`/takeout/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Get a takeout import
+ */
+export function getTakeoutImport({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TakeoutImportStatusDto;
+    }>(`/takeout/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
  * Get time bucket
  */
 export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
@@ -7672,41 +7708,6 @@ export function getMyCalendarHeatmap({ $from, to, $type }: {
     }))}`, {
         ...opts
     }));
-}
-/**
- * Delete user product key
- */
-export function deleteUserLicense(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/users/me/license", {
-        ...opts,
-        method: "DELETE"
-    }));
-}
-/**
- * Retrieve user product key
- */
-export function getUserLicense(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserLicense;
-    }>("/users/me/license", {
-        ...opts
-    }));
-}
-/**
- * Set user product key
- */
-export function setUserLicense({ licenseKeyDto }: {
-    licenseKeyDto: LicenseKeyDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserLicense;
-    }>("/users/me/license", oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: licenseKeyDto
-    })));
 }
 /**
  * Delete user onboarding
@@ -8240,9 +8241,6 @@ export enum Permission {
     ServerStorage = "server.storage",
     ServerStatistics = "server.statistics",
     ServerVersionCheck = "server.versionCheck",
-    ServerLicenseRead = "serverLicense.read",
-    ServerLicenseUpdate = "serverLicense.update",
-    ServerLicenseDelete = "serverLicense.delete",
     SessionCreate = "session.create",
     SessionRead = "session.read",
     SessionUpdate = "session.update",
@@ -8269,12 +8267,11 @@ export enum Permission {
     TagUpdate = "tag.update",
     TagDelete = "tag.delete",
     TagAsset = "tag.asset",
+    TakeoutCreate = "takeout.create",
+    TakeoutRead = "takeout.read",
+    TakeoutDelete = "takeout.delete",
     UserRead = "user.read",
     UserUpdate = "user.update",
-    UserLicenseCreate = "userLicense.create",
-    UserLicenseRead = "userLicense.read",
-    UserLicenseUpdate = "userLicense.update",
-    UserLicenseDelete = "userLicense.delete",
     UserOnboardingRead = "userOnboarding.read",
     UserOnboardingUpdate = "userOnboarding.update",
     UserOnboardingDelete = "userOnboarding.delete",
@@ -8295,6 +8292,7 @@ export enum Permission {
     WorkflowUpdate = "workflow.update",
     WorkflowDelete = "workflow.delete",
     WorkflowLogs = "workflow.logs",
+    WebdavAccess = "webdav.access",
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
@@ -8394,7 +8392,8 @@ export enum QueueName {
     Ocr = "ocr",
     Workflow = "workflow",
     IntegrityCheck = "integrityCheck",
-    Editor = "editor"
+    Editor = "editor",
+    Takeout = "takeout"
 }
 export enum QueueCommand {
     Start = "start",
@@ -8504,7 +8503,8 @@ export enum JobName {
     IntegrityChecksumFiles = "IntegrityChecksumFiles",
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
-    IntegrityDeleteReports = "IntegrityDeleteReports"
+    IntegrityDeleteReports = "IntegrityDeleteReports",
+    TakeoutImport = "TakeoutImport"
 }
 export enum SearchOrderField {
     FileCreatedAt = "fileCreatedAt",
@@ -8626,6 +8626,13 @@ export enum SyncRequestType {
     AssetFacesV2 = "AssetFacesV2",
     AssetFacesV3 = "AssetFacesV3",
     UserMetadataV1 = "UserMetadataV1"
+}
+export enum TakeoutImportState {
+    Queued = "queued",
+    Processing = "processing",
+    Completed = "completed",
+    Failed = "failed",
+    Cancelled = "cancelled"
 }
 export enum AssetOrderBy {
     TakenAt = "takenAt",

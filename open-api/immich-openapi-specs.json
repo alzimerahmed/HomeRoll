@@ -579,7 +579,7 @@
     },
     "/admin/database-backups/start-restore": {
       "post": {
-        "description": "Put Immich into maintenance mode to restore a backup (Immich must not be configured)",
+        "description": "Put HomeRoll into maintenance mode to restore a backup (HomeRoll must not be configured)",
         "operationId": "startDatabaseRestoreFlow",
         "parameters": [],
         "responses": {
@@ -1007,7 +1007,7 @@
     },
     "/admin/maintenance": {
       "post": {
-        "description": "Put Immich into or take it out of maintenance mode",
+        "description": "Put HomeRoll into or take it out of maintenance mode",
         "operationId": "setMaintenanceMode",
         "parameters": [],
         "requestBody": {
@@ -13099,161 +13099,6 @@
         "x-immich-state": "Deprecated"
       }
     },
-    "/server/license": {
-      "delete": {
-        "description": "Delete the currently set server product key.",
-        "operationId": "deleteServerLicense",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Delete server product key",
-        "tags": [
-          "Server"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "serverLicense.delete",
-        "x-immich-state": "Stable"
-      },
-      "get": {
-        "description": "Retrieve information about whether the server currently has a product key registered.",
-        "operationId": "getServerLicense",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LicenseResponseDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "404": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Get product key",
-        "tags": [
-          "Server"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "serverLicense.read",
-        "x-immich-state": "Stable"
-      },
-      "put": {
-        "description": "Validate and set the server product key if successful.",
-        "operationId": "setServerLicense",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LicenseKeyDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LicenseResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Set server product key",
-        "tags": [
-          "Server"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "serverLicense.update",
-        "x-immich-state": "Stable"
-      }
-    },
     "/server/media-types": {
       "get": {
         "description": "Retrieve all media types supported by the server.",
@@ -13332,7 +13177,7 @@
     },
     "/server/statistics": {
       "get": {
-        "description": "Retrieve statistics about the entire Immich instance such as asset counts.",
+        "description": "Retrieve statistics about the entire HomeRoll instance such as asset counts.",
         "operationId": "getServerStatistics",
         "parameters": [],
         "responses": {
@@ -16136,6 +15981,222 @@
         "x-immich-state": "Stable"
       }
     },
+    "/takeout": {
+      "get": {
+        "description": "Lists the takeout import jobs of the current user with their status and progress.",
+        "operationId": "getTakeoutImports",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TakeoutImportStatusDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List takeout imports",
+        "tags": [
+          "Takeout"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "takeout.read",
+        "x-immich-state": "Alpha"
+      },
+      "post": {
+        "description": "Uploads a Google Takeout archive (.zip, .tar, .tar.gz) and starts a background import job. Media files are deduplicated by checksum and Google JSON sidecar metadata (date taken, location, description) is applied to the imported assets. Each uploaded archive creates a separate import job.",
+        "operationId": "uploadTakeoutArchive",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TakeoutUploadDto"
+              }
+            }
+          },
+          "description": "Google Takeout archive upload",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TakeoutImportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Import a Google Takeout archive",
+        "tags": [
+          "Takeout"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "takeout.create",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/takeout/{id}": {
+      "delete": {
+        "description": "Requests cancellation of a takeout import job. Queued imports are skipped, running imports stop at the next entry; assets already imported are kept.",
+        "operationId": "cancelTakeoutImport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TakeoutImportStatusDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Cancel a takeout import",
+        "tags": [
+          "Takeout"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "takeout.delete",
+        "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Returns the status and progress of a single takeout import job.",
+        "operationId": "getTakeoutImport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TakeoutImportStatusDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get a takeout import",
+        "tags": [
+          "Takeout"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "takeout.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/timeline/bucket": {
       "get": {
         "description": "Retrieve a string of all asset ids in a given time bucket.",
@@ -16201,7 +16262,7 @@
             "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)",
+            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to HomeRoll)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrderBy"
             }
@@ -16400,7 +16461,7 @@
             "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)",
+            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to HomeRoll)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrderBy"
             }
@@ -16930,155 +16991,6 @@
           }
         ],
         "x-immich-permission": "user.read",
-        "x-immich-state": "Stable"
-      }
-    },
-    "/users/me/license": {
-      "delete": {
-        "description": "Delete the registered product key for the current user.",
-        "operationId": "deleteUserLicense",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Delete user product key",
-        "tags": [
-          "Users"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "userLicense.delete",
-        "x-immich-state": "Stable"
-      },
-      "get": {
-        "description": "Retrieve information about whether the current user has a registered product key.",
-        "operationId": "getUserLicense",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LicenseResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Retrieve user product key",
-        "tags": [
-          "Users"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "userLicense.read",
-        "x-immich-state": "Stable"
-      },
-      "put": {
-        "description": "Register a product key for the current user.",
-        "operationId": "setUserLicense",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LicenseKeyDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LicenseResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Set user product key",
-        "tags": [
-          "Users"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "userLicense.update",
         "x-immich-state": "Stable"
       }
     },
@@ -18180,8 +18092,8 @@
     }
   },
   "info": {
-    "title": "Immich",
-    "description": "Immich API",
+    "title": "HomeRoll",
+    "description": "HomeRoll API",
     "version": "3.3.0-rc.0",
     "contact": {}
   },
@@ -18196,11 +18108,11 @@
     },
     {
       "name": "API keys",
-      "description": "An api key can be used to programmatically access the Immich API."
+      "description": "An api key can be used to programmatically access the HomeRoll API."
     },
     {
       "name": "Assets",
-      "description": "An asset is an image or video that has been uploaded to Immich."
+      "description": "An asset is an image or video that has been uploaded to HomeRoll."
     },
     {
       "name": "Asset files",
@@ -18232,7 +18144,7 @@
     },
     {
       "name": "Database Backups (admin)",
-      "description": "Manage backups of the Immich database."
+      "description": "Manage backups of the HomeRoll database."
     },
     {
       "name": "Deprecated",
@@ -18264,7 +18176,7 @@
     },
     {
       "name": "Maintenance (admin)",
-      "description": "Maintenance mode allows you to put Immich in a read-only state to perform various operations."
+      "description": "Maintenance mode allows you to put HomeRoll in a read-only state to perform various operations."
     },
     {
       "name": "Map",
@@ -18276,7 +18188,7 @@
     },
     {
       "name": "Notifications",
-      "description": "A notification is a specialized message sent to users to inform them of important events. Currently, these notifications are only shown in the Immich web application."
+      "description": "A notification is a specialized message sent to users to inform them of important events. Currently, these notifications are only shown in the HomeRoll web application."
     },
     {
       "name": "Notifications (admin)",
@@ -18335,6 +18247,10 @@
       "description": "A tag is a user-defined label that can be applied to assets for organizational purposes. Tags can also be hierarchical, allowing for parent-child relationships between tags."
     },
     {
+      "name": "Takeout",
+      "description": "Endpoints for importing external archives (e.g. Google Takeout) into HomeRoll."
+    },
+    {
       "name": "Timeline",
       "description": "Specialized endpoints related to the timeline implementation used in the web application. External applications or tools should not use or rely on these endpoints, as they are subject to change without notice."
     },
@@ -18348,7 +18264,7 @@
     },
     {
       "name": "Users",
-      "description": "Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more."
+      "description": "Endpoints for viewing and updating the current users, including profile picture data, onboarding progress, and more."
     },
     {
       "name": "Views",
@@ -19063,6 +18979,9 @@
           "smartSearch": {
             "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
           },
+          "takeout": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
           "thumbnailGeneration": {
             "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
           },
@@ -19086,6 +19005,7 @@
           "search",
           "sidecar",
           "smartSearch",
+          "takeout",
           "thumbnailGeneration",
           "videoConversion",
           "workflow"
@@ -21169,7 +21089,7 @@
             "type": "string"
           },
           "createdAt": {
-            "description": "The UTC timestamp when the asset was originally uploaded to Immich.",
+            "description": "The UTC timestamp when the asset was originally uploaded to HomeRoll.",
             "format": "date-time",
             "type": "string"
           },
@@ -22810,7 +22730,8 @@
           "IntegrityChecksumFiles",
           "IntegrityChecksumFilesRefresh",
           "IntegrityDeleteReportType",
-          "IntegrityDeleteReports"
+          "IntegrityDeleteReports",
+          "TakeoutImport"
         ],
         "type": "string"
       },
@@ -22922,27 +22843,6 @@
           "videos"
         ],
         "type": "object"
-      },
-      "LicenseKeyDto": {
-        "properties": {
-          "activationKey": {
-            "description": "Activation key",
-            "type": "string"
-          },
-          "licenseKey": {
-            "description": "License key (format: /^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$/)",
-            "pattern": "^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "activationKey",
-          "licenseKey"
-        ],
-        "type": "object"
-      },
-      "LicenseResponseDto": {
-        "$ref": "#/components/schemas/UserLicense"
       },
       "LogLevel": {
         "description": "Log level",
@@ -25270,9 +25170,6 @@
           "server.storage",
           "server.statistics",
           "server.versionCheck",
-          "serverLicense.read",
-          "serverLicense.update",
-          "serverLicense.delete",
           "session.create",
           "session.read",
           "session.update",
@@ -25299,12 +25196,11 @@
           "tag.update",
           "tag.delete",
           "tag.asset",
+          "takeout.create",
+          "takeout.read",
+          "takeout.delete",
           "user.read",
           "user.update",
-          "userLicense.create",
-          "userLicense.read",
-          "userLicense.update",
-          "userLicense.delete",
           "userOnboarding.read",
           "userOnboarding.update",
           "userOnboarding.delete",
@@ -25325,6 +25221,7 @@
           "workflow.update",
           "workflow.delete",
           "workflow.logs",
+          "webdav.access",
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
@@ -26179,7 +26076,8 @@
           "ocr",
           "workflow",
           "integrityCheck",
-          "editor"
+          "editor",
+          "takeout"
         ],
         "type": "string"
       },
@@ -26359,6 +26257,9 @@
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "takeout": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "thumbnailGeneration": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -26386,6 +26287,7 @@
           "sidecar",
           "smartSearch",
           "storageTemplateMigration",
+          "takeout",
           "thumbnailGeneration",
           "videoConversion",
           "workflow"
@@ -27679,10 +27581,6 @@
             "description": "libvips version",
             "type": "string"
           },
-          "licensed": {
-            "description": "Whether the server is licensed",
-            "type": "boolean"
-          },
           "nodejs": {
             "description": "Node.js version",
             "type": "string"
@@ -27733,7 +27631,6 @@
           }
         },
         "required": [
-          "licensed",
           "version",
           "versionUrl"
         ],
@@ -30973,7 +30870,7 @@
             "type": "string"
           },
           "createdAt": {
-            "description": "Uploaded to Immich at",
+            "description": "Uploaded to HomeRoll at",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "nullable": true,
@@ -31113,7 +31010,7 @@
             "type": "string"
           },
           "createdAt": {
-            "description": "Uploaded to Immich at",
+            "description": "Uploaded to HomeRoll at",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "nullable": true,
@@ -32357,6 +32254,133 @@
         },
         "type": "object"
       },
+      "TakeoutImportProgressDto": {
+        "properties": {
+          "duplicates": {
+            "description": "Media files skipped because they already exist",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "errors": {
+            "description": "Entries that failed to import",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "imported": {
+            "description": "Media files imported as new assets",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "processed": {
+            "description": "Archive entries processed so far",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "skipped": {
+            "description": "Entries skipped (non-media files, oversized sidecars, quota limits)",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "duplicates",
+          "errors",
+          "imported",
+          "processed",
+          "skipped"
+        ],
+        "type": "object"
+      },
+      "TakeoutImportResponseDto": {
+        "properties": {
+          "fileName": {
+            "description": "Uploaded archive file name",
+            "type": "string"
+          },
+          "id": {
+            "description": "Import ID (same as the BullMQ job ID)",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TakeoutImportState"
+          }
+        },
+        "required": [
+          "fileName",
+          "id",
+          "status"
+        ],
+        "type": "object"
+      },
+      "TakeoutImportState": {
+        "description": "Takeout import status",
+        "enum": [
+          "queued",
+          "processing",
+          "completed",
+          "failed",
+          "cancelled"
+        ],
+        "type": "string"
+      },
+      "TakeoutImportStatusDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Job creation timestamp (epoch milliseconds)",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "error": {
+            "description": "Failure reason when the import failed",
+            "type": "string"
+          },
+          "fileName": {
+            "description": "Uploaded archive file name",
+            "type": "string"
+          },
+          "id": {
+            "description": "Import ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/TakeoutImportProgressDto",
+            "description": "Import progress and result counts"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TakeoutImportState"
+          }
+        },
+        "required": [
+          "createdAt",
+          "fileName",
+          "id",
+          "status"
+        ],
+        "type": "object"
+      },
+      "TakeoutUploadDto": {
+        "properties": {
+          "file": {
+            "description": "Google Takeout archive (.zip, .tar, .tar.gz, .tgz)",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
       "TemplateDto": {
         "properties": {
           "template": {
@@ -32417,7 +32441,7 @@
             "type": "array"
           },
           "createdAt": {
-            "description": "Array of UTC timestamps when each asset was originally uploaded to Immich",
+            "description": "Array of UTC timestamps when each asset was originally uploaded to HomeRoll",
             "items": {
               "type": "string"
             },
@@ -32960,14 +32984,6 @@
             "description": "Is admin user",
             "type": "boolean"
           },
-          "license": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserLicense"
-              }
-            ],
-            "nullable": true
-          },
           "name": {
             "description": "User name",
             "type": "string"
@@ -33027,7 +33043,6 @@
           "email",
           "id",
           "isAdmin",
-          "license",
           "name",
           "oauthId",
           "profileChangedAt",
@@ -33475,32 +33490,6 @@
         },
         "required": [
           "deleteDelay"
-        ],
-        "type": "object"
-      },
-      "UserLicense": {
-        "properties": {
-          "activatedAt": {
-            "description": "Activation date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
-          },
-          "activationKey": {
-            "description": "Activation key",
-            "type": "string"
-          },
-          "licenseKey": {
-            "description": "License key (format: /^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$/)",
-            "pattern": "^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "activatedAt",
-          "activationKey",
-          "licenseKey"
         ],
         "type": "object"
       },
