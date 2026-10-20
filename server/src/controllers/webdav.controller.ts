@@ -131,12 +131,14 @@ export class WebDavController {
 
   /**
    * Absolute path of the DAV mount (e.g. `/api/webdav`), derived from the
-   * matched route so hrefs stay correct whether or not the global `/api`
-   * prefix is applied.
+   * matched route pattern so hrefs stay correct whether or not the global
+   * `/api` prefix is applied. `request.baseUrl` is empty for app-level routes.
    */
   private getBaseHref(request: Request): string {
-    // `request.route.path` is an array for @All(['/', '/*davPath']) — the Express mount
-    // path in `request.baseUrl` is the reliable mount prefix (`/api/webdav`)
-    return request.baseUrl || '/api/webdav';
+    const routePath = request.route?.path as string | string[] | undefined;
+    const pattern = Array.isArray(routePath) ? routePath[0] : routePath;
+    // strip the wildcard/suffix and trailing slash: '/api/webdav/' -> '/api/webdav'
+    const base = (pattern ?? '').replace(/\/\*.*$/, '').replace(/\/+$/, '');
+    return base || '/webdav';
   }
 }
