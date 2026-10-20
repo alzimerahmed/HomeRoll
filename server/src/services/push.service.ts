@@ -57,6 +57,27 @@ const isPrivatePushHost = (hostname: string): boolean => {
     );
   }
   if (host.includes(':')) {
+    if (host.startsWith('::ffff:')) {
+      // IPv4-mapped IPv6 — evaluate the embedded IPv4 octets
+      const mapped = host.slice(7).replace(/\./g, '.');
+      const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(mapped);
+      if (ipv4) {
+        const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
+        return (
+          a === 0 ||
+          a === 10 ||
+          a === 127 ||
+          a >= 224 ||
+          (a === 100 && b >= 64 && b <= 127) ||
+          (a === 169 && b === 254) ||
+          (a === 172 && b >= 16 && b <= 31) ||
+          (a === 192 && b === 0 && b <= 2) ||
+          (a === 192 && b === 168) ||
+          (a === 198 && (b === 18 || b === 19))
+        );
+      }
+      return false;
+    }
     return (
       host === '::' ||
       host === '::1' ||
@@ -174,8 +195,9 @@ export class PushService extends BaseService {
     await Promise.all(
       subscriptions.map(async (subscription) => {
         try {
-          await this.send(subscription, vapid, payload);
-          delivered++;
+          if (await this.send(subscription, vapid, payload)) {
+            delivered++;
+          }
         } catch (error: Error | any) {
           // endpoint is a bearer-capability URL — log origin only
           this.logger.warn(`Failed to send push notification to ${new URL(subscription.endpoint).origin}: ${error?.message}`);
@@ -190,7 +212,7 @@ export class PushService extends BaseService {
     subscription: Selectable<PushSubscriptionTable>,
     vapid: VapidConfig,
     payload: WebPushPayload,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const body = encryptWebPushPayload(JSON.stringify(payload), subscription);
     const response = await fetch(subscription.endpoint, {
       method: 'POST',
@@ -207,12 +229,13 @@ export class PushService extends BaseService {
 
     if (response.status === 404 || response.status === 410) {
       await this.pushRepository.deleteByEndpoint(subscription.endpoint);
-      return;
+      return false;
     }
 
     if (!response.ok) {
       throw new Error(`Push service responded with ${response.status}`);
     }
+    return true;
   }
 
   /**

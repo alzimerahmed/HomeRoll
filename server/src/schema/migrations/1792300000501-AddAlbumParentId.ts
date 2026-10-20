@@ -2,6 +2,7 @@ import { Kysely, sql } from 'kysely';
 
 export async function up(db: Kysely<any>): Promise<void> {
   await sql`ALTER TABLE "album" ADD "parentId" uuid;`.execute(db);
+  await sql`COMMENT ON COLUMN "album"."parentId" IS 'Parent album ID for nested albums';`.execute(db);
   await sql`CREATE INDEX "album_parentId_idx" ON "album" ("parentId");`.execute(db);
   await sql`ALTER TABLE "album" ADD CONSTRAINT "album_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "album" ("id") ON UPDATE CASCADE ON DELETE SET NULL;`.execute(
     db,

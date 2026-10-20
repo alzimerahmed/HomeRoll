@@ -205,7 +205,8 @@ export class AlbumService extends BaseService {
       if (albumType === AlbumType.Smart && !rules) {
         throw new BadRequestException('Smart albums require rules');
       }
-      recompute = albumType === AlbumType.Smart && (dto.rules != null || album.albumType !== AlbumType.Smart);
+      recompute =
+        albumType === AlbumType.Smart && ((dto.rules !== undefined && dto.rules !== null) || album.albumType !== AlbumType.Smart);
     }
 
     const updatedAlbum = await this.albumRepository.update(
@@ -240,11 +241,11 @@ export class AlbumService extends BaseService {
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [id] });
     const album = await this.findOrFail(id, auth.user.id);
     if (album.albumType === AlbumType.Smart) {
       throw new BadRequestException('Cannot manually add assets to a smart album');
     }
-    await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [id] });
 
     const results = await addAssets(
       auth,
@@ -470,7 +471,7 @@ export class AlbumService extends BaseService {
   }
 
   private async syncSmartAlbumAssets(albumId: string, ownerId: string, rules: SmartAlbumRules): Promise<void> {
-    const assets = await this.albumRepository.getSmartAlbumAssetIds(ownerId, rules);
+    const assets = await this.albumRepository.getSmartAlbumAssetIds(albumId, ownerId, rules);
     await this.albumRepository.replaceAssets(
       albumId,
       assets.map(({ id }) => id),

@@ -1594,7 +1594,7 @@ describe(AlbumService.name, () => {
         [{ userId: owner.id, role: AlbumUserRole.Owner }],
         owner.id,
       );
-      expect(mocks.album.getSmartAlbumAssetIds).toHaveBeenCalledWith(owner.id, rules);
+      expect(mocks.album.getSmartAlbumAssetIds).toHaveBeenCalledWith(album.id, owner.id, rules);
       expect(mocks.album.replaceAssets).toHaveBeenCalledWith(album.id, [asset.id]);
     });
 
@@ -1710,7 +1710,7 @@ describe(AlbumService.name, () => {
         expect.objectContaining({ albumType: AlbumType.Smart, rules: newRules }),
         owner.id,
       );
-      expect(mocks.album.getSmartAlbumAssetIds).toHaveBeenCalledWith(owner.id, newRules);
+      expect(mocks.album.getSmartAlbumAssetIds).toHaveBeenCalledWith(album.id, owner.id, newRules);
       expect(mocks.album.replaceAssets).toHaveBeenCalledWith(album.id, [asset.id]);
       expect(mocks.album.updateThumbnails).toHaveBeenCalled();
     });
@@ -1780,7 +1780,7 @@ describe(AlbumService.name, () => {
 
       await sut.refreshSmartAlbum(AuthFactory.create(owner), album.id);
 
-      expect(mocks.album.getSmartAlbumAssetIds).toHaveBeenCalledWith(owner.id, rules);
+      expect(mocks.album.getSmartAlbumAssetIds).toHaveBeenCalledWith(album.id, owner.id, rules);
       expect(mocks.album.replaceAssets).toHaveBeenCalledWith(album.id, [asset.id]);
       expect(mocks.album.updateThumbnails).toHaveBeenCalled();
     });

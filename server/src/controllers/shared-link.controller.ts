@@ -115,7 +115,8 @@ export class SharedLinkController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    const defaultDomain = req.host ? `${req.protocol}://${req.host}` : undefined;
+    const host = req.get('host');
+    const defaultDomain = host ? `${req.protocol}://${host}` : undefined;
     const feed = await this.service.getFeed(key, dto, defaultDomain);
     res.set({ 'Content-Type': feedContentType(feed.format), 'Cache-Control': 'no-store' }).send(feed.xml);
   }

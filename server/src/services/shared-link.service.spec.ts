@@ -468,8 +468,9 @@ describe(SharedLinkService.name, () => {
       const keyParam = sharedLink.key.toString('base64url');
       const { xml } = await feedCall(keyParam);
 
-      // exif text stripped: title falls back to the file name
-      expect(xml).toContain('<title>IMG_0001.jpg</title>');
+      // exif text stripped: title and file name are metadata and must not leak
+      expect(xml).toContain('<title>Photo</title>');
+      expect(xml).not.toContain('IMG_0001.jpg');
       expect(xml).not.toContain('secret location');
       // no download links when allowDownload is off
       expect(xml).not.toContain('/original?key=');
