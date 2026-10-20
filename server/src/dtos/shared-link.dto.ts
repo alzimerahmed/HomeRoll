@@ -69,6 +69,12 @@ const SharedLinkEditSchema = z
   })
   .meta({ id: 'SharedLinkEditDto' });
 
+const SharedLinkFeedSchema = z
+  .object({
+    format: z.enum(['atom', 'rss']).optional().default('atom').describe('Feed format'),
+  })
+  .meta({ id: 'SharedLinkFeedDto' });
+
 const SharedLinkLoginSchema = z
   .object({
     password: z.string().describe('Shared link password').meta({ example: 'password' }),
@@ -96,6 +102,7 @@ const SharedLinkResponseSchema = z
   .meta({ id: 'SharedLinkResponseDto' });
 
 export class SharedLinkSearchDto extends createZodDto(SharedLinkSearchSchema) {}
+export class SharedLinkFeedDto extends createZodDto(SharedLinkFeedSchema) {}
 export class SharedLinkCreateDto extends createZodDto(SharedLinkCreateSchema) {}
 export class SharedLinkEditDto extends createZodDto(SharedLinkEditSchema) {}
 export class SharedLinkLoginDto extends createZodDto(SharedLinkLoginSchema) {}

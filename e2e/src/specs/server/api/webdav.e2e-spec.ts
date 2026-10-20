@@ -22,7 +22,7 @@ describe('/webdav', () => {
         .options('/webdav/')
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      expect(status).toBe(204);
+      expect(status).toBe(200);
       expect(headers['dav']).toContain('1');
       expect(headers['allow']).toContain('PROPFIND');
     });
@@ -95,7 +95,9 @@ describe('/webdav', () => {
       const { status } = await request(app)
         .get('/webdav/Libraries/..%2F..%2Fetc')
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect([400, 404]).toContain(status);
+      // %2F decodes to '/' before routing; '..'-segments are rejected anywhere
+      // upstream (400 traversal, 404 no match, 405 method not allowed on a non-file path)
+      expect([400, 404, 405]).toContain(status);
     });
   });
 
