@@ -124,7 +124,7 @@ description = "Analyze Dart code"
 usage = '''
 flag "--full" help="Check for unused code" default=#false
 '''
-depends = ["analyze:dart", "analyze:dcm"]
+depends = ["analyze:dart"]
 run = '''
 if [ "${usage_full}" = "true" ]; then
   mise run analyze:unused
@@ -134,7 +134,7 @@ fi
 [tasks."analyze-fix"]
 alias = "lint-fix"
 description = "Auto-fix Dart code"
-depends = ["analyze-fix:dart", "analyze-fix:dcm"]
+depends = ["analyze-fix:dart"]
 
 [tasks.format]
 description = "Format Dart code"
