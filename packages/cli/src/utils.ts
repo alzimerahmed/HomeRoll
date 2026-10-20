@@ -242,6 +242,11 @@ export class Batcher<T = unknown> {
     this.onBatch = onBatch;
   }
 
+  /** Number of items buffered and not yet handed to onBatch. */
+  get size(): number {
+    return this.items.length;
+  }
+
   private setDebounceTimer() {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);

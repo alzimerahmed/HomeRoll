@@ -88,10 +88,11 @@ program
   )
   .addOption(new Option('--no-progress', 'Hide progress bars').env('IMMICH_PROGRESS_BAR').default(true))
   .addOption(
-    new Option('--watch', 'Watch for changes and upload automatically')
+    new Option('--watch', 'Watch the paths for new or changed files and upload them automatically')
       .env('IMMICH_WATCH_CHANGES')
       .default(false)
-      .implies({ progress: false }),
+      .implies({ progress: false })
+      .conflicts('dryRun'),
   )
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action((paths, options) => upload(paths, program.opts(), options));

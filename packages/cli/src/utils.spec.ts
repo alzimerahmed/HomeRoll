@@ -328,6 +328,13 @@ describe('Batcher', () => {
     expect(onBatch).toHaveBeenCalledWith(['a']);
   });
 
+  it('should report the number of buffered items', async () => {
+    batcher.add('a');
+    expect(batcher.size).toBe(1);
+    batcher.flush();
+    expect(batcher.size).toBe(0);
+  });
+
   it('should trigger onBatch() when debounce time reached', async () => {
     vi.useFakeTimers();
     batcher = new Batcher({ batchSize: 2, debounceTimeMs: 100, onBatch });

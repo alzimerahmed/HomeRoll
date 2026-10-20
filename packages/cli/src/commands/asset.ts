@@ -14,7 +14,7 @@ import {
   getSupportedMediaTypes,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
-import { Matcher, watch as watchFs } from 'chokidar';
+import { ChokidarOptions, Matcher, watch as watchFs } from 'chokidar';
 import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import micromatch from 'micromatch';
@@ -26,10 +26,15 @@ import { BaseOptions, Batcher, authenticate, crawl, requirePermissions, s, sha1 
 
 const UPLOAD_WATCH_BATCH_SIZE = 100;
 const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
+const UPLOAD_WATCH_AWAIT_WRITE_FINISH: ChokidarOptions['awaitWriteFinish'] = { stabilityThreshold: 2000 };
+// Matches any path segment starting with a dot (hidden files and folders).
+const HIDDEN_PATH_PATTERN = /(^|[\\/])\.[^\\/]+/;
+// Partial-download extensions written by browsers and sync tools; never finished media.
+const PARTIAL_DOWNLOAD_EXTENSIONS = new Set(['.tmp', '.crdownload', '.part', '.partial']);
 
 // TODO figure out why `id` is missing
 type AssetBulkUploadCheckResults = Array<AssetBulkUploadCheckResult & { id: string }>;
-type Asset = { id: string; filepath: string };
+type Asset = { id: string; filepath: string; status?: AssetMediaStatus };
 
 export interface UploadOptionsDto {
   recursive?: boolean;
@@ -75,6 +80,73 @@ const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   await updateAlbums([...newAssets, ...duplicates], options);
 
   await deleteFiles(newAssets, duplicates, options);
+
+  return { newFiles, duplicates, newAssets };
+};
+
+/**
+ * Tracks paths currently being uploaded so a watch event for a file that is
+ * mid-upload does not queue a second, concurrent upload of the same file.
+ * Such events are marked dirty instead and re-queued once the upload finishes.
+ */
+export class InFlightTracker {
+  private readonly inFlight = new Set<string>();
+  private readonly dirty = new Set<string>();
+
+  /**
+   * Whether the path may be queued for upload right now. Returns false and
+   * marks the path dirty when it is already in flight, so the change is not lost.
+   */
+  tryQueue(filepath: string): boolean {
+    if (this.inFlight.has(filepath)) {
+      this.dirty.add(filepath);
+      return false;
+    }
+    return true;
+  }
+
+  start(filepaths: string[]): void {
+    for (const filepath of filepaths) {
+      this.inFlight.add(filepath);
+    }
+  }
+
+  /**
+   * Clears paths from the in-flight set and returns the ones that changed
+   * while they were uploading, so the caller can re-queue them.
+   */
+  finish(filepaths: string[]): string[] {
+    const requeue: string[] = [];
+    for (const filepath of filepaths) {
+      this.inFlight.delete(filepath);
+      if (this.dirty.delete(filepath)) {
+        requeue.push(filepath);
+      }
+    }
+    return requeue;
+  }
+}
+
+/**
+ * Builds the chokidar `ignored` matchers for watch mode:
+ * - the user-provided `--ignore` pattern
+ * - hidden files and folders (unless `--include-hidden`), matching the initial scan
+ * - partial-download files still being written by browsers or sync tools
+ */
+export const createWatchIgnored = (options: UploadOptionsDto): Matcher[] => {
+  const ignored: Matcher[] = [];
+
+  if (options.ignore) {
+    ignored.push((filepath) => micromatch.contains(filepath, `**/${options.ignore}`));
+  }
+
+  if (!options.includeHidden) {
+    ignored.push((filepath) => HIDDEN_PATH_PATTERN.test(filepath));
+  }
+
+  ignored.push((filepath) => PARTIAL_DOWNLOAD_EXTENSIONS.has(path.extname(filepath).toLowerCase()));
+
+  return ignored;
 };
 
 export const startWatch = async (
@@ -83,62 +155,119 @@ export const startWatch = async (
   {
     batchSize = UPLOAD_WATCH_BATCH_SIZE,
     debounceTimeMs = UPLOAD_WATCH_DEBOUNCE_TIME_MS,
-  }: { batchSize?: number; debounceTimeMs?: number } = {},
+    awaitWriteFinish = UPLOAD_WATCH_AWAIT_WRITE_FINISH,
+  }: {
+    batchSize?: number;
+    debounceTimeMs?: number;
+    awaitWriteFinish?: ChokidarOptions['awaitWriteFinish'];
+  } = {},
 ) => {
-  const watcherIgnored: Matcher[] = [];
   const { image, video } = await getSupportedMediaTypes();
   const extensions = new Set([...image, ...video]);
+  const inFlight = new InFlightTracker();
+  const pendingUploads = new Set<Promise<unknown>>();
+  let uploadedCount = 0;
+  let duplicateCount = 0;
 
-  if (options.ignore) {
-    watcherIgnored.push((path) => micromatch.contains(path, `**/${options.ignore}`));
-  }
+  const uploadWatchedPaths = async (filepaths: string[]) => {
+    // files deleted between the watch event and the batch dispatch are skipped,
+    // so a short-lived file cannot fail the whole batch
+    const existing = filepaths.filter((filepath) => existsSync(filepath));
+    inFlight.start(existing);
+    try {
+      const { newAssets, duplicates } = await uploadBatch(existing, options);
+      const uploaded = newAssets.filter((asset) => asset.status !== AssetMediaStatus.Duplicate);
+      uploadedCount += uploaded.length;
+      duplicateCount += newAssets.length - uploaded.length + duplicates.length;
+
+      if (!options.jsonOutput) {
+        for (const { filepath } of uploaded) {
+          console.log(`Uploaded: ${filepath}`);
+        }
+        for (const { filepath } of duplicates) {
+          console.log(`Skipped duplicate: ${filepath}`);
+        }
+        console.log(`Total: ${uploadedCount} uploaded, ${duplicateCount} duplicate${s(duplicateCount)}`);
+      }
+    } finally {
+      for (const filepath of inFlight.finish(existing)) {
+        queueFile(filepath);
+      }
+    }
+  };
 
   const pathsBatcher = new Batcher<string>({
     batchSize,
     debounceTimeMs,
-    onBatch: async (paths: string[]) => {
-      const uniquePaths = [...new Set(paths)];
-      await uploadBatch(uniquePaths, options);
+    onBatch: (paths: string[]) => {
+      const task = uploadWatchedPaths([...new Set(paths)]);
+      pendingUploads.add(task);
+      void task
+        .catch((error) => console.error(`Watch upload failed: ${error}`))
+        .finally(() => pendingUploads.delete(task));
+      return task;
     },
   });
 
-  const onFile = async (path: string, stats?: Stats) => {
+  const queueFile = (filepath: string) => {
+    if (inFlight.tryQueue(filepath)) {
+      pathsBatcher.add(filepath);
+    }
+  };
+
+  const onFile = async (filepath: string, stats?: Stats) => {
     if (stats?.isDirectory()) {
       return;
     }
-    const ext = '.' + path.split('.').pop()?.toLowerCase();
-    if (!ext || !extensions.has(ext)) {
+    const extension = path.extname(filepath).toLowerCase();
+    if (!extensions.has(extension)) {
       return;
     }
 
     if (!options.progress) {
       // logging when progress is disabled as it can cause issues with the progress bar rendering
-      console.log(`Change detected: ${path}`);
+      console.log(`Change detected: ${filepath}`);
     }
-    pathsBatcher.add(path);
+    queueFile(filepath);
   };
+
   const fsWatcher = watchFs(paths, {
     ignoreInitial: true,
-    ignored: watcherIgnored,
+    ignored: createWatchIgnored(options),
     alwaysStat: true,
-    awaitWriteFinish: true,
+    awaitWriteFinish,
     depth: options.recursive ? undefined : 1,
+    followSymlinks: false,
     persistent: true,
   })
     .on('add', onFile)
     .on('change', onFile)
     .on('error', (error) => console.error(`Watcher error: ${error}`));
 
-  process.on('SIGINT', async () => {
-    console.log('Exiting...');
-    await fsWatcher.close();
-    process.exit();
-  });
+  return {
+    /**
+     * Stops watching and drains the queue: pending paths are flushed and all
+     * in-flight uploads are awaited. A path re-queued by finishing uploads
+     * (changed while in flight) is processed too, looping until idle.
+     */
+    close: async () => {
+      await fsWatcher.close();
+      while (pathsBatcher.size > 0 || pendingUploads.size > 0) {
+        pathsBatcher.flush();
+        await Promise.allSettled([...pendingUploads]);
+      }
+    },
+  };
 };
 
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
   await authenticate(baseOptions);
   await requirePermissions([Permission.AssetUpload]);
+
+  if (options.watch && paths.length === 0) {
+    console.log('The --watch option requires at least one path to watch');
+    process.exit(1);
+  }
 
   const scanFiles = await scan(paths, options);
 
@@ -153,9 +282,28 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
 
   if (options.watch) {
     console.log('Watching for changes...');
-    await startWatch(paths, options);
+    const watcher = await startWatch(paths, options);
     // watcher does not handle the initial scan
     // as the scan() is a more efficient quick start with batched results
+
+    let shuttingDown = false;
+    let initialUpload: Promise<unknown> | undefined;
+    const shutdown = async () => {
+      if (shuttingDown) {
+        return;
+      }
+      shuttingDown = true;
+      console.log('Shutting down, waiting for in-flight uploads to finish...');
+      await Promise.allSettled([watcher.close(), initialUpload]);
+      process.exit(0);
+    };
+
+    process.on('SIGINT', () => void shutdown());
+    process.on('SIGTERM', () => void shutdown());
+
+    initialUpload = uploadBatch(scanFiles, options);
+    await initialUpload;
+    return;
   }
 
   await uploadBatch(scanFiles, options);
@@ -357,7 +505,7 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
       }
 
       const response = await uploadFile(filepath, stats, options);
-      newAssets.push({ id: response.id, filepath });
+      newAssets.push({ id: response.id, filepath, status: response.status });
       if (response.status === AssetMediaStatus.Duplicate) {
         duplicateCount++;
         duplicateSize += stats.size ?? 0;

@@ -16,9 +16,11 @@ import createFetchMock from 'vitest-fetch-mock';
 
 import {
   checkForDuplicates,
+  createWatchIgnored,
   deleteFiles,
   findSidecar,
   getAlbumName,
+  InFlightTracker,
   startWatch,
   uploadFiles,
   UploadOptionsDto,
@@ -233,6 +235,7 @@ describe('checkForDuplicates', () => {
 describe('startWatch', () => {
   let testFolder: string;
   let checkBulkUploadMocked: MockedFunction<typeof checkBulkUpload>;
+  const watchers: { close: () => Promise<void> }[] = [];
 
   beforeEach(async () => {
     vi.restoreAllMocks();
@@ -253,7 +256,7 @@ describe('startWatch', () => {
   it('should start watching a directory and upload new files', async () => {
     const testFilePath = path.join(testFolder, 'test.jpg');
 
-    await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 });
+    watchers.push(await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 }));
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(testFilePath, 'testjpg');
 
@@ -276,7 +279,7 @@ describe('startWatch', () => {
     const testFilePath = path.join(testFolder, 'test.jpg');
     const unsupportedFilePath = path.join(testFolder, 'test.txt');
 
-    await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 });
+    watchers.push(await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 }));
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(testFilePath, 'testjpg');
     await fs.promises.writeFile(unsupportedFilePath, 'testtxt');
@@ -306,6 +309,66 @@ describe('startWatch', () => {
     });
   });
 
+  it('should ignore hidden files by default', async () => {
+    const visibleFilePath = path.join(testFolder, 'visible.jpg');
+    const hiddenFilePath = path.join(testFolder, '.hidden.jpg');
+
+    watchers.push(
+      await startWatch(
+        [testFolder],
+        { concurrency: 1 },
+        { batchSize: 1, debounceTimeMs: 10, awaitWriteFinish: false },
+      ),
+    );
+    await sleep(100); // to debounce the watcher from considering the test file as a existing file
+    await fs.promises.writeFile(hiddenFilePath, 'hidden');
+    await fs.promises.writeFile(visibleFilePath, 'visiblejpg');
+
+    await vi.waitFor(
+      () =>
+        expect(checkBulkUpload).toHaveBeenCalledWith({
+          assetBulkUploadCheckDto: {
+            assets: expect.arrayContaining([
+              expect.objectContaining({
+                id: visibleFilePath,
+              }),
+            ]),
+          },
+        }),
+      { timeout: 5000 },
+    );
+
+    expect(checkBulkUpload).not.toHaveBeenCalledWith({
+      assetBulkUploadCheckDto: {
+        assets: expect.arrayContaining([
+          expect.objectContaining({
+            id: hiddenFilePath,
+          }),
+        ]),
+      },
+    });
+  });
+
+  it('should re-check a file when it changes after being processed', async () => {
+    const testFilePath = path.join(testFolder, 'test.jpg');
+
+    watchers.push(
+      await startWatch(
+        [testFolder],
+        { concurrency: 1 },
+        { batchSize: 1, debounceTimeMs: 10, awaitWriteFinish: false },
+      ),
+    );
+    await sleep(100); // to debounce the watcher from considering the test file as a existing file
+    await fs.promises.writeFile(testFilePath, 'testjpg');
+
+    await vi.waitFor(() => expect(checkBulkUploadMocked).toHaveBeenCalledTimes(1), { timeout: 5000 });
+
+    await fs.promises.writeFile(testFilePath, 'testjpg-updated');
+
+    await vi.waitFor(() => expect(checkBulkUploadMocked).toHaveBeenCalledTimes(2), { timeout: 5000 });
+  });
+
   it('should filter out ignored patterns', async () => {
     const testFilePath = path.join(testFolder, 'test.jpg');
     const ignoredPattern = 'ignored';
@@ -313,7 +376,13 @@ describe('startWatch', () => {
     await fs.promises.mkdir(ignoredFolder, { recursive: true });
     const ignoredFilePath = path.join(ignoredFolder, 'ignored.jpg');
 
-    await startWatch([testFolder], { concurrency: 1, ignore: ignoredPattern }, { batchSize: 1, debounceTimeMs: 10 });
+    watchers.push(
+      await startWatch(
+        [testFolder],
+        { concurrency: 1, ignore: ignoredPattern },
+        { batchSize: 1, debounceTimeMs: 10 },
+      ),
+    );
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(testFilePath, 'testjpg');
     await fs.promises.writeFile(ignoredFilePath, 'ignoredjpg');
@@ -343,8 +412,101 @@ describe('startWatch', () => {
     });
   });
 
+  it('should upload buffered files when closed', async () => {
+    const testFilePath = path.join(testFolder, 'test.jpg');
+
+    const watcher = await startWatch(
+      [testFolder],
+      { concurrency: 1 },
+      { batchSize: 10, debounceTimeMs: 60_000, awaitWriteFinish: false },
+    );
+    watchers.push(watcher);
+    await sleep(100); // to debounce the watcher from considering the test file as a existing file
+    await fs.promises.writeFile(testFilePath, 'testjpg');
+    await sleep(200); // let the watch event arrive and be buffered without dispatching
+    await watcher.close();
+
+    expect(checkBulkUpload).toHaveBeenCalledWith({
+      assetBulkUploadCheckDto: {
+        assets: [
+          expect.objectContaining({
+            id: testFilePath,
+          }),
+        ],
+      },
+    });
+  });
+
   afterEach(async () => {
+    await Promise.all(watchers.splice(0).map((watcher) => watcher.close()));
     await fs.promises.rm(testFolder, { recursive: true, force: true });
+  });
+});
+
+describe('createWatchIgnored', () => {
+  const isIgnored = (filepath: string, options: UploadOptionsDto) =>
+    createWatchIgnored(options).some((matcher) => typeof matcher === 'function' && matcher(filepath));
+
+  it('should ignore hidden files and folders by default', () => {
+    expect(isIgnored('/photos/.hidden.jpg', {} as UploadOptionsDto)).toBe(true);
+    expect(isIgnored('/photos/.config/photo.jpg', {} as UploadOptionsDto)).toBe(true);
+    expect(isIgnored('/photos/photo.jpg', {} as UploadOptionsDto)).toBe(false);
+  });
+
+  it('should include hidden files when includeHidden is set', () => {
+    const options = { includeHidden: true } as UploadOptionsDto;
+    expect(isIgnored('/photos/.hidden.jpg', options)).toBe(false);
+    expect(isIgnored('/photos/.config/photo.jpg', options)).toBe(false);
+  });
+
+  it('should ignore partial-download files', () => {
+    const options = {} as UploadOptionsDto;
+    expect(isIgnored('/photos/photo.jpg.tmp', options)).toBe(true);
+    expect(isIgnored('/photos/photo.jpg.crdownload', options)).toBe(true);
+    expect(isIgnored('/photos/photo.jpg.part', options)).toBe(true);
+    expect(isIgnored('/photos/photo.jpg.partial', options)).toBe(true);
+    expect(isIgnored('/photos/photo.jpg', options)).toBe(false);
+  });
+
+  it('should ignore the user-provided pattern', () => {
+    const options = { ignore: 'raw' } as UploadOptionsDto;
+    expect(isIgnored('/photos/raw/photo.jpg', options)).toBe(true);
+    expect(isIgnored('/photos/photo.jpg', options)).toBe(false);
+  });
+});
+
+describe('InFlightTracker', () => {
+  it('should queue a path that is not in flight', () => {
+    const tracker = new InFlightTracker();
+    expect(tracker.tryQueue('/photos/a.jpg')).toBe(true);
+  });
+
+  it('should not re-queue unchanged paths on finish', () => {
+    const tracker = new InFlightTracker();
+    tracker.start(['/photos/a.jpg', '/photos/b.jpg']);
+    expect(tracker.finish(['/photos/a.jpg', '/photos/b.jpg'])).toEqual([]);
+  });
+
+  it('should defer a change on an in-flight path and re-queue it on finish', () => {
+    const tracker = new InFlightTracker();
+    tracker.start(['/photos/a.jpg']);
+
+    expect(tracker.tryQueue('/photos/a.jpg')).toBe(false);
+    expect(tracker.tryQueue('/photos/b.jpg')).toBe(true);
+
+    expect(tracker.finish(['/photos/a.jpg'])).toEqual(['/photos/a.jpg']);
+    // a subsequent finish without new changes re-queues nothing
+    expect(tracker.finish(['/photos/a.jpg'])).toEqual([]);
+  });
+
+  it('should re-queue a dirty path only once even if it changed multiple times', () => {
+    const tracker = new InFlightTracker();
+    tracker.start(['/photos/a.jpg']);
+
+    expect(tracker.tryQueue('/photos/a.jpg')).toBe(false);
+    expect(tracker.tryQueue('/photos/a.jpg')).toBe(false);
+
+    expect(tracker.finish(['/photos/a.jpg'])).toEqual(['/photos/a.jpg']);
   });
 });
 
