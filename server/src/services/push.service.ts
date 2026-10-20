@@ -224,7 +224,7 @@ export class PushService extends BaseService {
         Urgency: 'normal',
         Authorization: buildVapidAuthorization(subscription.endpoint, vapid),
       },
-      body,
+      body: new Uint8Array(body),
     });
 
     if (response.status === 404 || response.status === 410) {
