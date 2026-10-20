@@ -2,7 +2,7 @@
   "name": "homeroll",
   "version": "3.3.0-rc.0",
   "description": "",
-  "author": "",
+  "author": "Alzimer Ahmed <alzimerahmed84@gmail.com>",
   "private": true,
   "license": "GNU Affero General Public License version 3",
   "type": "module",

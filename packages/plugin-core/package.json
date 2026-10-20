@@ -9,7 +9,7 @@
     "build:wasm": "extism-js dist/index.js -i dist/index.d.ts -o dist/plugin.wasm"
   },
   "keywords": [],
-  "author": "",
+  "author": "Alzimer Ahmed <alzimerahmed84@gmail.com>",
   "license": "AGPL-3.0",
   "devDependencies": {
     "@extism/js-pdk": "^1.0.1",
