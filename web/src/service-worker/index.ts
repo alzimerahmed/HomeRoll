@@ -4,6 +4,7 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 import { installMessageListener } from './messaging';
+import { installPushListeners } from './push';
 import { handleFetch as handleAssetFetch } from './request';
 
 const ASSET_REQUEST_REGEX = /^\/api\/assets\/[a-f0-9-]+\/(original|thumbnail)/;
@@ -35,3 +36,4 @@ sw.addEventListener('install', handleInstall, { passive: true });
 sw.addEventListener('activate', handleActivate, { passive: true });
 sw.addEventListener('fetch', handleFetch, { passive: true });
 installMessageListener();
+installPushListeners();

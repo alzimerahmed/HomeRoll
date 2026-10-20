@@ -4,6 +4,7 @@
   import DownloadSettings from './DownloadSettings.svelte';
   import FeatureSettings from './FeatureSettings.svelte';
   import NotificationsSettings from './NotificationsSettings.svelte';
+  import PushNotificationsSettings from './PushNotificationsSettings.svelte';
   import UserUsageStatistic from './UserUsageStatistic.svelte';
   import { OpenQueryParam, QueryParameter } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -14,6 +15,7 @@
     mdiAccountOutline,
     mdiApi,
     mdiBellOutline,
+    mdiBellRingOutline,
     mdiCogOutline,
     mdiDevices,
     mdiDownload,
@@ -104,6 +106,15 @@
   subtitle={$t('notifications_setting_description')}
 >
   <NotificationsSettings />
+</SettingAccordion>
+
+<SettingAccordion
+  icon={mdiBellRingOutline}
+  key="push-notifications"
+  title={$t('push_notifications')}
+  subtitle={$t('push_notifications_setting_description')}
+>
+  <PushNotificationsSettings />
 </SettingAccordion>
 
 {#if featureFlagsManager.value.oauth}
