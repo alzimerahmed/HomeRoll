@@ -27,9 +27,10 @@
   onMount(async () => {
     try {
       albums = prefetchedAlbums ?? (await getAllAlbums({ isOwned: true }));
-      loading = false;
     } catch (error) {
       handleError(error, $t('errors.unable_to_get_albums'));
+    } finally {
+      loading = false;
     }
   });
 

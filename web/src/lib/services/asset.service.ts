@@ -50,6 +50,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
+import { isSmartAlbum } from '$lib/utils/smart-album';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
@@ -239,7 +240,7 @@ export const getAssetActions = (
     title: $t('remove_from_album'),
     icon: mdiImageRemoveOutline,
     shortcuts: [{ key: 'l', shift: true }],
-    $if: () => !!album && (isOwner || isAlbumOwner),
+    $if: () => !!album && !isSmartAlbum(album) && (isOwner || isAlbumOwner),
     onAction: () => handleRemoveAssetsFromAlbum([asset.id], album!),
   };
 

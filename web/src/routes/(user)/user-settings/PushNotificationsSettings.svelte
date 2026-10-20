@@ -17,8 +17,8 @@
   let albumInviteNotificationEnabled = $state(authManager.preferences.pushNotifications?.albumInvite ?? true);
   let albumUpdateNotificationEnabled = $state(authManager.preferences.pushNotifications?.albumUpdate ?? true);
 
-  const vapidQuery = createQuery(() => getVapidPublicKeyQuery());
-  const subscriptionsQuery = createQuery(() => getPushSubscriptionsQuery());
+  const vapidQuery = createQuery(() => ({ ...getVapidPublicKeyQuery(), enabled: pushManager.supported }));
+  const subscriptionsQuery = createQuery(() => ({ ...getPushSubscriptionsQuery(), enabled: pushManager.supported }));
 
   let busy = $state(false);
   let testing = $state(false);
@@ -108,8 +108,8 @@
         userPreferencesUpdateDto: {
           pushNotifications: {
             enabled: pushNotificationsEnabled,
-            albumInvite: pushNotificationsEnabled && albumInviteNotificationEnabled,
-            albumUpdate: pushNotificationsEnabled && albumUpdateNotificationEnabled,
+            albumInvite: albumInviteNotificationEnabled,
+            albumUpdate: albumUpdateNotificationEnabled,
           },
         },
       });

@@ -16,7 +16,9 @@
   title={$t('smart_album')}
 >
   <Icon icon={mdiAutoFix} size="14" aria-hidden="true" />
-  {#if !iconOnly}
+  {#if iconOnly}
+    <span class="sr-only">{$t('smart_album')}</span>
+  {:else}
     <span>{$t('smart_album')}</span>
   {/if}
 </span>

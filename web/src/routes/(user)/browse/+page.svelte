@@ -1,6 +1,7 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
+  import { Route } from '$lib/route';
   import { getAssetMediaUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
   import { Icon } from '@immich/ui';
@@ -27,7 +28,7 @@
       {#each data.labels as label (label.key)}
         <li>
           <a
-            href="/browse/labels/{label.key}"
+            href={Route.browseLabel({ key: label.key })}
             class="group relative block overflow-hidden rounded-xl border border-subtle bg-subtle focus-visible:outline-2 focus-visible:outline-primary"
             draggable="false"
           >

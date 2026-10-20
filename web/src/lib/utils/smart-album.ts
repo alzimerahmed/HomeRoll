@@ -1,4 +1,4 @@
-import { AlbumType, type AlbumResponseDto, type SmartAlbumRulesDto } from '@immich/sdk';
+import { AlbumType, AssetType, type AlbumResponseDto, type SmartAlbumRulesDto } from '@immich/sdk';
 
 /**
  * FG-06 — smart album helpers. `SmartAlbumRulesDto` is a flat object of
@@ -69,6 +69,9 @@ export const defaultSmartRuleValue = (field: SmartRuleField): SmartAlbumRulesDto
     }
     case 'rating': {
       return 1;
+    }
+    case 'type': {
+      return AssetType.Image;
     }
     case 'personIds':
     case 'tagIds': {

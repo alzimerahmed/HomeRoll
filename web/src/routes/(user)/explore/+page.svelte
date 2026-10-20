@@ -184,7 +184,7 @@
   <div class="mt-2 mb-6">
     <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('browse')}</p>
     <a
-      href="/browse"
+      href={Route.browse()}
       class="flex w-fit items-center gap-4 rounded-xl border border-subtle bg-subtle p-4 pe-6 transition-colors hover:bg-immich-primary/5 focus-visible:outline-2 focus-visible:outline-primary dark:hover:bg-immich-dark-primary/15"
       draggable="false"
     >

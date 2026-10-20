@@ -139,7 +139,7 @@
 </script>
 
 <div class="flex flex-col gap-2" role="group" aria-label={$t('smart_album_rules')}>
-  {#each fields as field, index (index)}
+  {#each fields as field, index (field)}
     {@const meta = smartRuleFieldMeta[field]}
     <div class="flex items-start gap-2 rounded-xl border border-subtle p-2">
       <div class="w-32 shrink-0 sm:w-40">
