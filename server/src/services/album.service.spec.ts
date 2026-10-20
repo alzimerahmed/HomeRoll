@@ -1651,6 +1651,7 @@ describe(AlbumService.name, () => {
     it('should reject manually adding assets to a smart album', async () => {
       const album = AlbumFactory.from({ albumType: AlbumType.Smart, rules }).build();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
 
       await expect(
