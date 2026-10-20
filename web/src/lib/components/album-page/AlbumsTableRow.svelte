@@ -2,10 +2,13 @@
   import { goto } from '$app/navigation';
   import { dateFormats } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import SmartAlbumBadge from '$lib/components/album-page/SmartAlbumBadge.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { getAlbumActions } from '$lib/services/album.service';
   import { locale } from '$lib/stores/preferences.store';
+  import { getAlbumHierarchyActions, getSmartAlbumActions } from '$lib/utils/album-actions';
+  import { isSmartAlbum } from '$lib/utils/smart-album';
   import { AlbumUserRole, type AlbumResponseDto } from '@immich/sdk';
   import { Icon, menuManager } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
@@ -13,14 +16,18 @@
 
   type Props = {
     album: AlbumResponseDto;
+    /** Dim the row — used for structural context entries in the folder view. */
+    dimmed?: boolean;
   };
 
-  const { album }: Props = $props();
+  const { album, dimmed = false }: Props = $props();
 
   let contextMenuAnchor: HTMLDivElement | undefined = $state();
   const items = $derived.by(() => {
     const { Edit, Share, Download, Leave, Delete } = getAlbumActions($t, album);
-    return [Edit, Share, Download, Leave, Delete];
+    const { Move, CreateChild } = getAlbumHierarchyActions($t, album);
+    const { EditRules, Refresh, ConvertToManual } = getSmartAlbumActions($t, album);
+    return [Edit, Move, CreateChild, EditRules, Refresh, ConvertToManual, Share, Download, Leave, Delete];
   });
 
   const dateLocaleString = (dateString: string) => {
@@ -42,12 +49,17 @@
 </Portal>
 
 <tr
-  class="flex w-full place-items-center border-3 border-transparent p-2 text-center odd:bg-subtle/80 even:bg-subtle/20 hover:cursor-pointer hover:border-immich-primary/75 md:px-5 md:py-2 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
+  class="flex w-full place-items-center border-3 border-transparent p-2 text-center odd:bg-subtle/80 even:bg-subtle/20 hover:cursor-pointer hover:border-immich-primary/75 md:px-5 md:py-2 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 {dimmed
+    ? 'opacity-60'
+    : ''}"
   onclick={() => goto(Route.viewAlbum(album))}
   {oncontextmenu}
 >
   <td class="text-md w-8/12 items-center text-start text-ellipsis sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]">
     {album.albumName}
+    {#if isSmartAlbum(album)}
+      <SmartAlbumBadge iconOnly />
+    {/if}
     {#if album.shared}
       <Icon
         icon={mdiShareVariantOutline}

@@ -10,6 +10,8 @@
     albumViewSettings,
     SortOrder,
   } from '$lib/stores/preferences.store';
+  import { createSmartAlbumAndRedirect } from '$lib/utils/album-actions';
+  import { ALBUM_FOLDER_GROUP } from '$lib/utils/album-tree';
   import {
     type AlbumGroupOptionMetadata,
     type AlbumSortOptionMetadata,
@@ -19,14 +21,15 @@
     findFilterOption,
     findGroupOptionMetadata,
     findSortOptionMetadata,
+    getGroupOptionsMetadata,
     getSelectedAlbumGroupOption,
-    groupOptionsMetadata,
     sortOptionsMetadata,
   } from '$lib/utils/album-utils';
   import { Button, IconButton, Text } from '@immich/ui';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
+    mdiAutoFix,
     mdiFolderArrowDownOutline,
     mdiFolderArrowUpOutline,
     mdiFolderRemoveOutline,
@@ -110,6 +113,9 @@
     [AlbumGroupBy.Owner]: $t('group_owner'),
     [AlbumGroupBy.Year]: $t('group_year'),
   });
+
+  const albumGroupByName = (id: string) =>
+    id === ALBUM_FOLDER_GROUP ? $t('group_folder') : albumGroupByNames[id as AlbumGroupBy];
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
@@ -138,6 +144,17 @@
   <p class="hidden md:block">{$t('create_album')}</p>
 </Button>
 
+<!-- Create Smart Album -->
+<Button
+  leadingIcon={mdiAutoFix}
+  onclick={() => createSmartAlbumAndRedirect()}
+  size="small"
+  variant="ghost"
+  color="secondary"
+>
+  <p class="hidden md:block">{$t('new_smart_album')}</p>
+</Button>
+
 <!-- Sort Albums -->
 <Dropdown
   title={$t('sort_albums_by')}
@@ -153,11 +170,11 @@
 <!-- Group Albums -->
 <Dropdown
   title={$t('group_albums_by')}
-  options={Object.values(groupOptionsMetadata)}
+  options={getGroupOptionsMetadata()}
   selectedOption={selectedGroupOption}
   onSelect={handleChangeGroupBy}
   render={({ id, isDisabled }) => ({
-    title: albumGroupByNames[id],
+    title: albumGroupByName(id),
     icon: groupIcon,
     disabled: isDisabled(),
   })}

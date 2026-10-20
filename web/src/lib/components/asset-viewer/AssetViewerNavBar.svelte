@@ -3,6 +3,7 @@
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import ArchiveAction from '$lib/components/asset-viewer/actions/ArchiveAction.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/DeleteAction.svelte';
+  import HideAction from '$lib/components/asset-viewer/actions/HideAction.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
   import LoadingDots from '$lib/components/LoadingDots.svelte';
@@ -154,6 +155,9 @@
 
         {#if isOwner && !isLocked}
           <ArchiveAction {asset} {onAction} {preAction} />
+        {/if}
+        {#if isOwner && !isLocked && !asset.isTrashed}
+          <HideAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
         {/if}
         <ActionMenuItem action={Actions.ViewInTimeline} />
         <ActionMenuItem action={Actions.ViewSimilar} />

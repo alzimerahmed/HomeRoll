@@ -1,4 +1,4 @@
-import type { QueueResponseDto } from '@immich/sdk';
+import type { AssetOrientation, QueueResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
@@ -53,6 +53,7 @@ export type SearchDisplayFilters = {
   isNotInAlbum: boolean;
   isArchive: boolean;
   isFavorite: boolean;
+  hasNoFaces: boolean;
 };
 
 export type SearchLocationFilter = {
@@ -73,6 +74,7 @@ export type SearchFilter = {
   date: SearchDateFilter;
   display: SearchDisplayFilters;
   mediaType: MediaType;
+  orientation?: AssetOrientation;
   rating?: number | null;
 };
 

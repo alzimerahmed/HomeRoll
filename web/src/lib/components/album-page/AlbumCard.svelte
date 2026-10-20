@@ -1,7 +1,9 @@
 <script lang="ts">
   import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
+  import SmartAlbumBadge from '$lib/components/album-page/SmartAlbumBadge.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getShortDateRange } from '$lib/utils/date-time';
+  import { isSmartAlbum } from '$lib/utils/smart-album';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { ContextMenuButton, type MenuItems } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -13,6 +15,8 @@
     showItemCount?: boolean;
     preload?: boolean;
     contextMenuItems?: MenuItems;
+    /** Dim the card — used for structural context entries in the folder view. */
+    dimmed?: boolean;
   };
 
   const {
@@ -22,11 +26,14 @@
     showItemCount = false,
     preload = false,
     contextMenuItems,
+    dimmed = false,
   }: Props = $props();
 </script>
 
 <div
-  class="group relative rounded-2xl border border-transparent p-5 hover:border-gray-200 hover:bg-gray-100 dark:hover:border-gray-800 dark:hover:bg-gray-900"
+  class="group relative rounded-2xl border border-transparent p-5 hover:border-gray-200 hover:bg-gray-100 dark:hover:border-gray-800 dark:hover:bg-gray-900 {dimmed
+    ? 'opacity-60'
+    : ''}"
   data-testid="album-card"
 >
   {#if contextMenuItems}
@@ -42,6 +49,12 @@
         class="icon-white-drop-shadow"
         items={contextMenuItems}
       />
+    </div>
+  {/if}
+
+  {#if isSmartAlbum(album)}
+    <div class="absolute inset-s-6 top-6">
+      <SmartAlbumBadge iconOnly />
     </div>
   {/if}
 

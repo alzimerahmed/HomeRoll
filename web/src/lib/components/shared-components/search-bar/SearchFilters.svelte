@@ -30,6 +30,7 @@
     getSearchDatePreset,
     getSearchDateTitle,
     getSearchMediaTitle,
+    getSearchOrientationTitle,
     getSearchPeopleTitle,
     getSearchPlacesTitle,
     getSearchTagsTitle,
@@ -85,7 +86,11 @@
     ),
   );
   let tagsTitle = $state<string>();
-  let mediaTitle = $derived(getSearchMediaTitle(searchManager.filter.mediaType));
+  let mediaTitle = $derived(
+    [getSearchMediaTitle(searchManager.filter.mediaType), getSearchOrientationTitle(searchManager.filter.orientation)]
+      .filter(Boolean)
+      .join(' · ') || undefined,
+  );
 
   let filters = [
     {
@@ -134,6 +139,7 @@
     searchManager.filter.display.isArchive ||
       searchManager.filter.display.isFavorite ||
       searchManager.filter.display.isNotInAlbum ||
+      searchManager.filter.display.hasNoFaces ||
       searchManager.filter.rating,
   );
 

@@ -9,6 +9,7 @@ type ActionMap = {
   [AssetAction.RESTORE]: { asset: TimelineAsset };
   [AssetAction.SET_VISIBILITY_LOCKED]: { asset: TimelineAsset };
   [AssetAction.SET_VISIBILITY_TIMELINE]: { asset: TimelineAsset };
+  [AssetAction.SET_VISIBILITY_HIDDEN]: { asset: TimelineAsset };
   [AssetAction.RATING]: { asset: TimelineAsset; rating: number | null };
 };
 

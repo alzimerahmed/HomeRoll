@@ -4,6 +4,7 @@
   import { Route } from '$lib/route';
   import { getAlbumActions } from '$lib/services/album.service';
   import { albumViewSettings } from '$lib/stores/preferences.store';
+  import { getAlbumHierarchyActions, getSmartAlbumActions } from '$lib/utils/album-actions';
   import { type AlbumGroup, isAlbumGroupCollapsed, toggleAlbumGroupCollapsing } from '$lib/utils/album-utils';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { Icon, menuManager, type ActionItem } from '@immich/ui';
@@ -18,6 +19,8 @@
     showOwner?: boolean;
     showDateRange?: boolean;
     showItemCount?: boolean;
+    /** Albums kept only for structural context (e.g. ancestors of search matches); rendered dimmed. */
+    dimmedIds?: Set<string> | undefined;
   };
 
   const {
@@ -26,6 +29,7 @@
     showOwner = false,
     showDateRange = false,
     showItemCount = false,
+    dimmedIds = undefined,
   }: Props = $props();
 
   let isCollapsed = $derived(!!group && isAlbumGroupCollapsed($albumViewSettings, group.id));
@@ -67,7 +71,9 @@
     <div class="grid grid-auto-fill-56 gap-y-4" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
         {@const { Edit, Share, Download, Leave, Delete } = getAlbumActions($t, album)}
-        {@const items = [Edit, Share, Download, Leave, Delete]}
+        {@const { Move, CreateChild } = getAlbumHierarchyActions($t, album)}
+        {@const { EditRules, Refresh, ConvertToManual } = getSmartAlbumActions($t, album)}
+        {@const items = [Edit, Move, CreateChild, EditRules, Refresh, ConvertToManual, Share, Download, Leave, Delete]}
         <a
           href={Route.viewAlbum(album)}
           class="h-fit"
@@ -81,6 +87,7 @@
             {showItemCount}
             preload={index < 20}
             contextMenuItems={items}
+            dimmed={dimmedIds?.has(album.id) ?? false}
           />
         </a>
       {/each}

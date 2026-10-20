@@ -13,7 +13,13 @@
     SortOrder,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
+  import {
+    getSelectedAlbumGroupOption,
+    sortAlbums,
+    stringToSortOrder,
+    type AlbumGroup,
+  } from '$lib/utils/album-utils';
+  import { ALBUM_FOLDER_GROUP, buildAlbumTreeView, sortAlbumTree, type AlbumTreeNode } from '$lib/utils/album-tree';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { groupBy } from 'lodash-es';
@@ -140,6 +146,47 @@
   );
 
   let albumGroupOption = $derived(getSelectedAlbumGroupOption(userSettings));
+  let folderTreeView = $derived.by(() => {
+    if (albumGroupOption !== ALBUM_FOLDER_GROUP) {
+      return { roots: [], contextIds: new Set<string>() };
+    }
+    return buildAlbumTreeView(albums, filteredAlbums);
+  });
+
+  /**
+   * Folder hierarchy (FG-07). Every album renders as a card/row in the
+   * section of its parent album; albums with children additionally open a
+   * collapsible section named by their full ancestor path. Structural
+   * (context-only) albums kept for search matches are dimmed downstream via
+   * `folderTreeView.contextIds`.
+   */
+  groupOptions[ALBUM_FOLDER_GROUP] = (): AlbumGroup[] => {
+    const roots = sortAlbumTree(folderTreeView.roots, userSettings.sortBy, userSettings.sortOrder);
+    const unnamedAlbum = $t('unnamed_album');
+    const groups: AlbumGroup[] = [
+      {
+        id: 'album-folder-root',
+        name: $t('albums'),
+        albums: roots.map((root) => root.album),
+      },
+    ];
+
+    const pushSection = (node: AlbumTreeNode, parentPath: string) => {
+      const name = parentPath ? `${parentPath} › ${node.album.albumName || unnamedAlbum}` : node.album.albumName || unnamedAlbum;
+      if (node.children.length > 0) {
+        groups.push({ id: node.album.id, name, albums: node.children.map((child) => child.album) });
+      }
+      for (const child of node.children) {
+        pushSection(child, name);
+      }
+    };
+
+    for (const root of roots) {
+      pushSection(root, '');
+    }
+    return groups;
+  };
+
   let groupedAlbums = $derived.by(() => {
     const groupFunc = groupOptions[albumGroupOption] ?? groupOptions[AlbumGroupBy.None];
     const groupedAlbums = groupFunc(stringToSortOrder(userSettings.groupOrder), filteredAlbums);
@@ -202,12 +249,19 @@
       <AlbumCardGroup albums={groupedAlbums[0].albums} {showOwner} showDateRange showItemCount />
     {:else}
       {#each groupedAlbums as albumGroup (albumGroup.id)}
-        <AlbumCardGroup albums={albumGroup.albums} group={albumGroup} {showOwner} showDateRange showItemCount />
+        <AlbumCardGroup
+          albums={albumGroup.albums}
+          group={albumGroup}
+          {showOwner}
+          showDateRange
+          showItemCount
+          dimmedIds={folderTreeView.contextIds}
+        />
       {/each}
     {/if}
   {:else if userSettings.view === AlbumViewMode.List}
     <!-- Album Table -->
-    <AlbumsTable {groupedAlbums} {albumGroupOption} />
+    <AlbumsTable {groupedAlbums} {albumGroupOption} dimmedIds={folderTreeView.contextIds} />
   {/if}
 {:else}
   <!-- Empty Message -->

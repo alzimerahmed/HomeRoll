@@ -106,6 +106,14 @@ export const findFilterOption = (filter: string) => {
  * Album Grouping
  * --------------
  */
+/**
+ * Group-by option value for the nested album hierarchy (FG-07).
+ * `AlbumViewSettings.groupBy` is a plain string, so this extra option needs no
+ * change to `preferences.store`. Re-exported by `album-tree.ts` — import it from
+ * there (that module owns the tree logic).
+ */
+export const ALBUM_FOLDER_GROUP = 'Folder';
+
 export interface AlbumGroup {
   id: string;
   name: string;
@@ -113,7 +121,8 @@ export interface AlbumGroup {
 }
 
 export interface AlbumGroupOptionMetadata {
-  id: AlbumGroupBy;
+  /** AlbumGroupBy value, or an extension id like ALBUM_FOLDER_GROUP. */
+  id: AlbumGroupBy | (string & {});
   defaultOrder: SortOrder;
   isDisabled: () => boolean;
 }
@@ -139,10 +148,23 @@ export const groupOptionsMetadata: AlbumGroupOptionMetadata[] = [
   },
 ];
 
+/**
+ * The full list of grouping options, including extension options that are not
+ * part of the `AlbumGroupBy` enum.
+ */
+export const getGroupOptionsMetadata = (): AlbumGroupOptionMetadata[] => [
+  ...groupOptionsMetadata,
+  {
+    id: ALBUM_FOLDER_GROUP,
+    defaultOrder: SortOrder.Asc,
+    isDisabled: () => false,
+  },
+];
+
 export const findGroupOptionMetadata = (groupBy: string) => {
   // Default is no grouping
   const defaultGroupOption = groupOptionsMetadata[0];
-  return groupOptionsMetadata.find(({ id }) => groupBy === id) ?? defaultGroupOption;
+  return getGroupOptionsMetadata().find(({ id }) => groupBy === id) ?? defaultGroupOption;
 };
 
 export const getSelectedAlbumGroupOption = (settings: AlbumViewSettings) => {

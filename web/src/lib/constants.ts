@@ -8,6 +8,7 @@ export enum AssetAction {
   RESTORE = 'restore',
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
+  SET_VISIBILITY_HIDDEN = 'set-visibility-hidden',
   RATING = 'rating',
 }
 

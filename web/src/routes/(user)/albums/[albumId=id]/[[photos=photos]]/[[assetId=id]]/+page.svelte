@@ -2,8 +2,10 @@
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { navigating } from '$app/state';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
+  import AlbumBreadcrumb from '$lib/components/album-page/AlbumBreadcrumb.svelte';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
+  import SmartAlbumBadge from '$lib/components/album-page/SmartAlbumBadge.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
@@ -44,6 +46,13 @@
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
+  import {
+    getAlbumHierarchyActions,
+    getSmartAlbumActions,
+    handleRefreshSmartAlbum,
+  } from '$lib/utils/album-actions';
+  import { getAlbumAncestors } from '$lib/utils/album-tree';
+  import { isSmartAlbum } from '$lib/utils/smart-album';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
   import { AlbumUserRole, AssetVisibility, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
@@ -59,6 +68,7 @@
     mdiLink,
     mdiPlus,
     mdiPresentationPlay,
+    mdiRefresh,
   } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -314,6 +324,11 @@
   const { Cast } = $derived(getGlobalActions($t));
   const Actions = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
+  const HierarchyActions = $derived(getAlbumHierarchyActions($t, album));
+  const SmartActions = $derived(getSmartAlbumActions($t, album));
+  const isSmart = $derived(isSmartAlbum(album));
+  // Ancestor chain for the breadcrumb, resolved from every album the user can see.
+  const ancestors = $derived(getAlbumAncestors(album, data.albums));
 
   const Close = $derived({
     title: $t('go_back'),
@@ -336,7 +351,16 @@
   onAlbumUpdate={(album) => refreshAlbum(album)}
   onAssetsDelete={() => refreshAlbum()}
 />
-<CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
+<CommandPaletteDefaultProvider
+  name={$t('album')}
+  actions={[
+    ...(isSmart ? [] : [AddAssets, Upload]),
+    Close,
+    ...Object.values(Actions),
+    ...Object.values(HierarchyActions),
+    ...Object.values(SmartActions),
+  ]}
+/>
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
   <div class="relative w-full shrink">
@@ -360,12 +384,22 @@
           {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
             <!-- ALBUM TITLE -->
             <section class="pt-8 md:pt-24">
-              <AlbumTitle
-                id={album.id}
-                albumName={album.albumName}
-                {isEditor}
-                onUpdate={(albumName) => (album = { ...album, albumName })}
-              />
+              <AlbumBreadcrumb {ancestors} currentName={album.albumName} />
+              <div class="flex items-start gap-4">
+                <div class="min-w-0 grow">
+                  <AlbumTitle
+                    id={album.id}
+                    albumName={album.albumName}
+                    {isEditor}
+                    onUpdate={(albumName) => (album = { ...album, albumName })}
+                  />
+                </div>
+                {#if isSmart}
+                  <div class="shrink-0 pt-2">
+                    <SmartAlbumBadge />
+                  </div>
+                {/if}
+              </div>
 
               {#if album.assetCount > 0}
                 <AlbumSummary {album} />
@@ -420,17 +454,32 @@
           {#if album.assetCount === 0}
             <section id="empty-album" class="mt-50 flex place-content-center place-items-center">
               <div class="w-75">
-                <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('add_photos')}</p>
-                <button
-                  type="button"
-                  onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-                  class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
-                >
-                  <span class="text-primary">
-                    <Icon icon={mdiPlus} size="24" />
-                  </span>
-                  <span class="text-lg">{$t('select_photos')}</span>
-                </button>
+                {#if isSmart}
+                  <!-- Smart albums have no manual membership — prompt a rules refresh instead -->
+                  <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('smart_album_empty')}</p>
+                  <button
+                    type="button"
+                    onclick={() => handleRefreshSmartAlbum(album)}
+                    class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
+                  >
+                    <span class="text-primary">
+                      <Icon icon={mdiRefresh} size="24" />
+                    </span>
+                    <span class="text-lg">{$t('refresh_smart_album')}</span>
+                  </button>
+                {:else}
+                  <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('add_photos')}</p>
+                  <button
+                    type="button"
+                    onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
+                    class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
+                  >
+                    <span class="text-primary">
+                      <Icon icon={mdiPlus} size="24" />
+                    </span>
+                    <span class="text-lg">{$t('select_photos')}</span>
+                  </button>
+                {/if}
               </div>
             </section>
           {/if}
@@ -485,7 +534,9 @@
           {/if}
 
           <ActionMenuItem action={Actions.Tag} />
-          <ActionMenuItem action={Actions.RemoveFromAlbum} />
+          {#if !isSmart}
+            <ActionMenuItem action={Actions.RemoveFromAlbum} />
+          {/if}
           {#if assetMultiSelectManager.isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
           {/if}
@@ -497,7 +548,7 @@
           {#snippet trailing()}
             <ActionButton action={Cast} />
 
-            {#if isEditor}
+            {#if isEditor && !isSmart}
               <IconButton
                 variant="ghost"
                 shape="round"
@@ -533,6 +584,7 @@
               />
             {/if}
             <ActionButton action={Actions.Download} />
+            <ActionButton action={SmartActions.Refresh} />
 
             {#if isOwned || album.albumUsers.length > 1}
               <ButtonContextMenu
@@ -549,6 +601,10 @@
                   />
                 {/if}
                 <ActionMenuItem action={Actions.Options} />
+                <ActionMenuItem action={HierarchyActions.Move} />
+                <ActionMenuItem action={HierarchyActions.CreateChild} />
+                <ActionMenuItem action={SmartActions.EditRules} />
+                <ActionMenuItem action={SmartActions.ConvertToManual} />
                 {#if isOwned && album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}

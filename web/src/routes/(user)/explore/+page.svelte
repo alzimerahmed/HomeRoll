@@ -11,7 +11,8 @@
   import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
-  import { ImageCarousel } from '@immich/ui';
+  import { Icon, ImageCarousel } from '@immich/ui';
+  import { mdiLabelMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -179,6 +180,25 @@
       </div>
     </div>
   {/if}
+
+  <div class="mt-2 mb-6">
+    <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('browse')}</p>
+    <a
+      href="/browse"
+      class="flex w-fit items-center gap-4 rounded-xl border border-subtle bg-subtle p-4 pe-6 transition-colors hover:bg-immich-primary/5 focus-visible:outline-2 focus-visible:outline-primary dark:hover:bg-immich-dark-primary/15"
+      draggable="false"
+    >
+      <span
+        class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary"
+      >
+        <Icon icon={mdiLabelMultipleOutline} size="24" aria-hidden />
+      </span>
+      <span>
+        <span class="block text-sm font-medium dark:text-immich-dark-fg">{$t('browse_entry_title')}</span>
+        <span class="block text-sm text-subtle">{$t('browse_entry_subtitle')}</span>
+      </span>
+    </a>
+  </div>
 
   {#if !hasPeople && places.length === 0 && recents.length === 0}
     <EmptyPlaceholder text={$t('no_explore_results_message')} class="mx-auto mt-10" />

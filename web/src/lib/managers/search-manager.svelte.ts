@@ -87,6 +87,7 @@ class SearchManager {
         isArchive: searchQuery.visibility === AssetVisibility.Archive,
         isFavorite: searchQuery.isFavorite ?? false,
         isNotInAlbum: 'isNotInAlbum' in searchQuery && (searchQuery.isNotInAlbum ?? false),
+        hasNoFaces: 'hasNoFaces' in searchQuery && (searchQuery.hasNoFaces ?? false),
       },
       mediaType:
         searchQuery.type === AssetTypeEnum.Image
@@ -94,6 +95,7 @@ class SearchManager {
           : searchQuery.type === AssetTypeEnum.Video
             ? MediaType.Video
             : MediaType.All,
+      orientation: 'orientation' in searchQuery ? searchQuery.orientation : undefined,
       rating: searchQuery.rating,
     };
   }
@@ -134,6 +136,8 @@ class SearchManager {
       tagIds: this.filter.tagIds === null ? null : this.filter.tagIds.size > 0 ? [...this.filter.tagIds] : undefined,
       type,
       rating: this.filter.rating,
+      hasNoFaces: this.filter.display.hasNoFaces || undefined,
+      orientation: this.filter.orientation,
     };
   }
 

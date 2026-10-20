@@ -16,6 +16,8 @@
     mdiArchiveArrowDownOutline,
     mdiCards,
     mdiCardsOutline,
+    mdiEyeOff,
+    mdiEyeOffOutline,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -25,6 +27,8 @@
     mdiLink,
     mdiLock,
     mdiLockOutline,
+    mdiShape,
+    mdiShapeOutline,
     mdiMagnify,
     mdiMap,
     mdiMapOutline,
@@ -55,6 +59,8 @@
   {#if authManager.preferences.people.enabled && authManager.preferences.people.sidebarWeb}
     <NavbarItem title={$t('people')} href={Route.people()} icon={mdiAccountOutline} activeIcon={mdiAccount} />
   {/if}
+
+  <NavbarItem title={$t('browse')} href={Route.browse()} icon={mdiShapeOutline} activeIcon={mdiShape} />
 
   {#if authManager.preferences.sharedLinks.enabled && authManager.preferences.sharedLinks.sidebarWeb}
     <NavbarItem title={$t('shared_links')} href={Route.sharedLinks()} icon={mdiLink} />
@@ -110,6 +116,8 @@
   />
 
   <NavbarItem title={$t('locked_folder')} href={Route.locked()} icon={mdiLockOutline} activeIcon={mdiLock} />
+
+  <NavbarItem title={$t('hidden')} href={Route.hidden()} icon={mdiEyeOffOutline} activeIcon={mdiEyeOff} />
 
   {#if featureFlagsManager.value.trash}
     <NavbarItem title={$t('trash')} href={Route.trash()} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />

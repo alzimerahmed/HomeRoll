@@ -14,6 +14,7 @@
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
+  import HideAction from '$lib/components/timeline/actions/HideAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { QueryParameter } from '$lib/constants';
@@ -190,6 +191,9 @@
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
+      hasNoFaces: $t('no_faces'),
+      orientation: $t('orientation'),
+      rating: $t('rating'),
     };
     return keyMap[key] || key;
   }
@@ -278,6 +282,8 @@
                 {#await getTagNames(value) then tagNames}
                   {tagNames}
                 {/await}
+              {:else if searchKey === 'orientation' && typeof value === 'string'}
+                {$t(`orientation_${value}`)}
               {:else if searchKey === 'rating'}
                 {$t('rating_count', { values: { count: value ?? 0 } })}
               {:else if value === null || value === ''}
@@ -374,6 +380,7 @@
               <ChangeDescription menuItem />
               <ChangeLocation menuItem />
               <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} />
+              <HideAction menuItem onVisibilitySet={handleSetVisibility} />
               <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
               <ActionMenuItem action={Actions.Tag} />
               <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />

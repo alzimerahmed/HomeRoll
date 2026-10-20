@@ -16,9 +16,11 @@
   type Props = {
     groupedAlbums: AlbumGroup[];
     albumGroupOption?: string;
+    /** Albums kept only for structural context (e.g. ancestors of search matches); rendered dimmed. */
+    dimmedIds?: Set<string> | undefined;
   };
 
-  const { groupedAlbums, albumGroupOption = AlbumGroupBy.None }: Props = $props();
+  const { groupedAlbums, albumGroupOption = AlbumGroupBy.None, dimmedIds = undefined }: Props = $props();
 </script>
 
 <table class="mt-2 w-full text-start">
@@ -68,7 +70,7 @@
           transition:slide={{ duration: 300 }}
         >
           {#each albumGroup.albums as album (album.id)}
-            <AlbumTableRow {album} />
+            <AlbumTableRow {album} dimmed={dimmedIds?.has(album.id) ?? false} />
           {/each}
         </tbody>
       {/if}

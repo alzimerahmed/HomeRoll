@@ -123,7 +123,8 @@
       case AssetAction.DELETE:
       case AssetAction.ARCHIVE:
       case AssetAction.SET_VISIBILITY_LOCKED:
-      case AssetAction.SET_VISIBILITY_TIMELINE: {
+      case AssetAction.SET_VISIBILITY_TIMELINE:
+      case AssetAction.SET_VISIBILITY_HIDDEN: {
         // must update manager before performing any navigation
         timelineManager.removeAssets([action.asset.id]);
 

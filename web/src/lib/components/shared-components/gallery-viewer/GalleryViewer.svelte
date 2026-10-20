@@ -41,6 +41,7 @@
     viewport: Viewport;
     onEndReached?: (() => void) | undefined;
     showAssetName?: boolean;
+    removeAction?: AssetAction | null;
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
@@ -56,6 +57,7 @@
     viewport,
     onEndReached = undefined,
     showAssetName = false,
+    removeAction = null,
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
@@ -285,9 +287,11 @@
 
   const handleAction = async (action: Action) => {
     switch (action.type) {
+      case removeAction:
       case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
-      case AssetAction.TRASH: {
+      case AssetAction.TRASH:
+      case AssetAction.SET_VISIBILITY_HIDDEN: {
         const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
         assets.splice(
           assets.findIndex((currentAsset) => currentAsset.id === action.asset.id),

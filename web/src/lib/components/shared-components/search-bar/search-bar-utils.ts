@@ -1,4 +1,4 @@
-import { getAllPeople, type PersonResponseDto, type TagResponseDto } from '@immich/sdk';
+import { AssetOrientation, getAllPeople, type PersonResponseDto, type TagResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import type { SvelteSet } from 'svelte/reactivity';
@@ -130,6 +130,24 @@ export const getSearchMediaTitle = (mediaType: MediaType) => {
     }
     case MediaType.Video: {
       return $t('video');
+    }
+    default: {
+      return;
+    }
+  }
+};
+
+export const getSearchOrientationTitle = (orientation?: AssetOrientation) => {
+  const $t = get(t);
+  switch (orientation) {
+    case AssetOrientation.Landscape: {
+      return $t('orientation_landscape');
+    }
+    case AssetOrientation.Portrait: {
+      return $t('orientation_portrait');
+    }
+    case AssetOrientation.Square: {
+      return $t('orientation_square');
     }
     default: {
       return;

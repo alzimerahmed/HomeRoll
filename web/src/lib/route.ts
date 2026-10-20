@@ -98,6 +98,11 @@ export const Route = {
   viewTrashedAsset: ({ id }: { id: string }) => `/trash/photos/${id}`,
   recentlyAdded: () => '/recently-added',
 
+  // browse
+  browse: () => '/browse',
+  browseLabel: ({ key }: { key: string }) => `/browse/labels/${key}`,
+  hidden: () => '/hidden',
+
   // search
   search: (dto?: MetadataSearchDto | SmartSearchDto) => {
     const metadata = omitBy(dto ?? {}, (value) => value === undefined);
