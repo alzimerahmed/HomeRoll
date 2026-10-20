@@ -37,6 +37,10 @@ describe('/server', () => {
         imagemagick: expect.any(String),
         libvips: expect.any(String),
         exiftool: expect.any(String),
+        thirdPartySourceUrl: 'https://github.com/alzimerahmed/HomeRoll',
+        thirdPartyBugFeatureUrl: 'https://github.com/alzimerahmed/HomeRoll/issues',
+        thirdPartyDocumentationUrl: 'https://github.com/alzimerahmed/HomeRoll/wiki',
+        thirdPartySupportUrl: 'https://github.com/alzimerahmed/HomeRoll/issues',
       });
     });
   });

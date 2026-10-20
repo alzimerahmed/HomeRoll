@@ -46,17 +46,22 @@ const jobOf = (overrides: Partial<JobOf<JobName.TakeoutImport>> = {}): JobOf<Job
   ...overrides,
 });
 
-const bullJob = (data: object) => ({
-  id: 'import-id',
-  timestamp: 1000,
-  data,
-  progress: {} as Record<string, unknown>,
-  failedReason: undefined as string | undefined,
-  updateProgress: vitest.fn().mockResolvedValue(undefined),
-  updateData: vitest.fn().mockResolvedValue(undefined),
-  getState: vitest.fn().mockResolvedValue('active'),
-  remove: vitest.fn().mockResolvedValue(undefined),
-});
+const bullJob = (data: object) => {
+  const job = {
+    id: 'import-id',
+    timestamp: 1000,
+    data,
+    progress: {} as Record<string, unknown>,
+    failedReason: undefined as string | undefined,
+    updateProgress: vitest.fn().mockResolvedValue(undefined),
+    updateData: vitest.fn().mockImplementation(async (next: object) => {
+      job.data = next;
+    }),
+    getState: vitest.fn().mockResolvedValue('active'),
+    remove: vitest.fn().mockResolvedValue(undefined),
+  };
+  return job;
+};
 
 describe(TakeoutService.name, () => {
   let sut: TakeoutService;
@@ -83,6 +88,8 @@ describe(TakeoutService.name, () => {
     mocks.job.getJob.mockResolvedValue(bullJob({ ownerId: authStub.user1.user.id }) as any);
     mocks.job.searchJobs.mockResolvedValue([]);
     mocks.storage.readdir.mockResolvedValue([]);
+    mocks.storage.unlink.mockResolvedValue(undefined);
+    mocks.storage.removeEmptyDirs.mockResolvedValue(undefined);
     readArchive.mockReturnValue(archiveGenerator([]));
   });
 

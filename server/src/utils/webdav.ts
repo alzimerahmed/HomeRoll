@@ -55,7 +55,7 @@ export const encodeDavSegment = (segment: string): string => escapeXml(encodeURI
  * (e.g. `/api/webdav`). Collection hrefs get a trailing slash.
  */
 export const buildDavHref = (baseHref: string, segments: string[], isCollection: boolean): string => {
-  const base = baseHref.replaceAll(/\/+$/, '');
+  const base = baseHref.replace(/\/+$/, '');
   const path = segments.map((segment) => encodeDavSegment(segment)).join('/');
   const href = path ? `${base}/${path}` : base;
   return isCollection ? `${href}/` : href;

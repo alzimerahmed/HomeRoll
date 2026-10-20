@@ -65,6 +65,8 @@ describe(VersionService.name, () => {
 
     it('should not create a version check cron job when the URL is not configured', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ versionCheck: { url: undefined } }));
+      mocks.versionHistory.getLatest.mockResolvedValue(void 0);
+      mocks.versionHistory.create.mockResolvedValue(factory.versionHistory());
       await sut.onBootstrap();
       expect(mocks.database.tryLock).not.toHaveBeenCalledWith(DatabaseLock.VersionCheck);
       expect(mocks.cron.create).not.toHaveBeenCalled();

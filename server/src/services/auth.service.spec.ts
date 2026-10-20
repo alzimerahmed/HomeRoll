@@ -789,7 +789,7 @@ describe(AuthService.name, () => {
         loginDetails,
       );
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith('test@homeroll.test');
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith('test@immich.cloud');
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
     });
 

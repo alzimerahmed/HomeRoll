@@ -47,7 +47,7 @@ describe(WebDavService.name, () => {
 
     it('should list libraries at depth 1', async () => {
       mocks.library.getAll.mockResolvedValue([
-        { id: libraryId, name: 'My Library', createdAt: new Date(), updatedAt: new Date() },
+        { id: libraryId, name: 'My Library', ownerId: auth.user.id, createdAt: new Date(), updatedAt: new Date() },
       ] as never);
       const resources = await sut.propfind(auth, [DAV_LIBRARIES], 1);
       expect(resources).toHaveLength(2);
@@ -67,7 +67,7 @@ describe(WebDavService.name, () => {
     });
 
     it('should list assets of a library collection at depth 1', async () => {
-      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
       webdavRepository.getAssetsByLibraryId.mockResolvedValue([assetRow] as never);
       const resources = await sut.propfind(auth, [DAV_LIBRARIES, 'My Library'], 1);
       expect(resources).toHaveLength(2);
@@ -83,14 +83,14 @@ describe(WebDavService.name, () => {
     });
 
     it('should not list assets at depth 0', async () => {
-      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
       const resources = await sut.propfind(auth, [DAV_LIBRARIES, 'My Library'], 0);
       expect(resources).toHaveLength(1);
       expect(webdavRepository.getAssetsByLibraryId).not.toHaveBeenCalled();
     });
 
     it('should resolve a file resource', async () => {
-      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
       webdavRepository.getAssetsByLibraryId.mockResolvedValue([assetRow] as never);
       const resources = await sut.propfind(auth, [DAV_LIBRARIES, 'My Library', 'IMG_0001.jpg'], 1);
       expect(resources).toHaveLength(1);
@@ -112,7 +112,7 @@ describe(WebDavService.name, () => {
     });
 
     it('should 404 on an unknown file name', async () => {
-      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
       webdavRepository.getAssetsByLibraryId.mockResolvedValue([assetRow] as never);
       await expect(sut.propfind(auth, [DAV_LIBRARIES, 'My Library', 'other.jpg'], 1)).rejects.toBeInstanceOf(
         NotFoundException,
@@ -128,7 +128,7 @@ describe(WebDavService.name, () => {
     it('should reject collection paths with 405', async () => {
       await expect(sut.getFile(auth, [])).rejects.toBeInstanceOf(MethodNotAllowedException);
       await expect(sut.getFile(auth, [DAV_LIBRARIES])).rejects.toBeInstanceOf(MethodNotAllowedException);
-      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
       await expect(sut.getFile(auth, [DAV_LIBRARIES, 'My Library'])).rejects.toBeInstanceOf(MethodNotAllowedException);
     });
 
@@ -141,7 +141,7 @@ describe(WebDavService.name, () => {
     });
 
     it('should return a file response for an accessible asset', async () => {
-      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
       webdavRepository.getAssetsByLibraryId.mockResolvedValue([assetRow] as never);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
 
@@ -163,7 +163,7 @@ describe(WebDavService.name, () => {
     });
 
     it('should 404 when access is denied', async () => {
-      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
       webdavRepository.getAssetsByLibraryId.mockResolvedValue([assetRow] as never);
       // all access checks return empty sets by default (asset owned by another user)
       await expect(sut.getFile(auth, [DAV_LIBRARIES, 'My Library', 'IMG_0001.jpg'])).rejects.toBeInstanceOf(
@@ -172,7 +172,7 @@ describe(WebDavService.name, () => {
     });
 
     it('should 404 when the file name does not exist', async () => {
-      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
       webdavRepository.getAssetsByLibraryId.mockResolvedValue([assetRow] as never);
       await expect(sut.getFile(auth, [DAV_LIBRARIES, 'My Library', 'missing.jpg'])).rejects.toBeInstanceOf(
         NotFoundException,

@@ -19,7 +19,7 @@ describe('/webdav', () => {
   describe('OPTIONS /webdav', () => {
     it('should advertise DAV capabilities', async () => {
       const { status, headers } = await request(app)
-        .options('/api/webdav/')
+        .options('/webdav/')
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(204);
@@ -31,7 +31,7 @@ describe('/webdav', () => {
   describe('PROPFIND /webdav', () => {
     it('should return a multistatus response for the root', async () => {
       const { status, text, headers } = await request(app)
-        .propfind('/api/webdav/')
+        .propfind('/webdav/')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Depth', '1');
 
@@ -43,13 +43,13 @@ describe('/webdav', () => {
     });
 
     it('should reject unauthenticated requests', async () => {
-      const { status } = await request(app).propfind('/api/webdav/').set('Depth', '1');
+      const { status } = await request(app).propfind('/webdav/').set('Depth', '1');
       expect(status).toBe(401);
     });
 
     it('should reject Depth: infinity', async () => {
       const { status } = await request(app)
-        .propfind('/api/webdav/')
+        .propfind('/webdav/')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Depth', 'infinity');
       expect(status).toBe(403);
@@ -64,7 +64,7 @@ describe('/webdav', () => {
       expect(library.id).toBeTruthy();
 
       const { status, text } = await request(app)
-        .propfind('/api/webdav/Libraries')
+        .propfind('/webdav/Libraries')
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`)
         .set('Depth', '1');
 
@@ -84,7 +84,7 @@ describe('/webdav', () => {
       });
 
       const { status, body } = await request(app)
-        .get(`/api/webdav/Albums/${encodeURIComponent('dav-album')}/dav-test.png`)
+        .get(`/webdav/Albums/${encodeURIComponent('dav-album')}/dav-test.png`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
@@ -93,7 +93,7 @@ describe('/webdav', () => {
 
     it('should reject path traversal', async () => {
       const { status } = await request(app)
-        .get('/api/webdav/Libraries/..%2F..%2Fetc')
+        .get('/webdav/Libraries/..%2F..%2Fetc')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect([400, 404]).toContain(status);
     });
@@ -102,7 +102,7 @@ describe('/webdav', () => {
   describe('write methods', () => {
     it('should reject PUT', async () => {
       const { status } = await request(app)
-        .put('/api/webdav/Libraries/x')
+        .put('/webdav/Libraries/x')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(405);
     });
