@@ -54,8 +54,9 @@ const bullJob = (data: object) => {
     progress: {} as Record<string, unknown>,
     failedReason: undefined as string | undefined,
     updateProgress: vitest.fn().mockResolvedValue(undefined),
-    updateData: vitest.fn().mockImplementation(async (next: object) => {
+    updateData: vitest.fn().mockImplementation((next: object) => {
       job.data = next;
+      return Promise.resolve();
     }),
     getState: vitest.fn().mockResolvedValue('active'),
     remove: vitest.fn().mockResolvedValue(undefined),
