@@ -45,12 +45,12 @@ describe('Validation', () => {
 
   describe('toEmail', () => {
     it.each([
-      'test@immich.cloud',
-      'test@immich',
-      'first.last+tag@immich.cloud',
+      'test@homeroll.test',
+      'test@homeroll',
+      'first.last+tag@homeroll.test',
       // unicode local parts and internationalized domain names
-      'tëst@immich.cloud',
-      'leoñ@immich.cloud',
+      'tëst@homeroll.test',
+      'leoñ@homeroll.test',
       'test@яндекс.рф',
       'test@xn--d1acpjx3f.xn--p1ai',
       '用户@例子.广告',
@@ -59,15 +59,18 @@ describe('Validation', () => {
       expect(toEmail.safeParse(email).success).toBe(true);
     });
 
-    it.each(['immich', 'test@@immich.cloud', 'test user@immich.cloud', 'test@immich..cloud', 'test@-immich.cloud'])(
-      'should reject %s',
-      (email) => {
-        expect(toEmail.safeParse(email).success).toBe(false);
-      },
-    );
+    it.each([
+      'homeroll',
+      'test@@homeroll.test',
+      'test user@homeroll.test',
+      'test@homeroll..test',
+      'test@-homeroll.test',
+    ])('should reject %s', (email) => {
+      expect(toEmail.safeParse(email).success).toBe(false);
+    });
 
     it('should convert the email to lower case', () => {
-      expect(toEmail.parse('tÉst@Immich.Cloud')).toBe('tést@immich.cloud');
+      expect(toEmail.parse('tÉst@HomeRoll.Test')).toBe('tést@homeroll.test');
     });
   });
 });

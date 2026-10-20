@@ -78,7 +78,7 @@
               <Text size="small" class="text-center">{$t('read_changelog')}</Text>
             </VStack>
           </Link>
-          <Link href="https://github.com/alzimerahmed/HomeRoll" class="flex grow basis-0 justify-center">
+          <Link href="https://github.com/alzimerahmed/HomeRoll/wiki" class="flex grow basis-0 justify-center">
             <VStack>
               <Icon icon={mdiCodeTags} size="24" />
               <Text size="small" class="text-center">{$t('check_logs')}</Text>

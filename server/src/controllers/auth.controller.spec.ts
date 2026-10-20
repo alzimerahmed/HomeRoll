@@ -23,7 +23,7 @@ describe(AuthController.name, () => {
 
   describe('POST /auth/admin-sign-up', () => {
     const name = 'admin';
-    const email = 'admin@immich.cloud';
+    const email = 'admin@homeroll.test';
     const password = 'password';
 
     it('should require an email address', async () => {
@@ -55,7 +55,7 @@ describe(AuthController.name, () => {
     it('should require a valid email', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/auth/admin-sign-up')
-        .send({ name, email: 'immich', password });
+        .send({ name, email: 'homeroll', password });
       expect(status).toEqual(400);
       expect(body).toEqual(
         errorDto.validationError([{ path: ['email'], message: 'Invalid input: expected email, received string' }]),
@@ -66,9 +66,9 @@ describe(AuthController.name, () => {
       service.adminSignUp.mockReset();
       const { status } = await request(ctx.getHttpServer())
         .post('/auth/admin-sign-up')
-        .send({ name: 'admin', password: 'password', email: 'aDmIn@IMMICH.cloud' });
+        .send({ name: 'admin', password: 'password', email: 'aDmIn@HOMEROLL.TEST' });
       expect(status).toEqual(201);
-      expect(service.adminSignUp).toHaveBeenCalledWith(expect.objectContaining({ email: 'admin@immich.cloud' }));
+      expect(service.adminSignUp).toHaveBeenCalledWith(expect.objectContaining({ email: 'admin@homeroll.test' }));
     });
 
     it('should accept an email with a local domain', async () => {
@@ -116,7 +116,7 @@ describe(AuthController.name, () => {
     it(`should not allow null password`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/auth/login')
-        .send({ name: 'admin', email: 'admin@immich.cloud', password: null });
+        .send({ name: 'admin', email: 'admin@homeroll.test', password: null });
       expect(status).toBe(400);
       expect(body).toEqual(
         errorDto.validationError([{ path: ['password'], message: 'Invalid input: expected string, received null' }]),
@@ -141,11 +141,11 @@ describe(AuthController.name, () => {
 
       const { status } = await request(ctx.getHttpServer())
         .post('/auth/login')
-        .send({ name: 'admin', email: 'aDmIn@iMmIcH.ApP', password: 'password' });
+        .send({ name: 'admin', email: 'aDmIn@HOMEROLL.TEST', password: 'password' });
 
       expect(status).toBe(201);
       expect(service.login).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'admin@immich.app' }),
+        expect.objectContaining({ email: 'admin@homeroll.test' }),
         expect.anything(),
       );
     });

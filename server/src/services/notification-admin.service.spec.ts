@@ -57,11 +57,11 @@ describe(NotificationService.name, () => {
       await expect(sut.sendTestEmail('', smtpTransport.notifications.smtp)).resolves.not.toThrow();
       expect(mocks.email.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
+        data: { baseUrl: 'http://localhost:2283', displayName: userStub.admin.name },
       });
       expect(mocks.email.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
-          subject: 'Test email from Immich',
+          subject: 'Test email from HomeRoll',
           smtp: smtpTransport.notifications.smtp.transport,
         }),
       );
@@ -71,17 +71,17 @@ describe(NotificationService.name, () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
       mocks.email.verifySmtp.mockResolvedValue(true);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.systemMetadata.get.mockResolvedValue({ server: { externalDomain: 'https://demo.immich.app' } });
+      mocks.systemMetadata.get.mockResolvedValue({ server: { externalDomain: 'https://demo.homeroll.test' } });
       mocks.email.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
 
       await expect(sut.sendTestEmail('', smtpTransport.notifications.smtp)).resolves.not.toThrow();
       expect(mocks.email.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'https://demo.immich.app', displayName: userStub.admin.name },
+        data: { baseUrl: 'https://demo.homeroll.test', displayName: userStub.admin.name },
       });
       expect(mocks.email.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
-          subject: 'Test email from Immich',
+          subject: 'Test email from HomeRoll',
           smtp: smtpTransport.notifications.smtp.transport,
         }),
       );
@@ -94,17 +94,17 @@ describe(NotificationService.name, () => {
       mocks.email.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
 
       await expect(
-        sut.sendTestEmail('', { ...smtpTransport.notifications.smtp, replyTo: 'demo@immich.app' }),
+        sut.sendTestEmail('', { ...smtpTransport.notifications.smtp, replyTo: 'demo@homeroll.test' }),
       ).resolves.not.toThrow();
       expect(mocks.email.renderEmail).toHaveBeenCalledWith({
         template: EmailTemplate.TEST_EMAIL,
-        data: { baseUrl: 'https://my.immich.app', displayName: userStub.admin.name },
+        data: { baseUrl: 'http://localhost:2283', displayName: userStub.admin.name },
       });
       expect(mocks.email.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
-          subject: 'Test email from Immich',
+          subject: 'Test email from HomeRoll',
           smtp: smtpTransport.notifications.smtp.transport,
-          replyTo: 'demo@immich.app',
+          replyTo: 'demo@homeroll.test',
         }),
       );
     });

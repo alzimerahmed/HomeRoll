@@ -31,14 +31,14 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'PublicConfigDto': {
     'map': PublicConfigMapDto(
       enabled: true,
-      lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
-      darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+      lightStyle: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+      darkStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     ).toJson(),
     'ffmpeg': PublicConfigFFmpegDto(realtime: PublicConfigFFmpegRealtimeDto(enabled: false)).toJson(),
   },
   'ServerConfigDto': {
-    'mapLightStyleUrl': 'https://tiles.immich.cloud/v1/style/light.json',
-    'mapDarkStyleUrl': 'https://tiles.immich.cloud/v1/style/dark.json',
+    'mapLightStyleUrl': 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    'mapDarkStyleUrl': 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     'minFaces': 3,
   },
   'UserResponseDto': {'profileChangedAt': _now},

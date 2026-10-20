@@ -17,7 +17,7 @@ test.describe('Registration', () => {
 
     // register
     await expect(page).toHaveTitle(/Admin Registration/);
-    await page.getByLabel('Admin Email').fill('admin@immich.app');
+    await page.getByLabel('Admin Email').fill('admin@homeroll.test');
     await page.getByLabel('Admin Password', { exact: true }).fill('password');
     await page.getByLabel('Confirm Admin Password').fill('password');
     await page.getByLabel('Name').fill('Immich Admin');
@@ -26,7 +26,7 @@ test.describe('Registration', () => {
     // login
     await expect(page).toHaveTitle(/Login/);
     await page.goto('/auth/login?autoLaunch=0');
-    await page.getByLabel('Email').fill('admin@immich.app');
+    await page.getByLabel('Email').fill('admin@homeroll.test');
     await page.getByLabel('Password', { exact: true }).fill('password');
     await page.getByRole('button', { name: 'Login' }).click();
 
@@ -53,7 +53,7 @@ test.describe('Registration', () => {
     await page.goto('/admin/user-management');
     await expect(page).toHaveTitle(/User Management/);
     await page.getByRole('button', { name: 'Create user' }).click();
-    await page.getByLabel('Email').fill('user@immich.cloud');
+    await page.getByLabel('Email').fill('user@homeroll.test');
     await page.getByLabel('Password', { exact: true }).fill('password');
     await page.getByLabel('Confirm Password').fill('password');
     await page.getByLabel('Name').fill('Immich User');
@@ -64,7 +64,7 @@ test.describe('Registration', () => {
 
     // login
     await page.goto('/auth/login?autoLaunch=0');
-    await page.getByLabel('Email').fill('user@immich.cloud');
+    await page.getByLabel('Email').fill('user@homeroll.test');
     await page.getByLabel('Password').fill('password');
     await page.getByRole('button', { name: 'Login' }).click();
 
@@ -77,7 +77,7 @@ test.describe('Registration', () => {
 
     // login with new password
     await expect(page).toHaveURL('/auth/login?autoLaunch=0');
-    await page.getByLabel('Email').fill('user@immich.cloud');
+    await page.getByLabel('Email').fill('user@homeroll.test');
     await page.getByLabel('Password').fill('new-password');
     await page.getByRole('button', { name: 'Login' }).click();
 

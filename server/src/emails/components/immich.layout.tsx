@@ -50,9 +50,9 @@ export const ImmichLayout = ({ children, preview }: ImmichLayoutProps) => (
           <Section className="my-6 p-12 border border-red-400 rounded-[50px] bg-gray-50">
             <Section className="flex justify-center mb-12">
               <Img
-                src="https://immich.app/img/immich-logo-inline-light.png"
+                src="https://raw.githubusercontent.com/alzimerahmed/HomeRoll/main/docs/static/img/homeroll-logo-inline-light.png"
                 className="h-12 antialiased rounded-none w-full"
-                alt="Immich"
+                alt="HomeRoll"
               />
             </Section>
 

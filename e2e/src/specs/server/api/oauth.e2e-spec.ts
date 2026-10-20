@@ -19,7 +19,7 @@ const authServer = {
   external: 'http://127.0.0.1:2286',
 };
 
-const mobileOverrideRedirectUri = 'https://photos.immich.app/oauth/mobile-redirect';
+const mobileOverrideRedirectUri = 'https://photos.homeroll.test/oauth/mobile-redirect';
 
 const redirect = async (url: string, cookies?: string[]) => {
   const { headers } = await request(url)
@@ -196,7 +196,7 @@ describe(`/oauth`, () => {
         accessToken: expect.any(String),
         isAdmin: false,
         name: 'OAuth User',
-        userEmail: 'oauth-auto-register@immich.app',
+        userEmail: 'oauth-auto-register@homeroll.test',
         userId: expect.any(String),
       });
     });
@@ -211,7 +211,7 @@ describe(`/oauth`, () => {
       expect(body).toMatchObject({
         accessToken: expect.any(String),
         userId: expect.any(String),
-        userEmail: 'oauth-auto-register@immich.app',
+        userEmail: 'oauth-auto-register@homeroll.test',
       });
     });
 
@@ -229,7 +229,7 @@ describe(`/oauth`, () => {
       expect(body).toMatchObject({
         accessToken: expect.any(String),
         userId: expect.any(String),
-        userEmail: 'oauth-with-quota@immich.app',
+        userEmail: 'oauth-with-quota@homeroll.test',
       });
 
       const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
@@ -243,7 +243,7 @@ describe(`/oauth`, () => {
       expect(body).toMatchObject({
         accessToken: expect.any(String),
         userId: expect.any(String),
-        userEmail: 'oauth-with-username@immich.app',
+        userEmail: 'oauth-with-username@homeroll.test',
       });
 
       const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
@@ -257,7 +257,7 @@ describe(`/oauth`, () => {
       expect(body).toMatchObject({
         accessToken: expect.any(String),
         userId: expect.any(String),
-        userEmail: 'oauth-with-role@immich.app',
+        userEmail: 'oauth-with-role@homeroll.test',
         isAdmin: true,
       });
 
@@ -281,7 +281,7 @@ describe(`/oauth`, () => {
         accessToken: expect.any(String),
         isAdmin: false,
         name: 'OAuth User',
-        userEmail: 'oauth-rs256-token@immich.app',
+        userEmail: 'oauth-rs256-token@homeroll.test',
         userId: expect.any(String),
       });
     });
@@ -293,7 +293,7 @@ describe(`/oauth`, () => {
       expect(body).toMatchObject({
         accessToken: expect.any(String),
         userId: expect.any(String),
-        userEmail: 'oauth-with-embedded-profile-picture@immich.app',
+        userEmail: 'oauth-with-embedded-profile-picture@homeroll.test',
         profileImagePath: expect.any(String),
       });
 
@@ -314,7 +314,7 @@ describe(`/oauth`, () => {
       expect(status).toBe(201);
       expect(body).toMatchObject({
         userId: expect.any(String),
-        userEmail: 'oauth-signed-profile@immich.app',
+        userEmail: 'oauth-signed-profile@homeroll.test',
       });
     });
 
@@ -355,7 +355,7 @@ describe(`/oauth`, () => {
       it('should link to an existing user by email', async () => {
         const { userId } = await utils.userSetup(admin.accessToken, {
           name: 'OAuth User 3',
-          email: 'oauth-user3@immich.app',
+          email: 'oauth-user3@homeroll.test',
           password: 'password',
         });
         const callbackParams = await loginWithOAuth('oauth-user3');
@@ -363,7 +363,7 @@ describe(`/oauth`, () => {
         expect(status).toBe(201);
         expect(body).toMatchObject({
           userId,
-          userEmail: 'oauth-user3@immich.app',
+          userEmail: 'oauth-user3@homeroll.test',
         });
       });
     });
@@ -449,7 +449,7 @@ describe(`/oauth`, () => {
         accessToken: expect.any(String),
         isAdmin: false,
         name: 'OAuth User',
-        userEmail: 'oauth-mobile-override@immich.app',
+        userEmail: 'oauth-mobile-override@homeroll.test',
         userId: expect.any(String),
       });
     });
@@ -468,7 +468,7 @@ describe(`/oauth`, () => {
       expect(body).toMatchObject({
         accessToken: expect.any(String),
         name: 'ID Token User',
-        userEmail: 'oauth-id-token-claims@immich.app',
+        userEmail: 'oauth-id-token-claims@homeroll.test',
         userId: expect.any(String),
       });
     });

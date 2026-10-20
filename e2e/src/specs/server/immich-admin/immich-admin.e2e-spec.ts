@@ -15,7 +15,7 @@ describe(`immich-admin`, () => {
       child.stdout.on('data', (chunk) => {
         data += chunk;
         if (data.includes('Please enter the user email:')) {
-          child.stdin.end('admin@immich.cloud\n');
+          child.stdin.end('admin@homeroll.test\n');
         }
       });
 
@@ -34,7 +34,7 @@ describe(`immich-admin`, () => {
       child.stdout.on('data', (chunk) => {
         data += chunk;
         if (data.includes('Please enter the user email:')) {
-          child.stdin.end('admin@immich.cloud\n');
+          child.stdin.end('admin@homeroll.test\n');
         }
       });
 
@@ -52,7 +52,7 @@ describe(`immich-admin`, () => {
 
       // TODO: Vitest needs upgrade to Node 22.x to fix the failed check
       // expect(stderr).toBe('');
-      expect(stdout).toContain("email: 'admin@immich.cloud'");
+      expect(stdout).toContain("email: 'admin@homeroll.test'");
       expect(stdout).toContain("name: 'Immich Admin'");
     });
   });

@@ -139,8 +139,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   map: {
     enabled: true,
-    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
-    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+    lightStyle: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    darkStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
   },
   nightlyTasks: {
     startTime: '00:00',
@@ -405,9 +405,9 @@ describe(SystemConfigService.name, () => {
     });
 
     const externalDomainTests = [
-      { should: 'with a trailing slash', externalDomain: 'https://demo.immich.app/' },
-      { should: 'without a trailing slash', externalDomain: 'https://demo.immich.app' },
-      { should: 'with a port', externalDomain: 'https://demo.immich.app:42', result: 'https://demo.immich.app:42' },
+      { should: 'with a trailing slash', externalDomain: 'https://demo.homeroll.test/' },
+      { should: 'without a trailing slash', externalDomain: 'https://demo.homeroll.test' },
+      { should: 'with a port', externalDomain: 'https://demo.homeroll.test:42', result: 'https://demo.homeroll.test:42' },
       {
         should: 'with basic auth',
         externalDomain: 'https://user:password@example.com:123',
@@ -422,7 +422,7 @@ describe(SystemConfigService.name, () => {
         mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
         const config = await sut.getAdminConfig();
-        expect(config.server.externalDomain).toEqual(result ?? 'https://demo.immich.app');
+        expect(config.server.externalDomain).toEqual(result ?? 'https://demo.homeroll.test');
       });
     }
 

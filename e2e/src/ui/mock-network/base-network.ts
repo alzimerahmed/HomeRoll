@@ -16,7 +16,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
       contentType: 'application/json',
       json: {
         id: adminUserId,
-        email: 'admin@immich.cloud',
+        email: 'admin@homeroll.test',
         name: 'Immich Admin',
         profileImagePath: '',
         avatarColor: 'orange',
@@ -31,7 +31,6 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
         quotaSizeInBytes: null,
         quotaUsageInBytes: 20_849_000_159,
         status: 'active',
-        license: null,
       },
     });
   });
@@ -76,7 +75,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
           includeEmbeddedVideos: false,
         },
         purchase: {
-          showSupportBadge: true,
+          showSupportBadge: false,
           hideBuyButtonUntil: '2100-02-12T00:00:00.000Z',
         },
         cast: {
@@ -95,7 +94,6 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
       json: {
         version: 'v2.2.3',
         versionUrl: 'https://github.com/alzimerahmed/HomeRoll/releases/tag/v2.2.3',
-        licensed: false,
         build: '1234567890',
         buildUrl: 'https://github.com/alzimerahmed/HomeRoll/actions/runs/1234567890',
         buildImage: 'e2e',
@@ -149,8 +147,8 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
         isOnboarded: true,
         externalDomain: '',
         publicUsers: true,
-        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
-        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
+        mapDarkStyleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        mapLightStyleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
         maintenanceMode: false,
       },
     });

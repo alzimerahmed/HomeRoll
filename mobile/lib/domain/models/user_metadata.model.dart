@@ -34,7 +34,7 @@ abstract class Preferences with _$Preferences {
     @Default(true) bool sharedLinksEnabled,
     @Default(false) bool tagsEnabled,
     @Default(AvatarColor.primary) AvatarColor userAvatarColor,
-    @Default(true) bool showSupportBadge,
+    @Default(false) bool showSupportBadge,
     @Default(3) int minimumFaces,
   }) = _Preferences;
 
@@ -50,7 +50,7 @@ abstract class Preferences with _$Preferences {
         (e) => e.value == (map["avatar"] as Map<String, Object?>?)?["color"] as String?,
         orElse: () => AvatarColor.primary,
       ),
-      showSupportBadge: (map["purchase"] as Map<String, Object?>?)?["showSupportBadge"] as bool? ?? true,
+      showSupportBadge: (map["purchase"] as Map<String, Object?>?)?["showSupportBadge"] as bool? ?? false,
       minimumFaces: (map["people"] as Map<String, Object?>?)?["minimumFaces"] as int? ?? 3,
     );
   }

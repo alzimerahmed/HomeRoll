@@ -59,7 +59,7 @@
             <p class="text-sm dark:text-immich-dark-fg">
               <FormatMessage key="admin.map_manage_reverse_geocoding_settings">
                 {#snippet children({ message })}
-                  <Link href="https://github.com/alzimerahmed/HomeRoll">{message}</Link>
+                  <Link href="https://github.com/alzimerahmed/HomeRoll/wiki">{message}</Link>
                 {/snippet}
               </FormatMessage>
             </p>

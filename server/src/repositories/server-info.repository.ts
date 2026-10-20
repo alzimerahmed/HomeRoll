@@ -58,6 +58,9 @@ export class ServerInfoRepository {
   async getLatestRelease(channel: ReleaseChannel): Promise<VersionResponse> {
     try {
       const { versionCheck } = this.configRepository.getEnv();
+      if (!versionCheck.url) {
+        throw new Error('Version check is disabled');
+      }
       const url = new URL(versionCheck.url);
       switch (channel) {
         case ReleaseChannel.Stable: {

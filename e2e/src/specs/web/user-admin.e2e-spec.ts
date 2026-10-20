@@ -28,14 +28,14 @@ test.describe('User Administration', () => {
     // Create a new user
     await page.goto('/admin/users');
     await page.getByRole('button', { name: 'Create user' }).click();
-    await page.getByLabel('Email').fill('user@immich.cloud');
+    await page.getByLabel('Email').fill('user@homeroll.test');
     await page.getByLabel('Password', { exact: true }).fill('password');
     await page.getByLabel('Confirm Password').fill('password');
     await page.getByLabel('Name').fill('Immich User');
     await page.getByRole('button', { name: 'Create', exact: true }).click();
 
     // Verify the user exists in the user list
-    await page.getByRole('row', { name: 'user@immich.cloud' });
+    await page.getByRole('row', { name: 'user@homeroll.test' });
   });
 
   test('promote to admin', async ({ context, page }) => {
@@ -44,7 +44,7 @@ test.describe('User Administration', () => {
 
     const user = await utils.userSetup(admin.accessToken, {
       name: 'Admin 2',
-      email: 'admin2@immich.cloud',
+      email: 'admin2@homeroll.test',
       password: 'password',
     });
 
@@ -72,7 +72,7 @@ test.describe('User Administration', () => {
 
     const user = await utils.userSetup(admin.accessToken, {
       name: 'Admin 2',
-      email: 'admin2@immich.cloud',
+      email: 'admin2@homeroll.test',
       password: 'password',
       isAdmin: true,
     });

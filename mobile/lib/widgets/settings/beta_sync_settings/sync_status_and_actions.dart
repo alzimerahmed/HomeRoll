@@ -51,7 +51,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
         }
 
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final exportFile = File(path.join(documentsDir.path, 'immich_export_$timestamp.sqlite'));
+        final exportFile = File(path.join(documentsDir.path, 'homeroll_export_$timestamp.sqlite'));
 
         await dbFile.copy(exportFile.path);
 

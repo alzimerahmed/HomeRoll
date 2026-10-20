@@ -83,13 +83,13 @@ describe('/admin/users', () => {
         .post(`/admin/users`)
         .send({
           isAdmin: true,
-          email: 'user5@immich.cloud',
+          email: 'user5@homeroll.test',
           password: 'password123',
           name: 'Immich',
         })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toMatchObject({
-        email: 'user5@immich.cloud',
+        email: 'user5@homeroll.test',
         isAdmin: true,
         shouldChangePassword: true,
       });

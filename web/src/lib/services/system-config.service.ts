@@ -23,7 +23,7 @@ export const getSystemConfigActions = (
     title: $t('export_as_json'),
     description: $t('admin.export_config_as_json_description'),
     icon: mdiDownload,
-    onAction: () => downloadJson(config, 'immich-config.json'),
+    onAction: () => downloadJson(config, 'homeroll-config.json'),
     shortcuts: [
       { shift: true, key: 's' },
       { shift: true, key: 'd' },

@@ -193,7 +193,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 ContextHelper(context).pop();
                 unawaited(
                   launchUrl(
-                    Uri.parse('https://github.com/alzimerahmed/HomeRoll'),
+                    Uri.parse('https://github.com/alzimerahmed/HomeRoll/wiki'),
                     mode: LaunchMode.externalApplication,
                   ),
                 );

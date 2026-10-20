@@ -47,7 +47,7 @@
       <p>
         <FormatMessage key="admin.backup_onboarding_footer">
           {#snippet children({ message })}
-            <Link href="https://github.com/alzimerahmed/HomeRoll">{message}</Link>
+            <Link href="https://github.com/alzimerahmed/HomeRoll/wiki">{message}</Link>
           {/snippet}
         </FormatMessage>
       </p>

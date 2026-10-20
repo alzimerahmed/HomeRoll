@@ -41,7 +41,7 @@ abstract final class ImmichLogger {
   static Future<void> shareLogs(BuildContext context, {String? startupError}) async {
     final tempDir = await getTemporaryDirectory();
     final dateTime = DateTime.now().toIso8601String();
-    final filePath = '${tempDir.path}/Immich_log_$dateTime.log';
+    final filePath = '${tempDir.path}/HomeRoll_log_$dateTime.log';
     final logFile = await File(filePath).create();
     final io = logFile.openWrite();
     try {
@@ -69,7 +69,7 @@ abstract final class ImmichLogger {
     // Share file
     await Share.shareXFiles(
       [XFile(filePath)],
-      subject: "Immich logs $dateTime",
+      subject: "HomeRoll logs $dateTime",
       sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
     ).then((value) => logFile.delete());
   }

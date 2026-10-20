@@ -28,31 +28,31 @@ const claims = [
   { sub: OAuthUser.NO_EMAIL },
   {
     sub: OAuthUser.NO_NAME,
-    email: 'oauth-no-name@immich.app',
+    email: 'oauth-no-name@homeroll.test',
     email_verified: true,
   },
   {
     sub: OAuthUser.WITH_USERNAME,
-    email: 'oauth-with-username@immich.app',
+    email: 'oauth-with-username@homeroll.test',
     email_verified: true,
     immich_username: 'user-username',
   },
   {
     sub: OAuthUser.WITH_QUOTA,
-    email: 'oauth-with-quota@immich.app',
+    email: 'oauth-with-quota@homeroll.test',
     email_verified: true,
     preferred_username: 'user-quota',
     immich_quota: 25,
   },
   {
     sub: OAuthUser.WITH_ROLE,
-    email: 'oauth-with-role@immich.app',
+    email: 'oauth-with-role@homeroll.test',
     email_verified: true,
     immich_role: 'admin',
   },
   {
     sub: OAuthUser.WITH_EMBEDDED_PROFILE_PICTURE,
-    email: 'oauth-with-embedded-profile-picture@immich.app',
+    email: 'oauth-with-embedded-profile-picture@homeroll.test',
     email_verified: true,
     picture:
       'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NHB4IiBoZWlnaHQ9IjY0cHgiIHZpZXdCb3g9IjAgMCA2NCA2NCIgdmVyc2lvbj0iMS4xIj48cmVjdCBmaWxsPSIjMzc3YjM3IiBjeD0iMzIiIGN5PSIzMiIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByPSIzMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBzdHlsZT0iY29sb3I6ICNmZmY7IGxpbmUtaGVpZ2h0OiAxOyBmb250LWZhbWlseTogJ1JlZEhhdFRleHQnLCdPdmVycGFzcycsb3ZlcnBhc3MsaGVsdmV0aWNhLGFyaWFsLHNhbnMtc2VyaWY7ICIgZmlsbD0iI2ZmZiIgYWxpZ25tZW50LWJhc2VsaW5lPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI0MDAiIGR5PSIuMWVtIj5BQTwvdGV4dD48L3N2Zz4=',
@@ -84,7 +84,7 @@ export async function generateLogoutToken(iss: string, sub: string) {
 
 const withDefaultClaims = (sub: string) => ({
   sub,
-  email: `${sub}@immich.app`,
+  email: `${sub}@homeroll.test`,
   name: 'OAuth User',
   given_name: `OAuth`,
   family_name: 'User',
@@ -95,7 +95,7 @@ const getClaims = (sub: string, use?: string) => {
   if (sub === OAuthUser.ID_TOKEN_CLAIMS) {
     return {
       sub,
-      email: `oauth-${sub}@immich.app`,
+      email: `oauth-${sub}@homeroll.test`,
       email_verified: true,
       name: use === 'id_token' ? 'ID Token User' : 'Userinfo User',
     };
@@ -106,7 +106,7 @@ const getClaims = (sub: string, use?: string) => {
 const setup = async () => {
   const redirectUris = [
     'http://127.0.0.1:2285/auth/login',
-    'https://photos.immich.app/oauth/mobile-redirect',
+    'https://photos.homeroll.test/oauth/mobile-redirect',
   ];
   const port = 2286;
   const host = '0.0.0.0';

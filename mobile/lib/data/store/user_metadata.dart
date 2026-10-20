@@ -6,7 +6,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 // TODO(rewrite): Remove once the current user is a store entry of its own
 import 'package:immich_mobile/providers/user.provider.dart';
 
-/// Server held metadata about the current user; their preferences, onboarding state and license
+/// Server held metadata about the current user; their preferences and onboarding state
 ///
 /// State is stored in the local DB, and is only written by server sync
 extension type const UserMetadataStore._(Provider<UserMetadataMutations> _provider)

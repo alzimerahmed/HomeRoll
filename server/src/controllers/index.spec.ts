@@ -14,7 +14,6 @@ const UNAUTHENTICATED_ADMIN_ROUTES = new Set([
 const ADMIN_ROUTES = new Set([
   'DELETE libraries/:id',
   'DELETE queues/:name/jobs',
-  'DELETE server/license',
   'GET jobs',
   'GET libraries',
   'GET libraries/:id',
@@ -22,7 +21,6 @@ const ADMIN_ROUTES = new Set([
   'GET queues',
   'GET queues/:name',
   'GET queues/:name/jobs',
-  'GET server/license',
   'GET server/statistics',
   'GET system-config',
   'GET system-config/defaults',
@@ -39,7 +37,6 @@ const ADMIN_ROUTES = new Set([
   'PUT jobs/:name',
   'PUT libraries/:id',
   'PUT queues/:name',
-  'PUT server/license',
   'PUT system-config',
 ]);
 

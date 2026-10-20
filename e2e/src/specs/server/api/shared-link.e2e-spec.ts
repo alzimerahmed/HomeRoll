@@ -109,11 +109,11 @@ describe('/shared-links', () => {
       expect(resp.text).toContain(`<meta property="og:image" content="http://127.0.0.1:2285`);
     });
 
-    it('should fall back to my.immich.app og:image meta tag for shared asset if Host header is not present', async () => {
+    it('should fall back to the default domain og:image meta tag for shared asset if Host header is not present', async () => {
       const resp = await request(shareUrl).get(`/${linkWithAssets.key}`).set('Host', '');
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
-      expect(resp.text).toContain(`<meta property="og:image" content="https://my.immich.app`);
+      expect(resp.text).toContain(`<meta property="og:image" content="http://localhost:2283`);
     });
 
     it('should return 404 for an invalid shared link', async () => {

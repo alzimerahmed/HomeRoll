@@ -20,7 +20,6 @@ import type { NextFunction, Response } from 'express';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto.js';
-import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto.js';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto.js';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto.js';
@@ -125,40 +124,6 @@ export class UserController {
     @Body() dto: UserPreferencesUpdateDto,
   ): Promise<UserPreferencesResponseDto> {
     return this.service.updateMyPreferences(auth, dto);
-  }
-
-  @Get('me/license')
-  @Authenticated({ permission: Permission.UserLicenseRead })
-  @Endpoint({
-    summary: 'Retrieve user product key',
-    description: 'Retrieve information about whether the current user has a registered product key.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  getUserLicense(@Auth() auth: AuthDto): Promise<LicenseResponseDto> {
-    return this.service.getLicense(auth);
-  }
-
-  @Put('me/license')
-  @Authenticated({ permission: Permission.UserLicenseUpdate })
-  @Endpoint({
-    summary: 'Set user product key',
-    description: 'Register a product key for the current user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  async setUserLicense(@Auth() auth: AuthDto, @Body() license: LicenseKeyDto): Promise<LicenseResponseDto> {
-    return this.service.setLicense(auth, license);
-  }
-
-  @Delete('me/license')
-  @Authenticated({ permission: Permission.UserLicenseDelete })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Endpoint({
-    summary: 'Delete user product key',
-    description: 'Delete the registered product key for the current user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  async deleteUserLicense(@Auth() auth: AuthDto): Promise<void> {
-    await this.service.deleteLicense(auth);
   }
 
   @Get('me/onboarding')

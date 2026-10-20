@@ -1,10 +1,10 @@
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
-import type { MaybeDehydrated, UserMetadataItem } from 'src/types.js';
+import type { MaybeDehydrated } from 'src/types.js';
 import { User, UserAdmin } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { pinCodeRegex } from 'src/dtos/auth.dto.js';
-import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum.js';
+import { UserAvatarColor, UserAvatarColorSchema, UserStatusSchema } from 'src/enum.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation.js';
 
@@ -36,16 +36,6 @@ export const UserResponseSchema = z
   .meta({ id: 'UserResponseDto' });
 
 export class UserResponseDto extends createZodDto(UserResponseSchema) {}
-
-const licenseKeyRegex = /^IM(SV|CL)(-[\dA-Za-z]{4}){8}$/;
-
-export const UserLicenseSchema = z
-  .object({
-    licenseKey: z.string().regex(licenseKeyRegex).describe(`License key (format: ${licenseKeyRegex.toString()})`),
-    activationKey: z.string().describe('Activation key'),
-    activatedAt: isoDatetimeToDate.describe('Activation date'),
-  })
-  .meta({ id: 'UserLicense' });
 
 const emailToAvatarColor = (email: string): UserAvatarColor => {
   const values = Object.values(UserAvatarColor);
@@ -131,17 +121,11 @@ const UserAdminResponseSchema = UserResponseSchema.extend({
   quotaSizeInBytes: z.int().min(0).nullable().describe('Storage quota in bytes'),
   quotaUsageInBytes: z.int().min(0).nullable().describe('Storage usage in bytes'),
   status: UserStatusSchema,
-  license: UserLicenseSchema.nullable(),
 }).meta({ id: 'UserAdminResponseDto' });
 
 export class UserAdminResponseDto extends createZodDto(UserAdminResponseSchema) {}
 
 export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
-  const metadata = entity.metadata || [];
-  const license = metadata.find(
-    (item): item is UserMetadataItem<UserMetadataKey.License> => item.key === UserMetadataKey.License,
-  )?.value;
-
   return {
     ...mapUser(entity),
     clusterGroupId: entity.clusterGroupId,
@@ -156,6 +140,5 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
-    license: license ? { ...license, activatedAt: new Date(license.activatedAt) } : null,
   };
 }

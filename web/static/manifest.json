@@ -1,5 +1,6 @@
 {
-  "background_color": "#ffffff",
+  "background_color": "#16130F",
+  "theme_color": "#16130F",
   "description": "Self-hosted photo and video backup solution directly from your mobile phone.",
   "dir": "auto",
   "display": "standalone",
@@ -24,8 +25,8 @@
     }
   ],
   "lang": "en",
-  "name": "Immich",
-  "short_name": "Immich",
+  "name": "HomeRoll",
+  "short_name": "HomeRoll",
   "shortcuts": [
     {
       "name": "Photos",

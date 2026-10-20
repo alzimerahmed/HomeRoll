@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon';
 import { defaults } from 'src/dtos/config.dto.js';
-import { CronJob, JobName, JobStatus, ReleaseChannel, SystemMetadataKey } from 'src/enum.js';
+import { CronJob, DatabaseLock, JobName, JobStatus, ReleaseChannel, SystemMetadataKey } from 'src/enum.js';
 import { VersionService } from 'src/services/version.service.js';
+import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { factory } from 'test/small.factory.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
@@ -61,6 +62,13 @@ describe(VersionService.name, () => {
         }),
       );
     });
+
+    it('should not create a version check cron job when the URL is not configured', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ versionCheck: { url: undefined } }));
+      await sut.onBootstrap();
+      expect(mocks.database.tryLock).not.toHaveBeenCalledWith(DatabaseLock.VersionCheck);
+      expect(mocks.cron.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('getVersion', () => {
@@ -96,6 +104,12 @@ describe(VersionService.name, () => {
     it('should not run if version check is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ newVersionCheck: { enabled: false } });
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
+    });
+
+    it('should not run if the version check URL is not configured', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ versionCheck: { url: undefined } }));
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
+      expect(mocks.serverInfo.getLatestRelease).not.toHaveBeenCalled();
     });
 
     it('should skip if the last check was less than 50 seconds ago', async () => {

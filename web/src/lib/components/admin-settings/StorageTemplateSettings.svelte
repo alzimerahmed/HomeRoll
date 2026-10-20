@@ -269,9 +269,9 @@
         <FormatMessage key="admin.storage_template_more_details">
           {#snippet children({ tag, message })}
             {#if tag === 'template-link'}
-              <Link href="https://github.com/alzimerahmed/HomeRoll">{message}</Link>
+              <Link href="https://github.com/alzimerahmed/HomeRoll/wiki">{message}</Link>
             {:else if tag === 'implications-link'}
-              <Link href="https://github.com/alzimerahmed/HomeRoll">
+              <Link href="https://github.com/alzimerahmed/HomeRoll/wiki">
                 {message}
               </Link>
             {/if}

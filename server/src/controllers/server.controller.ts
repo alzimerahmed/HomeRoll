@@ -1,7 +1,6 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Put } from '@nestjs/common';
-import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
-import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
 import {
   ServerAboutResponseDto,
   ServerApkLinksDto,
@@ -130,7 +129,7 @@ export class ServerController {
   @Authenticated({ permission: Permission.ServerStatistics, admin: true })
   @Endpoint({
     summary: 'Get statistics',
-    description: 'Retrieve statistics about the entire Immich instance such as asset counts.',
+    description: 'Retrieve statistics about the entire HomeRoll instance such as asset counts.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getServerStatistics(): Promise<ServerStatsResponseDto> {
@@ -146,41 +145,6 @@ export class ServerController {
   })
   getSupportedMediaTypes(): ServerMediaTypesResponseDto {
     return this.service.getSupportedMediaTypes();
-  }
-
-  @Get('license')
-  @Authenticated({ permission: Permission.ServerLicenseRead, admin: true })
-  @ApiNotFoundResponse()
-  @Endpoint({
-    summary: 'Get product key',
-    description: 'Retrieve information about whether the server currently has a product key registered.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  getServerLicense(): Promise<LicenseResponseDto> {
-    return this.service.getLicense();
-  }
-
-  @Put('license')
-  @Authenticated({ permission: Permission.ServerLicenseUpdate, admin: true })
-  @Endpoint({
-    summary: 'Set server product key',
-    description: 'Validate and set the server product key if successful.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  setServerLicense(@Body() license: LicenseKeyDto): Promise<LicenseResponseDto> {
-    return this.service.setLicense(license);
-  }
-
-  @Delete('license')
-  @Authenticated({ permission: Permission.ServerLicenseDelete, admin: true })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Endpoint({
-    summary: 'Delete server product key',
-    description: 'Delete the currently set server product key.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  deleteServerLicense(): Promise<void> {
-    return this.service.deleteLicense();
   }
 
   @Get('version-check')

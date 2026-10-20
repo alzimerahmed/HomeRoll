@@ -6,11 +6,11 @@ describe(ApiService.name, () => {
       const output = render('<!-- metadata:tags -->', {
         title: 'title',
         description: 'description',
-        imageUrl: 'https://demo.immich.app/api/assets/123',
+        imageUrl: 'https://demo.homeroll.test/api/assets/123',
       });
       expect(output).toContain('<meta property="og:title" content="title" />');
       expect(output).toContain('<meta property="og:description" content="description" />');
-      expect(output).toContain('<meta property="og:image" content="https://demo.immich.app/api/assets/123" />');
+      expect(output).toContain('<meta property="og:image" content="https://demo.homeroll.test/api/assets/123" />');
     });
 
     it('should escape html tags', () => {

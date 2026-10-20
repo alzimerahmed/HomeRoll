@@ -1,4 +1,3 @@
-import { SystemMetadataKey } from 'src/enum.js';
 import { ServerService } from 'src/services/server.service.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
@@ -167,8 +166,8 @@ describe(ServerService.name, () => {
         isOnboarded: false,
         externalDomain: '',
         publicUsers: true,
-        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
-        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
+        mapDarkStyleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        mapLightStyleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
         maintenanceMode: false,
         minFaces: 3,
       });
@@ -268,32 +267,4 @@ describe(ServerService.name, () => {
     });
   });
 
-  describe('setLicense', () => {
-    it('should save license if valid', async () => {
-      mocks.systemMetadata.set.mockResolvedValue();
-
-      const license = { licenseKey: 'IMSV-license-key', activationKey: 'activation-key' };
-      await sut.setLicense(license);
-
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.License, expect.any(Object));
-    });
-
-    it('should not save license if invalid', async () => {
-      mocks.user.upsertMetadata.mockResolvedValue();
-
-      const license = { licenseKey: 'license-key', activationKey: 'activation-key' };
-      const call = sut.setLicense(license);
-      await expect(call).rejects.toThrowError('Invalid license key');
-      expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('deleteLicense', () => {
-    it('should delete license', async () => {
-      mocks.user.upsertMetadata.mockResolvedValue();
-
-      await sut.deleteLicense();
-      expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
-    });
-  });
 });

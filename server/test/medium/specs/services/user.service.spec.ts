@@ -16,12 +16,6 @@ import { mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { factory, newUuid } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
-const userLicense = {
-  licenseKey: 'IMCL-FF69-TUK1-RWZU-V9Q8-QGQS-S5GC-X4R2-UFK4',
-  activationKey:
-    'KuX8KsktrBSiXpQMAH0zLgA5SpijXVr_PDkzLdWUlAogCTMBZ0I3KCHXK0eE9EEd7harxup8_EHMeqAWeHo5VQzol6LGECpFv585U9asXD4Zc-UXt3mhJr2uhazqipBIBwJA2YhmUCDy8hiyiGsukDQNu9Rg9C77UeoKuZBWVjWUBWG0mc1iRqfvF0faVM20w53czAzlhaMxzVGc3Oimbd7xi_CAMSujF_2y8QpA3X2fOVkQkzdcH9lV0COejl7IyH27zQQ9HrlrXv3Lai5Hw67kNkaSjmunVBxC5PS0TpKoc9SfBJMaAGWnaDbjhjYUrm-8nIDQnoeEAidDXVAdPw',
-};
-
 let defaultDatabase: Kysely<DB>;
 
 const setup = (db?: Kysely<DB>) => {
@@ -37,7 +31,7 @@ const setup = (db?: Kysely<DB>) => {
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
   const { ctx } = setup();
-  await ctx.newUser({ isAdmin: true, email: 'admin@immich.cloud' });
+  await ctx.newUser({ isAdmin: true, email: 'admin@homeroll.test' });
 });
 
 describe(UserService.name, () => {
@@ -129,15 +123,6 @@ describe(UserService.name, () => {
       );
     });
 
-    it('should include license info', async () => {
-      const { sut, ctx } = setup();
-      const { user } = await ctx.newUser();
-      const auth = factory.auth({ user: { id: user.id } });
-
-      await sut.setLicense(auth, userLicense);
-
-      await expect(sut.getMe(auth)).resolves.toMatchObject({ license: userLicense });
-    });
   });
 
   describe('updateMe', () => {
@@ -173,7 +158,7 @@ describe(UserService.name, () => {
       const { user } = await ctx.newUser();
       const auth = factory.auth({ user: { id: user.id } });
 
-      const dto = { email: 'updated@immich.cloud' };
+      const dto = { email: 'updated@homeroll.test' };
 
       await expect(sut.updateMe(auth, dto)).resolves.toMatchObject(dto);
       await expect(sut.getMe(auth)).resolves.toMatchObject(dto);
@@ -276,57 +261,6 @@ describe(UserService.name, () => {
       });
       await expect(sut.updateMyPreferences(auth, dto)).resolves.toMatchObject(dto);
       await expect(sut.getMyPreferences(auth)).resolves.toMatchObject(dto);
-    });
-  });
-
-  describe('setLicense', () => {
-    it('should set a license', async () => {
-      const { sut, ctx } = setup();
-      const { user } = await ctx.newUser();
-      const auth = factory.auth({ user: { id: user.id } });
-      await expect(sut.getLicense(auth)).rejects.toThrowError();
-      const after = await sut.setLicense(auth, userLicense);
-      expect(after.licenseKey).toEqual(userLicense.licenseKey);
-      expect(after.activationKey).toEqual(userLicense.activationKey);
-      const response = await sut.getLicense(auth);
-      expect(response).toEqual(after);
-      await expect(sut.getMe(auth)).resolves.toMatchObject({ license: after });
-    });
-
-    it('should reject a license key that does not start with IMCL-', async () => {
-      const { sut, ctx } = setup();
-      const { user } = await ctx.newUser();
-      const auth = factory.auth({ user: { id: user.id } });
-
-      await expect(
-        sut.setLicense(auth, {
-          licenseKey: 'IMSV-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD-ABCD',
-          activationKey: 'activationKey',
-        }),
-      ).rejects.toThrow('Invalid license key');
-    });
-
-    it('should reject an invalid activation key', async () => {
-      const { sut, ctx } = setup();
-      const { user } = await ctx.newUser();
-      const auth = factory.auth({ user: { id: user.id } });
-
-      await expect(
-        sut.setLicense(auth, { ...userLicense, activationKey: `invalid${userLicense.activationKey}` }),
-      ).rejects.toThrow('Invalid license key');
-    });
-  });
-
-  describe('deleteLicense', () => {
-    it('should delete the license', async () => {
-      const { sut, ctx } = setup();
-      const { user } = await ctx.newUser();
-      const auth = factory.auth({ user: { id: user.id } });
-
-      await sut.setLicense(auth, userLicense);
-      await sut.deleteLicense(auth);
-
-      await expect(sut.getLicense(auth)).rejects.toThrowError();
     });
   });
 

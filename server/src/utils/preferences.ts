@@ -46,8 +46,8 @@ const getDefaultPreferences = (): UserPreferences => {
       includeEmbeddedVideos: false,
     },
     purchase: {
-      showSupportBadge: true,
-      hideBuyButtonUntil: new Date(2022, 1, 12).toISOString(),
+      showSupportBadge: false,
+      hideBuyButtonUntil: new Date(2100, 1, 12).toISOString(),
     },
     cast: {
       gCastEnabled: false,

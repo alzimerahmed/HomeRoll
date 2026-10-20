@@ -9,13 +9,10 @@ import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { getAboutInfoQuery } from '$lib/queries/server.query';
 import { Route } from '$lib/route';
 import { isSharedLinkRoute } from '$lib/utils/navigation';
 
 class AuthManager {
-  isPurchased = $state(false);
   isSharedLink = $derived(isSharedLinkRoute(page.route?.id));
   params = $derived(this.isSharedLink ? { key: page.params.key, slug: page.params.slug } : {});
 
@@ -66,16 +63,6 @@ class AuthManager {
       this.#preferences = preferences;
       this.#user = user;
 
-      if (user.license?.activatedAt) {
-        this.isPurchased = true;
-      } else {
-        // check server status
-        const serverInfo = await queryClient.query(getAboutInfoQuery()).catch(() => {});
-        if (serverInfo?.licensed) {
-          this.isPurchased = true;
-        }
-      }
-
       eventManager.emit('AuthUserLoaded', user);
     } catch {
       // noop
@@ -103,8 +90,6 @@ class AuthManager {
     }
 
     if (redirectUri.startsWith('/')) {
-      this.isPurchased = false;
-
       this.reset();
       eventManager.emit('AuthLogout');
 

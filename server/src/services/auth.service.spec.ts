@@ -17,7 +17,7 @@ import { userStub } from 'test/fixtures/user.stub.js';
 import { newUuid } from 'test/small.factory.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
-const email = 'test@immich.com';
+const email = 'test@homeroll.test';
 const loginDetails = {
   isSecure: true,
   clientIp: '127.0.0.1',
@@ -321,14 +321,14 @@ describe(AuthService.name, () => {
   });
 
   describe('adminSignUp', () => {
-    const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
+    const dto: SignUpDto = { email: 'test@homeroll.test', password: 'password', name: 'homeroll admin' };
 
     it('should sign up the admin', async () => {
       mocks.user.create.mockResolvedValue({
         ...userStub.admin,
         ...dto,
         id: 'admin',
-        name: 'immich admin',
+        name: 'homeroll admin',
         createdAt: new Date('2021-01-01'),
         metadata: [] as UserMetadataItem[],
       } as UserAdmin);
@@ -337,8 +337,8 @@ describe(AuthService.name, () => {
         avatarColor: expect.any(String),
         id: 'admin',
         createdAt: new Date('2021-01-01'),
-        email: 'test@immich.com',
-        name: 'immich admin',
+        email: 'test@homeroll.test',
+        name: 'homeroll admin',
       });
 
       expect(mocks.user.create).toHaveBeenCalled();
@@ -683,13 +683,13 @@ describe(AuthService.name, () => {
 
   describe('getMobileRedirect', () => {
     it('should pass along the query params', () => {
-      expect(sut.getMobileRedirect('https://immich.app?code=123&state=456')).toEqual(
+      expect(sut.getMobileRedirect('https://homeroll.test?code=123&state=456')).toEqual(
         'app.immich:///oauth-callback?code=123&state=456',
       );
     });
 
     it('should work if called without query params', () => {
-      expect(sut.getMobileRedirect('https://immich.app')).toEqual('app.immich:///oauth-callback?');
+      expect(sut.getMobileRedirect('https://homeroll.test')).toEqual('app.immich:///oauth-callback?');
     });
   });
 
@@ -697,7 +697,7 @@ describe(AuthService.name, () => {
     it('should fail if oauth is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ oauth: { enabled: false } });
 
-      await expect(sut.authorize({ redirectUri: 'https://demo.immich.app' })).rejects.toBeInstanceOf(
+      await expect(sut.authorize({ redirectUri: 'https://demo.homeroll.test' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
@@ -705,7 +705,7 @@ describe(AuthService.name, () => {
     it('should authorize the user', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
 
-      await sut.authorize({ redirectUri: 'https://demo.immich.app' });
+      await sut.authorize({ redirectUri: 'https://demo.homeroll.test' });
     });
   });
 
@@ -723,7 +723,7 @@ describe(AuthService.name, () => {
 
       await expect(
         sut.callback(
-          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
           {},
           loginDetails,
         ),
@@ -743,7 +743,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
         {},
         loginDetails,
       );
@@ -763,7 +763,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
         {},
         loginDetails,
       );
@@ -784,12 +784,12 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
         {},
         loginDetails,
       );
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith('test@immich.cloud');
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith('test@homeroll.test');
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
     });
 
@@ -803,7 +803,7 @@ describe(AuthService.name, () => {
 
       await expect(
         sut.callback(
-          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
           {},
           loginDetails,
         ),
@@ -822,7 +822,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
         {},
         loginDetails,
       );
@@ -841,7 +841,7 @@ describe(AuthService.name, () => {
 
       await expect(
         sut.callback(
-          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
           {},
           loginDetails,
         ),
@@ -882,7 +882,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -901,7 +901,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -920,7 +920,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -939,7 +939,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -958,7 +958,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -977,7 +977,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -994,7 +994,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1012,7 +1012,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1023,7 +1023,7 @@ describe(AuthService.name, () => {
     it('should sync the profile picture', async () => {
       const fileId = newUuid();
       const user = UserFactory.create({ oauthId: 'oauth-id' });
-      const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+      const profile = OAuthProfileFactory.create({ picture: 'https://auth.homeroll.test/profiles/1.jpg' });
       const pictureBytes = new Uint8Array([1, 2, 3, 4, 5]);
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
@@ -1035,7 +1035,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1058,7 +1058,7 @@ describe(AuthService.name, () => {
 
     it('should not update the user when thumbnail processing fails on the OAuth picture', async () => {
       const user = UserFactory.create({ oauthId: 'oauth-id' });
-      const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+      const profile = OAuthProfileFactory.create({ picture: 'https://auth.homeroll.test/profiles/1.jpg' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
@@ -1069,7 +1069,7 @@ describe(AuthService.name, () => {
 
       await expect(
         sut.callback(
-          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
           {},
           loginDetails,
         ),
@@ -1088,7 +1088,7 @@ describe(AuthService.name, () => {
         profile: OAuthProfileFactory.create({
           sub: oauthId,
           email: user.email,
-          picture: 'https://auth.immich.cloud/profiles/1.jpg',
+          picture: 'https://auth.homeroll.test/profiles/1.jpg',
         }),
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
@@ -1096,7 +1096,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1117,7 +1117,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1136,7 +1136,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1157,7 +1157,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1176,7 +1176,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1196,7 +1196,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1216,7 +1216,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1240,7 +1240,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1263,7 +1263,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1287,7 +1287,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1313,7 +1313,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1337,7 +1337,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1358,7 +1358,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1378,7 +1378,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1397,7 +1397,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
         loginDetails,
       );
@@ -1418,7 +1418,7 @@ describe(AuthService.name, () => {
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        { url: 'http://homeroll/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
         {},
         loginDetails,
       );
@@ -1440,7 +1440,7 @@ describe(AuthService.name, () => {
 
       await sut.link(
         auth,
-        { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
       );
 
@@ -1463,7 +1463,7 @@ describe(AuthService.name, () => {
 
       await sut.link(
         auth,
-        { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        { url: 'http://homeroll/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
         {},
       );
 
@@ -1484,7 +1484,7 @@ describe(AuthService.name, () => {
       mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserAdmin);
 
       await expect(
-        sut.link(auth, { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' }, {}),
+        sut.link(auth, { url: 'http://homeroll/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' }, {}),
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();

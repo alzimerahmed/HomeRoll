@@ -44,7 +44,7 @@
   });
 
   const downloadAssets = async () => {
-    await downloadArchive(`immich-shared`, { assetIds: assets.map((asset) => asset.id) });
+    await downloadArchive(`homeroll-shared`, { assetIds: assets.map((asset) => asset.id) });
   };
 
   const handleUploadAssets = async (files: File[] = []) => {
@@ -97,7 +97,7 @@
           onclick={handleSelectAll}
         />
         {#if sharedLink?.allowDownload}
-          <DownloadAction filename="immich-shared" />
+          <DownloadAction filename="homeroll-shared" />
         {/if}
         {#if isOwned}
           <RemoveFromSharedLink bind:sharedLink />

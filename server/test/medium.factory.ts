@@ -783,7 +783,7 @@ const userInsert = (user: Partial<Insertable<UserTable>> & { clusterGroupId: str
   const id = user.id || newUuid();
 
   const defaults = {
-    email: `${id}@immich.cloud`,
+    email: `${id}@homeroll.test`,
     name: `User ${id}`,
     deletedAt: null,
     isAdmin: false,

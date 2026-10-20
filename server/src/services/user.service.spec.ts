@@ -1,6 +1,6 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UserAdmin } from 'src/database.js';
-import { CacheControl, JobName, UserMetadataKey } from 'src/enum.js';
+import { CacheControl, JobName } from 'src/enum.js';
 import { UserService } from 'src/services/user.service.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
@@ -297,55 +297,6 @@ describe(UserService.name, () => {
       const options = { force: true, recursive: true };
 
       expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(expect.stringContaining('data/library/admin'), options);
-    });
-  });
-
-  describe('setLicense', () => {
-    it('should save client license if valid', async () => {
-      const license = { licenseKey: 'IMCL-license-key', activationKey: 'activation-key' };
-
-      mocks.user.upsertMetadata.mockResolvedValue();
-
-      await sut.setLicense(authStub.user1, license);
-
-      expect(mocks.user.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {
-        key: UserMetadataKey.License,
-        value: expect.any(Object),
-      });
-    });
-
-    it('should save server license as client if valid', async () => {
-      const license = { licenseKey: 'IMSV-license-key', activationKey: 'activation-key' };
-
-      mocks.user.upsertMetadata.mockResolvedValue();
-
-      await sut.setLicense(authStub.user1, license);
-
-      expect(mocks.user.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {
-        key: UserMetadataKey.License,
-        value: expect.any(Object),
-      });
-    });
-
-    it('should not save license if invalid', async () => {
-      const license = { licenseKey: 'license-key', activationKey: 'activation-key' };
-      const call = sut.setLicense(authStub.admin, license);
-
-      mocks.user.upsertMetadata.mockResolvedValue();
-
-      await expect(call).rejects.toThrowError('Invalid license key');
-
-      expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('deleteLicense', () => {
-    it('should delete license', async () => {
-      mocks.user.upsertMetadata.mockResolvedValue();
-
-      await sut.deleteLicense(authStub.admin);
-
-      expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
     });
   });
 

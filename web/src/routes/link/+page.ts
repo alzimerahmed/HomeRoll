@@ -7,7 +7,6 @@ enum LinkTarget {
   HOME = 'home',
   UNSUBSCRIBE = 'unsubscribe',
   VIEW_ASSET = 'view_asset',
-  ACTIVATE_LICENSE = 'activate_license',
 }
 
 export const load = (({ url }) => {
@@ -27,25 +26,6 @@ export const load = (({ url }) => {
       if (id) {
         return redirect(307, Route.viewAsset({ id }));
       }
-      break;
-    }
-
-    case LinkTarget.ACTIVATE_LICENSE: {
-      // https://my.immich.app/link?target=activate_license&licenseKey=IMCL-9XC3-T4S3-37BU-GGJ5-8MWP-F2Y1-BGEX-AQTF
-      const licenseKey = queryParams.get('licenseKey');
-      const activationKey = queryParams.get('activationKey');
-      const redirectUrl = new URL(Route.buy(), url.origin);
-
-      if (licenseKey) {
-        redirectUrl.searchParams.append('licenseKey', licenseKey);
-
-        if (activationKey) {
-          redirectUrl.searchParams.append('activationKey', activationKey);
-        }
-
-        return redirect(307, redirectUrl);
-      }
-
       break;
     }
   }

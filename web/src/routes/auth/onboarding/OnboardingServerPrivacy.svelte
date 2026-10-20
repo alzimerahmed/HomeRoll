@@ -29,7 +29,7 @@
   />
   <SettingSwitch
     title={$t('admin.version_check_settings')}
-    subtitle={$t('admin.version_check_implications', { values: { server: 'version.immich.cloud' } })}
+    subtitle={$t('admin.version_check_implications', { values: { server: 'a configurable endpoint' } })}
     bind:checked={configToEdit.newVersionCheck.enabled}
   />
 </div>

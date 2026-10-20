@@ -28,7 +28,7 @@ describe(UserAdminController.name, () => {
     it('should allow a null pinCode', async () => {
       await request(ctx.getHttpServer()).post(`/admin/users`).send({
         name: 'Test user',
-        email: 'test@immich.cloud',
+        email: 'test@homeroll.test',
         password: 'password',
         pinCode: null,
       });
@@ -38,7 +38,7 @@ describe(UserAdminController.name, () => {
     it('should allow a null avatarColor', async () => {
       await request(ctx.getHttpServer()).post(`/admin/users`).send({
         name: 'Test user',
-        email: 'test@immich.cloud',
+        email: 'test@homeroll.test',
         password: 'password',
         avatarColor: null,
       });
@@ -56,7 +56,7 @@ describe(UserAdminController.name, () => {
         const { status, body } = await request(ctx.getHttpServer())
           .post(`/admin/users`)
           .set('Authorization', `Bearer token`)
-          .send({ email: 'user@immich.app', password: 'test', name: 'Test User', [key]: null });
+          .send({ email: 'user@homeroll.test', password: 'test', name: 'Test User', [key]: null });
         expect(status).toBe(400);
         expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
       });
@@ -64,7 +64,7 @@ describe(UserAdminController.name, () => {
 
     it(`should not allow decimal quota`, async () => {
       const dto: UserAdminCreateDto = {
-        email: 'user@immich.app',
+        email: 'user@homeroll.test',
         password: 'test',
         name: 'Test User',
         quotaSizeInBytes: 1.2,

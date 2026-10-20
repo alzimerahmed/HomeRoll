@@ -73,7 +73,7 @@
         <FormatMessage key="maintenance_description">
           {#snippet children({ tag, message })}
             {#if tag === 'link'}
-              <Link href="https://github.com/alzimerahmed/HomeRoll">
+              <Link href="https://github.com/alzimerahmed/HomeRoll/wiki">
                 {message}
               </Link>
             {/if}

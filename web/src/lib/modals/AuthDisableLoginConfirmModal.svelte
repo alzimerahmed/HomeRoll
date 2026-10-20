@@ -18,7 +18,7 @@
       <p>
         <FormatMessage key="admin.authentication_settings_reenable">
           {#snippet children({ message })}
-            <Link href="https://github.com/alzimerahmed/HomeRoll">{message}</Link>
+            <Link href="https://github.com/alzimerahmed/HomeRoll/wiki">{message}</Link>
           {/snippet}
         </FormatMessage>
       </p>

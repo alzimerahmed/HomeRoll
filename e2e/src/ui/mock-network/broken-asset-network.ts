@@ -19,7 +19,7 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
     ownerId,
     owner: {
       id: ownerId,
-      email: 'admin@immich.cloud',
+      email: 'admin@homeroll.test',
       name: 'Admin',
       profileImagePath: '',
       profileChangedAt: now,

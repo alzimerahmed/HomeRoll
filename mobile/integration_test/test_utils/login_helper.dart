@@ -59,11 +59,11 @@ class ImmichTestLoginHelper {
 }
 
 enum LoginCredentials {
-  testInstance("https://flutter-int-test.preview.immich.app", "demo@immich.app", "demo"),
+  testInstance("http://localhost:2283", "demo@homeroll.test", "demo"),
 
-  testInstanceButWithWrongPassword("https://flutter-int-test.preview.immich.app", "demo@immich.app", "wrong"),
+  testInstanceButWithWrongPassword("http://localhost:2283", "demo@homeroll.test", "wrong"),
 
-  wrongInstanceUrl("https://does-not-exist.preview.immich.app", "demo@immich.app", "demo");
+  wrongInstanceUrl("https://does-not-exist.homeroll.test", "demo@homeroll.test", "demo");
 
   const LoginCredentials(this.server, this.email, this.password);
 

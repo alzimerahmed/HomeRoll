@@ -116,7 +116,7 @@ export const DummyValue = {
   UUID_1,
   UUID_SET: new Set([UUID]),
   PAGINATION: { take: 10, skip: 0 },
-  EMAIL: 'user@immich.app',
+  EMAIL: 'user@homeroll.test',
   STRING: 'abcdefghi',
   NUMBER: 50,
   BUFFER: Buffer.from('abcdefghi'),

@@ -18,7 +18,7 @@ export class UserFactory {
     return new UserFactory({
       id: newUuid(),
       clusterGroupId: newUuid(),
-      email: 'test@immich.cloud',
+      email: 'test@homeroll.test',
       password: '',
       pinCode: null,
       createdAt: newDate(),

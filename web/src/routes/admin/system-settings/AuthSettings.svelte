@@ -79,7 +79,7 @@
             <Text size="small">
               <FormatMessage key="admin.oauth_settings_more_details">
                 {#snippet children({ message })}
-                  <Link href="https://github.com/alzimerahmed/HomeRoll">{message}</Link>
+                  <Link href="https://github.com/alzimerahmed/HomeRoll/wiki">{message}</Link>
                 {/snippet}
               </FormatMessage>
             </Text>
