@@ -85,6 +85,15 @@ const DownloadUpdateSchema = z
   .optional()
   .meta({ id: 'DownloadUpdate' });
 
+const PushNotificationsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether push notifications are enabled'),
+    albumInvite: z.boolean().optional().describe('Whether to receive push notifications for album invites'),
+    albumUpdate: z.boolean().optional().describe('Whether to receive push notifications for album updates'),
+  })
+  .optional()
+  .meta({ id: 'PushNotificationsUpdate' });
+
 const PurchaseUpdateSchema = z
   .object({
     showSupportBadge: z.boolean().optional().describe('Whether to show support badge'),
@@ -114,6 +123,7 @@ const UserPreferencesUpdateSchema = z
     cast: CastUpdateSchema,
     download: DownloadUpdateSchema,
     emailNotifications: EmailNotificationsUpdateSchema,
+    pushNotifications: PushNotificationsUpdateSchema,
     folders: FoldersUpdateSchema,
     memories: MemoriesUpdateSchema,
     people: PeopleUpdateSchema,
@@ -183,6 +193,14 @@ const EmailNotificationsResponseSchema = z
   })
   .meta({ id: 'EmailNotificationsResponse' });
 
+const PushNotificationsResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether push notifications are enabled'),
+    albumInvite: z.boolean().describe('Whether to receive push notifications for album invites'),
+    albumUpdate: z.boolean().describe('Whether to receive push notifications for album updates'),
+  })
+  .meta({ id: 'PushNotificationsResponse' });
+
 const DownloadResponseSchema = z
   .object({
     archiveSize: z.int().describe('Maximum archive size in bytes'),
@@ -219,6 +237,7 @@ const UserPreferencesResponseSchema = z
     sharedLinks: SharedLinksResponseSchema,
     tags: TagsResponseSchema,
     emailNotifications: EmailNotificationsResponseSchema,
+    pushNotifications: PushNotificationsResponseSchema,
     download: DownloadResponseSchema,
     purchase: PurchaseResponseSchema,
     cast: CastResponseSchema,

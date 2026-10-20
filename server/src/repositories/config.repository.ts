@@ -71,6 +71,12 @@ export interface EnvData {
     url?: string;
   };
 
+  push: {
+    vapidPublicKey?: string;
+    vapidPrivateKey?: string;
+    vapidSubject?: string;
+  };
+
   network: {
     trustedProxies: string[];
   };
@@ -297,6 +303,12 @@ const getEnv = (): EnvData => {
 
     versionCheck: {
       url: dto.IMMICH_VERSION_CHECK_URL,
+    },
+
+    push: {
+      vapidPublicKey: dto.IMMICH_VAPID_PUBLIC_KEY,
+      vapidPrivateKey: dto.IMMICH_VAPID_PRIVATE_KEY,
+      vapidSubject: dto.IMMICH_VAPID_SUBJECT,
     },
 
     network: {

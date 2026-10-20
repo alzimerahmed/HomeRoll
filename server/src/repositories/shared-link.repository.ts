@@ -122,6 +122,32 @@ export class SharedLinkRepository {
     return this.authBuilder().where('shared_link.slug', '=', slug).executeTakeFirst();
   }
 
+  /**
+   * Newest assets of an album for the shared-link feed (FG-08). The shared
+   * link itself is the access grant, so no membership check is applied.
+   * No @GenerateSql: generated SQL artifacts are produced by sync-sql in CI.
+   */
+  getFeedAssets(albumId: string, limit: number) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('album_asset', (join) =>
+        join.onRef('album_asset.assetId', '=', 'asset.id').on('album_asset.albumId', '=', albumId),
+      )
+      .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .select([
+        'asset.id',
+        'asset.originalFileName',
+        'asset.fileCreatedAt',
+        'asset.createdAt',
+        'asset.updatedAt',
+        'asset_exif.description',
+      ])
+      .where('asset.deletedAt', 'is', null)
+      .orderBy('asset.fileCreatedAt', 'desc')
+      .limit(limit)
+      .execute();
+  }
+
   private authBuilder() {
     return this.db
       .selectFrom('shared_link')

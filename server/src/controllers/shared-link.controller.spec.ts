@@ -90,6 +90,38 @@ describe(SharedLinkController.name, () => {
     });
   });
 
+  describe('GET /shared-links/:key/feed', () => {
+    it('should be a public route', async () => {
+      service.getFeed.mockResolvedValue({ format: 'atom', xml: '<feed/>' });
+      await request(ctx.getHttpServer()).get('/shared-links/some-key/feed');
+
+      expect(ctx.authenticate).not.toHaveBeenCalled();
+    });
+
+    it('should return the atom feed with a no-store cache header', async () => {
+      service.getFeed.mockResolvedValue({ format: 'atom', xml: '<feed/>' });
+      const { status, headers, text } = await request(ctx.getHttpServer()).get('/shared-links/some-key/feed');
+
+      expect(status).toBe(200);
+      expect(headers['content-type']).toContain('application/atom+xml');
+      expect(headers['cache-control']).toBe('no-store');
+      expect(text).toBe('<feed/>');
+    });
+
+    it('should support the rss format', async () => {
+      service.getFeed.mockResolvedValue({ format: 'rss', xml: '<rss/>' });
+      const { status, headers } = await request(ctx.getHttpServer()).get('/shared-links/some-key/feed?format=rss');
+
+      expect(status).toBe(200);
+      expect(headers['content-type']).toContain('application/rss+xml');
+      expect(service.getFeed).toHaveBeenCalledWith(
+        'some-key',
+        expect.objectContaining({ format: 'rss' }),
+        expect.anything(),
+      );
+    });
+  });
+
   describe('DELETE /shared-links/:id/assets', () => {
     it('should require shared link update permission', async () => {
       await request(ctx.getHttpServer()).delete(`/shared-links/${factory.uuid()}/assets`).send({ assetIds: [] });

@@ -1,10 +1,23 @@
 import { registerEnum } from '@immich/sql-tools';
 import { PersonUserRole } from 'src/dtos/person.dto.js';
-import { AlbumUserRole, AssetStatus, AssetVisibility, ChecksumAlgorithm, SourceType, VideoCodec } from 'src/enum.js';
+import {
+  AlbumType,
+  AlbumUserRole,
+  AssetStatus,
+  AssetVisibility,
+  ChecksumAlgorithm,
+  SourceType,
+  VideoCodec,
+} from 'src/enum.js';
 
 export const album_user_role_enum = registerEnum({
   name: 'album_user_role_enum',
   values: [AlbumUserRole.Owner, AlbumUserRole.Editor, AlbumUserRole.Viewer],
+});
+
+export const album_type_enum = registerEnum({
+  name: 'album_type_enum',
+  values: Object.values(AlbumType),
 });
 
 export const assets_status_enum = registerEnum({

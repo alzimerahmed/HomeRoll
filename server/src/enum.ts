@@ -73,6 +73,13 @@ export enum AlbumUserRole {
 
 export const AlbumUserRoleSchema = z.enum(AlbumUserRole).describe('Album user role').meta({ id: 'AlbumUserRole' });
 
+export enum AlbumType {
+  Manual = 'manual',
+  Smart = 'smart',
+}
+
+export const AlbumTypeSchema = z.enum(AlbumType).describe('Album type').meta({ id: 'AlbumType' });
+
 export enum AssetOrder {
   Asc = 'asc',
   Desc = 'desc',
@@ -1251,6 +1258,7 @@ export enum ApiTag {
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
   AssetFiles = 'Asset files',
+  Browse = 'Browse',
   ConfigUser = 'Config (user)',
   ConfigAdmin = 'Config (admin)',
   ConfigPublic = 'Config (public)',
@@ -1271,6 +1279,7 @@ export enum ApiTag {
   Partners = 'Partners',
   People = 'People',
   Plugins = 'Plugins',
+  Push = 'Push',
   Queues = 'Queues',
   Search = 'Search',
   Server = 'Server',

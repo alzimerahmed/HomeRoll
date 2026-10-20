@@ -148,6 +148,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.ApiKeys]: 'An api key can be used to programmatically access the HomeRoll API.',
   [ApiTag.Assets]: 'An asset is an image or video that has been uploaded to HomeRoll.',
   [ApiTag.AssetFiles]: 'An asset file is a file associated with an asset, including edited versions, thumbnails, etc.',
+  [ApiTag.Browse]: 'Endpoints for browsing assets via the curated CLIP label taxonomy.',
   [ApiTag.Authentication]: 'Endpoints related to user authentication, including OAuth.',
   [ApiTag.AuthenticationAdmin]: 'Administrative endpoints related to authentication.',
   [ApiTag.ClusterGroups]:
@@ -180,6 +181,8 @@ export const endpointTags: Record<ApiTag, string> = {
     'A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job.',
   [ApiTag.Plugins]:
     'A plugin is an installed module that makes filters and actions available for the workflow feature.',
+  [ApiTag.Push]:
+    'Endpoints for managing web push subscriptions. Push notifications are delivered via the Web Push protocol (RFC 8291) and require the VAPID keys to be configured on the server.',
   [ApiTag.Queues]:
     'Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed.',
   [ApiTag.Search]:

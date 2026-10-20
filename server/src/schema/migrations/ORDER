@@ -98,3 +98,6 @@
 1790587508209-RenameGeoNamesCountries
 1790616293884-PersonSharing
 1790693088454-AddPersonUserTableSharedBySharedWithConstraint
+1792300000401-CreatePushSubscriptionTable
+1792300000501-AddAlbumParentId
+1792300000502-AddAlbumTypeAndRules

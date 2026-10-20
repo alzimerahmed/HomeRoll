@@ -608,6 +608,11 @@ export type UserPreferences = {
     albumInvite: boolean;
     albumUpdate: boolean;
   };
+  pushNotifications: {
+    enabled: boolean;
+    albumInvite: boolean;
+    albumUpdate: boolean;
+  };
   download: {
     archiveSize: number;
     includeEmbeddedVideos: boolean;

@@ -68,6 +68,10 @@ export const EnvSchema = z
     IMMICH_ALLOW_SETUP: stringBool.optional(),
     IMMICH_TRUSTED_PROXIES: trustedProxiesSchema,
     IMMICH_VERSION_CHECK_URL: z.string().optional(),
+
+    IMMICH_VAPID_PUBLIC_KEY: z.string().optional(),
+    IMMICH_VAPID_PRIVATE_KEY: z.string().optional(),
+    IMMICH_VAPID_SUBJECT: z.string().optional(),
     IMMICH_WORKERS_INCLUDE: z.string().optional(),
     IMMICH_WORKERS_EXCLUDE: z.string().optional(),
     DB_DATABASE_NAME: z.string().optional(),

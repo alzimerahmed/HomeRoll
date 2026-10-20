@@ -8,8 +8,8 @@ import { AuthService } from 'src/services/auth.service.js';
 import { SharedLinkService } from 'src/services/shared-link.service.js';
 import { OpenGraphTags } from 'src/utils/misc.js';
 
-export const render = (index: string, meta: OpenGraphTags) => {
-  const [title, description, imageUrl] = [meta.title, meta.description, meta.imageUrl].map((item) =>
+export const render = (index: string, meta: OpenGraphTags, url?: string) => {
+  const [title, description, imageUrl, shareUrl] = [meta.title, meta.description, meta.imageUrl, url].map((item) =>
     item ? escape(item) : '',
   );
 
@@ -20,7 +20,8 @@ export const render = (index: string, meta: OpenGraphTags) => {
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
-    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}`;
+    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}
+    ${shareUrl ? `<meta property="og:url" content="${shareUrl}" />` : ''}`;
 
   return index.replace('<!-- metadata:tags -->', () => tags);
 };
@@ -93,7 +94,8 @@ export class ApiService {
       }
 
       if (meta) {
-        html = render(index, meta);
+        const shareUrl = new URL(request.url.split('?')[0], defaultDomain || 'http://localhost:2283').href;
+        html = render(index, meta, shareUrl);
       }
 
       res.status(status).type(responseType).header('Cache-Control', 'no-store').send(html);

@@ -8,6 +8,7 @@ import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
 import { AssetFileRepository } from 'src/repositories/asset-file.repository.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
+import { BrowseRepository } from 'src/repositories/browse.repository.js';
 import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
 import { CronRepository } from 'src/repositories/cron.repository.js';
@@ -35,6 +36,7 @@ import { PersonUserRepository } from 'src/repositories/person-user.repository.js
 import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
+import { PushRepository } from 'src/repositories/push.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository.js';
 import { SessionRepository } from 'src/repositories/session.repository.js';
@@ -67,6 +69,7 @@ export const repositories = [
   AssetEditRepository,
   AssetFileRepository,
   AssetJobRepository,
+  BrowseRepository,
   ConfigRepository,
   CronRepository,
   CryptoRepository,
@@ -94,6 +97,7 @@ export const repositories = [
   PersonUserRepository,
   PluginRepository,
   ProcessRepository,
+  PushRepository,
   SearchRepository,
   SessionRepository,
   ServerInfoRepository,

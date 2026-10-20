@@ -1,5 +1,6 @@
 import { Database, Extensions, Generated, Int8 } from '@immich/sql-tools';
 import {
+  album_type_enum,
   album_user_role_enum,
   asset_face_source_type,
   asset_visibility_enum,
@@ -73,6 +74,7 @@ import { PersonUserTable } from 'src/schema/tables/person-user.table.js';
 import { PersonTable } from 'src/schema/tables/person.table.js';
 import { PluginMethodTable } from 'src/schema/tables/plugin-method.table.js';
 import { PluginTable } from 'src/schema/tables/plugin.table.js';
+import { PushSubscriptionTable } from 'src/schema/tables/push-subscription.table.js';
 import { SessionTable } from 'src/schema/tables/session.table.js';
 import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table.js';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table.js';
@@ -144,6 +146,7 @@ export class ImmichDatabase {
     PersonUserTable,
     PersonGroupTable,
     PersonGroupAuditTable,
+    PushSubscriptionTable,
     SessionTable,
     SharedLinkAssetTable,
     SharedLinkTable,
@@ -194,6 +197,7 @@ export class ImmichDatabase {
 
   enum = [
     album_user_role_enum,
+    album_type_enum,
     assets_status_enum,
     asset_face_source_type,
     asset_visibility_enum,
@@ -268,6 +272,8 @@ export interface DB {
   person_user: PersonUserTable;
   person_group: PersonGroupTable;
   person_group_audit: PersonGroupAuditTable;
+
+  push_subscription: PushSubscriptionTable;
 
   cluster_group: ClusterGroupTable;
   cluster_group_request: ClusterGroupRequestTable;

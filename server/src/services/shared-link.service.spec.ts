@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto.js';
 import { mapSharedLink } from 'src/dtos/shared-link.dto.js';
 import { SharedLinkType } from 'src/enum.js';
@@ -393,6 +393,124 @@ describe(SharedLinkService.name, () => {
       });
 
       expect(mocks.sharedLink.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('getFeed', () => {
+    const authRow = (overrides: Record<string, unknown> = {}) =>
+        ({
+          id: 'link-1',
+          userId: 'user-1',
+          albumId: null,
+          expiresAt: null,
+          password: null,
+          showExif: true,
+          allowUpload: true,
+          allowDownload: true,
+          user: { id: 'user-1' },
+          ...overrides,
+        }) as never;
+
+    const feedCall = (key = 'link-key', format = 'atom') =>
+      sut.getFeed(key, { format } as never, 'https://homeroll.test');
+
+    it('404s when the key is unknown', async () => {
+      mocks.sharedLink.getByKey.mockResolvedValue(undefined);
+
+      await expect(feedCall()).rejects.toThrow(NotFoundException);
+      expect(mocks.sharedLink.get).not.toHaveBeenCalled();
+    });
+
+    it('404s when the link is expired', async () => {
+      mocks.sharedLink.getByKey.mockResolvedValue(authRow({ expiresAt: new Date('2000-01-01') }));
+
+      await expect(feedCall()).rejects.toThrow(NotFoundException);
+    });
+
+    it('404s when the link is password-protected', async () => {
+      mocks.sharedLink.getByKey.mockResolvedValue(authRow({ password: 'password' }));
+
+      await expect(feedCall()).rejects.toThrow(NotFoundException);
+    });
+
+    it('builds an atom feed for an individual shared link', async () => {
+      const sharedLink = SharedLinkFactory.from({ description: null })
+        .asset({}, (builder) => builder.exif())
+        .build();
+      mocks.sharedLink.getByKey.mockResolvedValue(authRow());
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink) as never);
+
+      const { format, xml } = await feedCall(sharedLink.key.toString('base64url'));
+
+      const keyParam = sharedLink.key.toString('base64url');
+      expect(format).toBe('atom');
+      expect(xml).toContain('<feed xmlns="http://www.w3.org/2005/Atom">');
+      expect(xml).toContain('<title>Public Share</title>');
+      expect(xml).toContain(`<link href="https://homeroll.test/share/${keyParam}" />`);
+      expect(xml).toContain(`https://homeroll.test/api/shared-links/${keyParam}/feed?format=atom`);
+      expect(xml).toContain(
+        `https://homeroll.test/api/assets/${sharedLink.assets[0].id}/original?key=${keyParam}`,
+      );
+      expect(xml).toContain('rel="enclosure"');
+    });
+
+    it('honors showMetadata/allowDownload flags', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'IMG_0001.jpg' }).exif().build();
+      const sharedLink = {
+        ...getForSharedLink(SharedLinkFactory.from({ showExif: false, allowDownload: false }).asset().build()),
+        showExif: false,
+        allowDownload: false,
+        assets: [{ ...asset, exifInfo: { description: 'secret location' } }],
+      };
+      mocks.sharedLink.getByKey.mockResolvedValue(authRow({ showExif: false, allowDownload: false }));
+      mocks.sharedLink.get.mockResolvedValue(sharedLink as never);
+
+      const keyParam = sharedLink.key.toString('base64url');
+      const { xml } = await feedCall(keyParam);
+
+      // exif text stripped: title falls back to the file name
+      expect(xml).toContain('<title>IMG_0001.jpg</title>');
+      expect(xml).not.toContain('secret location');
+      // no download links when allowDownload is off
+      expect(xml).not.toContain('/original?key=');
+      expect(xml).toContain(`/thumbnail?key=${keyParam}`);
+    });
+
+    it('builds an rss feed for an album shared link', async () => {
+      const album = AlbumFactory.from({ albumName: 'Vacation' }).build();
+      const sharedLink = getForSharedLink(SharedLinkFactory.from({ type: SharedLinkType.Album }).album().build());
+      mocks.sharedLink.getByKey.mockResolvedValue(authRow({ albumId: album.id }));
+      mocks.sharedLink.get.mockResolvedValue({ ...sharedLink, album } as never);
+      mocks.sharedLink.getFeedAssets.mockResolvedValue([
+        {
+          id: 'asset-1',
+          originalFileName: 'IMG_0001.jpg',
+          fileCreatedAt: new Date('2024-05-01T10:00:00Z'),
+          createdAt: new Date('2024-05-01T10:00:00Z'),
+          updatedAt: new Date('2024-05-01T10:00:00Z'),
+          type: 'IMAGE',
+          description: 'A sunny beach',
+        },
+      ] as never);
+
+      const { format, xml } = await feedCall('link-key', 'rss');
+
+      expect(format).toBe('rss');
+      expect(xml).toContain('<rss version="2.0"');
+      expect(xml).toContain('<title>Vacation</title>');
+      expect(xml).toContain('<title>A sunny beach</title>');
+      expect(xml).toContain('<pubDate>Wed, 01 May 2024 10:00:00 GMT</pubDate>');
+      expect(mocks.sharedLink.getFeedAssets).toHaveBeenCalled();
+    });
+
+    it('builds an empty feed for a link without assets', async () => {
+      const sharedLink = getForSharedLink(SharedLinkFactory.create());
+      mocks.sharedLink.getByKey.mockResolvedValue(authRow());
+      mocks.sharedLink.get.mockResolvedValue({ ...sharedLink, assets: [] } as never);
+
+      const { xml } = await feedCall();
+      expect(xml).toContain('<feed xmlns="http://www.w3.org/2005/Atom">');
+      expect(xml).not.toContain('<entry>');
     });
   });
 });

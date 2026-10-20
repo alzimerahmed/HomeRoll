@@ -42,6 +42,8 @@ export const envData: EnvData = {
     url: 'https://version.homeroll.test/version',
   },
 
+  push: {},
+
   network: {
     trustedProxies: [],
   },

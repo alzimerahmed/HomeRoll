@@ -7,6 +7,7 @@ import { AssetMediaService } from 'src/services/asset-media.service.js';
 import { AssetService } from 'src/services/asset.service.js';
 import { AuthAdminService } from 'src/services/auth-admin.service.js';
 import { AuthService } from 'src/services/auth.service.js';
+import { BrowseService } from 'src/services/browse.service.js';
 import { CliService } from 'src/services/cli.service.js';
 import { ClusterGroupService } from 'src/services/cluster-group.service.js';
 import { DatabaseBackupService } from 'src/services/database-backup.service.js';
@@ -28,6 +29,7 @@ import { OcrService } from 'src/services/ocr.service.js';
 import { PartnerService } from 'src/services/partner.service.js';
 import { PersonService } from 'src/services/person.service.js';
 import { PluginService } from 'src/services/plugin.service.js';
+import { PushService } from 'src/services/push.service.js';
 import { QueueService } from 'src/services/queue.service.js';
 import { SearchService } from 'src/services/search.service.js';
 import { ServerService } from 'src/services/server.service.js';
@@ -64,6 +66,7 @@ export const services = [
   AssetService,
   AuthService,
   AuthAdminService,
+  BrowseService,
   CliService,
   DatabaseBackupService,
   DatabaseService,
@@ -85,6 +88,7 @@ export const services = [
   PartnerService,
   PersonService,
   PluginService,
+  PushService,
   QueueService,
   SearchService,
   ServerService,
