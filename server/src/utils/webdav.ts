@@ -195,8 +195,7 @@ export const buildMultistatus = (baseHref: string, resources: DavResource[]): st
   );
 
   return (
-    '<?xml version="1.0" encoding="utf-8"?>' +
-    `<D:multistatus xmlns:D="DAV:">${responses.join('')}</D:multistatus>`
+    '<?xml version="1.0" encoding="utf-8"?>' + `<D:multistatus xmlns:D="DAV:">${responses.join('')}</D:multistatus>`
   );
 };
 

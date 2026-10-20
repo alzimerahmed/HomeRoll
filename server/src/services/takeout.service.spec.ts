@@ -118,7 +118,7 @@ describe(TakeoutService.name, () => {
       expect(mocks.storage.unlink).toHaveBeenCalledWith(file.path);
     });
 
-    it('should only count the uploader\'s own pending imports towards the cap', async () => {
+    it("should only count the uploader's own pending imports towards the cap", async () => {
       mocks.job.searchJobs.mockResolvedValue(
         Array.from({ length: 5 }, () => ({ id: newUuid(), data: { ownerId: 'another-user' } })) as any,
       );
@@ -144,10 +144,12 @@ describe(TakeoutService.name, () => {
           people: [{ name: 'Alice' }],
         }),
       );
-      readArchive.mockReturnValue((async function* () {
-        yield media;
-        yield sidecar;
-      })());
+      readArchive.mockReturnValue(
+        (async function* () {
+          yield media;
+          yield sidecar;
+        })(),
+      );
 
       const job = jobOf();
       const status = await sut.handleTakeoutImport(job);
@@ -175,7 +177,10 @@ describe(TakeoutService.name, () => {
       expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({ fileCreatedAt: takenAt, localDateTime: takenAt }),
       );
-      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', expect.objectContaining({ file: expect.anything() }));
+      expect(mocks.event.emit).toHaveBeenCalledWith(
+        'AssetCreate',
+        expect.objectContaining({ file: expect.anything() }),
+      );
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.AssetExtractMetadata, data: { id: expect.any(String), source: 'upload' } },
       ]);
@@ -239,9 +244,7 @@ describe(TakeoutService.name, () => {
     });
 
     it('should stop early when the job is cancelled while running', async () => {
-      mocks.job.getJob.mockResolvedValue(
-        bullJob({ ownerId: authStub.user1.user.id, cancelled: true }) as any,
-      );
+      mocks.job.getJob.mockResolvedValue(bullJob({ ownerId: authStub.user1.user.id, cancelled: true }) as any);
 
       readArchive.mockReturnValue(
         (async function* () {

@@ -200,9 +200,7 @@ describe('webdav utils', () => {
     });
 
     it('should not emit file properties on collections', () => {
-      const xml = buildMultistatus('/api/webdav', [
-        { segments: ['Albums'], name: 'Albums', isCollection: true },
-      ]);
+      const xml = buildMultistatus('/api/webdav', [{ segments: ['Albums'], name: 'Albums', isCollection: true }]);
       expect(xml).not.toContain('getcontentlength');
       expect(xml).not.toContain('getcontenttype');
       expect(xml).not.toContain('getetag');
@@ -210,9 +208,7 @@ describe('webdav utils', () => {
     });
 
     it('should emit an empty resourcetype for files', () => {
-      const xml = buildMultistatus('/api/webdav', [
-        { segments: ['a.txt'], name: 'a.txt', isCollection: false },
-      ]);
+      const xml = buildMultistatus('/api/webdav', [{ segments: ['a.txt'], name: 'a.txt', isCollection: false }]);
       expect(xml).toContain('<D:resourcetype></D:resourcetype>');
     });
   });

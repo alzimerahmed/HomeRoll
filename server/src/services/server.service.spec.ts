@@ -266,5 +266,4 @@ describe(ServerService.name, () => {
       expect(mocks.user.getUserStats).toHaveBeenCalled();
     });
   });
-
 });

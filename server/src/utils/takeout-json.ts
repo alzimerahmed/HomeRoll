@@ -100,10 +100,7 @@ export const matchSidecar = (mediaFileName: string, jsonFileName: string): boole
  * Finds the sidecar JSON for a media file inside a list of `.json` file names
  * from the same directory. Returns `undefined` when there is no match.
  */
-export const findSidecarJson = (
-  mediaFileName: string,
-  jsonFileNames: Iterable<string>,
-): string | undefined => {
+export const findSidecarJson = (mediaFileName: string, jsonFileNames: Iterable<string>): string | undefined => {
   const names = jsonFileNames instanceof Set ? jsonFileNames : new Set(jsonFileNames);
 
   for (const candidate of getSidecarCandidates(mediaFileName)) {
@@ -138,7 +135,9 @@ const parseGeo = (value: unknown): TakeoutGeo | null => {
   }
 
   const alt = Number(altitude);
-  return Number.isFinite(alt) && alt !== 0 ? { latitude: lat, longitude: lng, altitude: alt } : { latitude: lat, longitude: lng };
+  return Number.isFinite(alt) && alt !== 0
+    ? { latitude: lat, longitude: lng, altitude: alt }
+    : { latitude: lat, longitude: lng };
 };
 
 const parseTimestamp = (value: unknown): Date | undefined => {
@@ -181,7 +180,9 @@ export const parseTakeoutJson = (raw: unknown): TakeoutMetadata | null => {
 
   if (Array.isArray(json.people)) {
     const people = json.people
-      .map((person) => (typeof (person as { name?: unknown })?.name === 'string' ? (person as { name: string }).name : null))
+      .map((person) =>
+        typeof (person as { name?: unknown })?.name === 'string' ? (person as { name: string }).name : null,
+      )
       .filter((name): name is string => name !== null);
     if (people.length > 0) {
       metadata.people = people;

@@ -1,4 +1,10 @@
-import { findSidecarJson, getSidecarCandidates, getSidecarMediaName, matchSidecar, parseTakeoutJson } from 'src/utils/takeout-json.js';
+import {
+  findSidecarJson,
+  getSidecarCandidates,
+  getSidecarMediaName,
+  matchSidecar,
+  parseTakeoutJson,
+} from 'src/utils/takeout-json.js';
 
 describe('takeout json utils', () => {
   describe('getSidecarMediaName', () => {

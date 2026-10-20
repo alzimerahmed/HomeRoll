@@ -407,7 +407,11 @@ describe(SystemConfigService.name, () => {
     const externalDomainTests = [
       { should: 'with a trailing slash', externalDomain: 'https://demo.homeroll.test/' },
       { should: 'without a trailing slash', externalDomain: 'https://demo.homeroll.test' },
-      { should: 'with a port', externalDomain: 'https://demo.homeroll.test:42', result: 'https://demo.homeroll.test:42' },
+      {
+        should: 'with a port',
+        externalDomain: 'https://demo.homeroll.test:42',
+        result: 'https://demo.homeroll.test:42',
+      },
       {
         should: 'with basic auth',
         externalDomain: 'https://user:password@example.com:123',

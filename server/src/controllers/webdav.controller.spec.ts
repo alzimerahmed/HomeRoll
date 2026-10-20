@@ -85,10 +85,7 @@ describe(WebDavController.name, () => {
       service.propfind.mockResolvedValue([
         { segments: ['Libraries', 'My Library', 'a.jpg'], name: 'a.jpg', isCollection: false },
       ]);
-      const { status, text } = await dav('propfind', '/webdav/Libraries/My%20Library/a.jpg').set(
-        'Depth',
-        '0',
-      );
+      const { status, text } = await dav('propfind', '/webdav/Libraries/My%20Library/a.jpg').set('Depth', '0');
       expect(status).toBe(207);
       expect(service.propfind).toHaveBeenCalledWith(undefined, ['Libraries', 'My Library', 'a.jpg'], 0);
       expect(text).toContain('/webdav/Libraries/My%20Library/a.jpg');
@@ -112,9 +109,7 @@ describe(WebDavController.name, () => {
 
     it('should stream a file', async () => {
       service.getFile.mockResolvedValue(file());
-      const { status, headers } = await request(ctx.getHttpServer()).get(
-        '/webdav/Libraries/My%20Library/a.txt',
-      );
+      const { status, headers } = await request(ctx.getHttpServer()).get('/webdav/Libraries/My%20Library/a.txt');
       expect(status).toBe(200);
       expect(headers['content-type']).toContain('text/plain');
       expect(service.getFile).toHaveBeenCalledWith(undefined, ['Libraries', 'My Library', 'a.txt']);
@@ -131,9 +126,7 @@ describe(WebDavController.name, () => {
 
     it('should respond to HEAD without a body', async () => {
       service.getFile.mockResolvedValue(file());
-      const { status, text } = await request(ctx.getHttpServer()).head(
-        '/webdav/Libraries/My%20Library/a.txt',
-      );
+      const { status, text } = await request(ctx.getHttpServer()).head('/webdav/Libraries/My%20Library/a.txt');
       expect(status).toBe(200);
       expect(text ?? '').toBe('');
     });

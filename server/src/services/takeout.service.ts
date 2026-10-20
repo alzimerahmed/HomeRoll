@@ -90,7 +90,9 @@ export class TakeoutService extends BaseService {
     }
 
     // strip control characters — the name lands in logs and API responses
-    const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8').replaceAll(/[\x00-\x1f\x7f]/g, '_');
+    const fileName = Buffer.from(file.originalname, 'latin1')
+      .toString('utf8')
+      .replaceAll(/[\x00-\x1f\x7f]/g, '_');
 
     try {
       // the queue is serial — bound each user's staged backlog so archives can't pile up on disk
@@ -101,9 +103,7 @@ export class TakeoutService extends BaseService {
         (job) => (job.data as { ownerId?: string } | undefined)?.ownerId === auth.user.id,
       );
       if (ownedPending.length >= MAX_PENDING_IMPORTS) {
-        throw new BadRequestException(
-          `Too many pending takeout imports — wait for a running import to finish first`,
-        );
+        throw new BadRequestException(`Too many pending takeout imports — wait for a running import to finish first`);
       }
 
       const format = await this.detectFormat(file.path);
@@ -133,7 +133,9 @@ export class TakeoutService extends BaseService {
 
   async getImports(auth: AuthDto): Promise<TakeoutImportStatusDto[]> {
     const jobs = await this.jobRepository.searchJobs(QueueName.Takeout, {});
-    const items = jobs.filter((job) => job.id && job.data && (job.data as { ownerId?: string }).ownerId === auth.user.id);
+    const items = jobs.filter(
+      (job) => job.id && job.data && (job.data as { ownerId?: string }).ownerId === auth.user.id,
+    );
 
     const imports: TakeoutImportStatusDto[] = [];
     for (const item of items) {
@@ -390,10 +392,7 @@ export class TakeoutService extends BaseService {
    * file itself lacks them (embedded EXIF still wins — that job updates the asset row,
    * but the locked EXIF columns are skipped).
    */
-  private async applySidecarMetadata(
-    item: PendingAsset,
-    sidecars: Map<string, Map<string, Buffer>>,
-  ): Promise<void> {
+  private async applySidecarMetadata(item: PendingAsset, sidecars: Map<string, Map<string, Buffer>>): Promise<void> {
     const jsonFiles = sidecars.get(item.directory);
     if (!jsonFiles) {
       return;

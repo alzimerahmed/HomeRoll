@@ -122,7 +122,6 @@ describe(UserService.name, () => {
         expect.objectContaining({ id: user.id, email: user.email, quotaUsageInBytes: 0 }),
       );
     });
-
   });
 
   describe('updateMe', () => {

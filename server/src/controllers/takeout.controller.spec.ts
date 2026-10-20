@@ -73,9 +73,7 @@ describe(TakeoutController.name, () => {
     it('should list imports', async () => {
       service.getImports.mockResolvedValue([]);
 
-      const { status } = await request(ctx.getHttpServer())
-        .get('/takeout')
-        .set('Authorization', 'Bearer token');
+      const { status } = await request(ctx.getHttpServer()).get('/takeout').set('Authorization', 'Bearer token');
 
       expect(status).toBe(200);
       expect(service.getImports).toHaveBeenCalledWith(authStub.user1);

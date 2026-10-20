@@ -120,9 +120,7 @@ describe(WebDavService.name, () => {
     });
 
     it('should 404 on too-deep paths', async () => {
-      await expect(sut.propfind(auth, [DAV_LIBRARIES, 'a', 'b', 'c'], 1)).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+      await expect(sut.propfind(auth, [DAV_LIBRARIES, 'a', 'b', 'c'], 1)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
@@ -131,9 +129,7 @@ describe(WebDavService.name, () => {
       await expect(sut.getFile(auth, [])).rejects.toBeInstanceOf(MethodNotAllowedException);
       await expect(sut.getFile(auth, [DAV_LIBRARIES])).rejects.toBeInstanceOf(MethodNotAllowedException);
       mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library' }] as never);
-      await expect(sut.getFile(auth, [DAV_LIBRARIES, 'My Library'])).rejects.toBeInstanceOf(
-        MethodNotAllowedException,
-      );
+      await expect(sut.getFile(auth, [DAV_LIBRARIES, 'My Library'])).rejects.toBeInstanceOf(MethodNotAllowedException);
     });
 
     it('should 404 on unknown roots', async () => {
@@ -141,9 +137,7 @@ describe(WebDavService.name, () => {
     });
 
     it('should 404 on traversal', async () => {
-      await expect(sut.getFile(auth, [DAV_LIBRARIES, '..', 'f.jpg'])).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(sut.getFile(auth, [DAV_LIBRARIES, '..', 'f.jpg'])).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should return a file response for an accessible asset', async () => {

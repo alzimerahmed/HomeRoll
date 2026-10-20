@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  MethodNotAllowedException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, MethodNotAllowedException, NotFoundException } from '@nestjs/common';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { CacheControl, Permission } from 'src/enum.js';
 import { WebDavRepository } from 'src/repositories/webdav.repository.js';
@@ -167,11 +161,7 @@ export class WebDavService extends BaseService {
     };
   }
 
-  private async findCollection(
-    auth: AuthDto,
-    root: DavRoot,
-    name: string,
-  ): Promise<DavCollectionEntry | undefined> {
+  private async findCollection(auth: AuthDto, root: DavRoot, name: string): Promise<DavCollectionEntry | undefined> {
     const collections = await this.listCollections(auth, root);
     return collections.find((entry) => entry.name === name);
   }

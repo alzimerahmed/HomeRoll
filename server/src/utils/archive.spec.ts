@@ -185,7 +185,11 @@ describe('archive utils', () => {
     });
 
     it('should skip directory entries', async () => {
-      const tar = Buffer.concat([tarEntry('folder/', 0, { type: '5' }), tarEntry('folder/file.txt', Buffer.from('x')), tarEnd]);
+      const tar = Buffer.concat([
+        tarEntry('folder/', 0, { type: '5' }),
+        tarEntry('folder/file.txt', Buffer.from('x')),
+        tarEnd,
+      ]);
 
       const paths: string[] = [];
       for await (const entry of readTarArchive(Readable.from(tar))) {
@@ -197,10 +201,7 @@ describe('archive utils', () => {
     });
 
     it('should apply the ustar prefix to names', async () => {
-      const tar = Buffer.concat([
-        tarEntry('file.txt', Buffer.from('x'), { prefix: 'long/prefix' }),
-        tarEnd,
-      ]);
+      const tar = Buffer.concat([tarEntry('file.txt', Buffer.from('x'), { prefix: 'long/prefix' }), tarEnd]);
 
       for await (const entry of readTarArchive(Readable.from(tar))) {
         expect(entry.path).toBe('long/prefix/file.txt');
