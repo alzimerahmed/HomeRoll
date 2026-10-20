@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PostgresError } from 'postgres';
 import { SharedLink } from 'src/database.js';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto.js';
@@ -13,7 +7,6 @@ import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   SharedLinkCreateDto,
   SharedLinkEditDto,
-  SharedLinkFeedDto,
   SharedLinkLoginDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
@@ -22,11 +15,7 @@ import {
 import { Permission, SharedLinkType } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
 import { asDateTimeString } from 'src/utils/date.js';
-import { FeedItem, FeedFormat, buildAtomFeed, buildRssFeed } from 'src/utils/feed.js';
 import { OpenGraphTags, findOrFail, getExternalDomain } from 'src/utils/misc.js';
-
-/** Maximum number of items included in a shared-link feed. */
-export const SHARED_LINK_FEED_ITEM_LIMIT = 50;
 
 @Injectable()
 export class SharedLinkService extends BaseService {
@@ -223,91 +212,6 @@ export class SharedLinkService extends BaseService {
     await this.sharedLinkRepository.update(sharedLink);
 
     return results;
-  }
-
-  /**
-   * RSS/Atom feed for a shared link (FG-08). The share key in the path is the
-   * credential — this route is public and the key is validated here. Feeds are
-   * unavailable for password-protected links (RSS readers cannot complete the
-   * cookie login), expired links, and unknown keys; all of these 404 to avoid
-   * leaking link existence.
-   */
-  async getFeed(
-    key: string,
-    { format }: SharedLinkFeedDto,
-    defaultDomain?: string,
-  ): Promise<{ format: FeedFormat; xml: string }> {
-    const keyBytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
-    const row = await this.sharedLinkRepository.getByKey(keyBytes);
-    if (!row || (row.expiresAt && new Date(row.expiresAt) <= new Date()) || row.password) {
-      throw new NotFoundException('Shared link feed not found');
-    }
-
-    const sharedLink = await this.sharedLinkRepository.get(row.userId, row.id);
-    if (!sharedLink) {
-      throw new NotFoundException('Shared link feed not found');
-    }
-
-    const { server } = await this.getConfig({ withCache: true });
-    const domain = getExternalDomain(server, defaultDomain);
-    const keyParam = sharedLink.key.toString('base64url');
-
-    const items = await this.getFeedItems(sharedLink, domain, keyParam);
-
-    const title = sharedLink.album ? sharedLink.album.albumName : sharedLink.description || 'Public Share';
-    const link = sharedLink.slug ? `${domain}/s/${sharedLink.slug}` : `${domain}/share/${keyParam}`;
-
-    const channel = {
-      title,
-      description: sharedLink.description || `${items.length} shared photos & videos`,
-      link,
-      selfLink: `${domain}/api/shared-links/${keyParam}/feed?format=${format}`,
-      updatedAt: items[0]?.updatedAt ?? new Date(),
-    };
-
-    return { format, xml: format === 'rss' ? buildRssFeed(channel, items) : buildAtomFeed(channel, items) };
-  }
-
-  private async getFeedItems(sharedLink: SharedLink, domain: string, keyParam: string): Promise<FeedItem[]> {
-    const toItem = (asset: {
-      id: string;
-      originalFileName: string;
-      fileCreatedAt: Date | string;
-      updatedAt?: Date | string | null;
-      createdAt?: Date | string;
-      description?: string | null;
-    }): FeedItem => {
-      const thumbnailUrl = `${domain}/api/assets/${asset.id}/thumbnail?key=${keyParam}`;
-      const description =
-        sharedLink.showExif && asset.description ? String(asset.description) : undefined;
-
-      return {
-        id: asset.id,
-        title: sharedLink.showExif && asset.description ? String(asset.description) : asset.originalFileName,
-        link: sharedLink.allowDownload
-          ? `${domain}/api/assets/${asset.id}/original?key=${keyParam}`
-          : thumbnailUrl,
-        publishedAt: new Date(asset.fileCreatedAt),
-        updatedAt: new Date(asset.updatedAt ?? asset.fileCreatedAt),
-        description,
-        enclosureUrl: thumbnailUrl,
-        enclosureType: 'image/webp',
-      };
-    };
-
-    if (sharedLink.type === SharedLinkType.Album && sharedLink.albumId) {
-      const assets = await this.sharedLinkRepository.getFeedAssets(
-        sharedLink.albumId,
-        SHARED_LINK_FEED_ITEM_LIMIT,
-      );
-      return assets.map(toItem);
-    }
-
-    // individual links: assets come back ordered by fileCreatedAt asc — take the newest N
-    return sharedLink.assets
-      .slice(-SHARED_LINK_FEED_ITEM_LIMIT)
-      .reverse()
-      .map((asset) => toItem({ ...asset, description: asset.exifInfo?.description }));
   }
 
   async getMetadataTags(auth: AuthDto, defaultDomain?: string): Promise<null | OpenGraphTags> {

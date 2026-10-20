@@ -13,7 +13,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import type { LoginDetails } from 'src/services/auth.service.js';
@@ -23,7 +23,6 @@ import { AssetIdsDto } from 'src/dtos/asset.dto.js';
 import {
   SharedLinkCreateDto,
   SharedLinkEditDto,
-  SharedLinkFeedDto,
   SharedLinkLoginDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
@@ -32,7 +31,6 @@ import { ApiTag, ImmichCookie, Permission } from 'src/enum.js';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { SharedLinkService } from 'src/services/shared-link.service.js';
-import { feedContentType } from 'src/utils/feed.js';
 import { respondWithCookie } from 'src/utils/response.js';
 import { UUIDParamDto } from 'src/validation.js';
 
@@ -99,25 +97,6 @@ export class SharedLinkController {
   })
   getMySharedLink(@Auth() auth: AuthDto, @Req() req: Request): Promise<SharedLinkResponseDto> {
     return this.service.getMine(auth, getAuthTokens(req.cookies));
-  }
-
-  /**
-   * RSS/Atom feed of a shared link's newest assets (FG-08). Public route: the
-   * share key embedded in the path is the credential. Excluded from the OpenAPI
-   * spec because it returns XML, not JSON.
-   */
-  @Get(':key/feed')
-  @Authenticated({ public: true })
-  @ApiExcludeEndpoint()
-  async getSharedLinkFeed(
-    @Param('key') key: string,
-    @Query() dto: SharedLinkFeedDto,
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<void> {
-    const defaultDomain = req.host ? `${req.protocol}://${req.host}` : undefined;
-    const feed = await this.service.getFeed(key, dto, defaultDomain);
-    res.set({ 'Content-Type': feedContentType(feed.format), 'Cache-Control': 'no-store' }).send(feed.xml);
   }
 
   @Get(':id')
