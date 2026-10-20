@@ -13,9 +13,7 @@ uploads
 coverage
 
 mobile/generated
-mobile/gradle.properties
 mobile/*.jks
-mobile/libisar.dylib
 mobile/ios/build
 
 packages/**/build
@@ -29,6 +27,14 @@ vite.config.js.timestamp-*
 *.tsbuildinfo
 *.tsbuildInfo
 
+# Catch-all for env files outside per-package .gitignores
+.env
+.env.*
+!.env.example
+
+# Windows reserved-name artifact from `> nul` redirects
+/nul
+
 # HomeRoll knowledge layer + agent system (private — never commit)
 .devin/
 .switchboard/
@@ -36,3 +42,4 @@ docs/*.md
 !/docs/README.md
 docs/design/
 docs/infra/
+docs/architecture/

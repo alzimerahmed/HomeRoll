@@ -196,3 +196,5 @@ cython_debug/
 *.zip
 
 core
+.venv/
+.env
