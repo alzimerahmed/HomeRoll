@@ -173,6 +173,57 @@ from
 where
   "asset"."id" = any ($1::uuid[])
 
+-- AssetRepository.getHiddenAssets
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height",
+  to_json("asset_exif") as "exifInfo"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = $1::uuid
+  and "asset"."visibility" = 'hidden'
+  and "asset"."deletedAt" is null
+  and not exists (
+    select
+      1 as "one"
+    from
+      "asset" as "still"
+    where
+      "still"."livePhotoVideoId" = "asset"."id"
+      and "still"."deletedAt" is null
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+
 -- AssetRepository.getByIdsWithAllRelationsButStacks
 select
   "asset".*,

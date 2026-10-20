@@ -406,3 +406,69 @@ from
 where
   "album_asset"."assetId" = $2
 on conflict do nothing
+
+-- AlbumRepository.getAncestorIds
+with recursive
+  "ancestors" as (
+    select
+      "album"."id",
+      "album"."parentId",
+      0 as "depth"
+    from
+      "album"
+    where
+      "album"."id" = $1::uuid
+    union all
+    select
+      "album"."id",
+      "album"."parentId",
+      ancestors.depth + 1 as "depth"
+    from
+      "album"
+      inner join "ancestors" on "ancestors"."parentId" = "album"."id"
+    where
+      "ancestors"."depth" < $2
+  )
+select
+  "ancestors"."id"
+from
+  "ancestors"
+where
+  "ancestors"."id" != $3::uuid
+
+-- AlbumRepository.getMaxSubtreeDepth
+with recursive
+  "subtree" as (
+    select
+      "album"."id",
+      0 as "depth"
+    from
+      "album"
+    where
+      "album"."id" = $1::uuid
+    union all
+    select
+      "album"."id",
+      subtree.depth + 1 as "depth"
+    from
+      "album"
+      inner join "subtree" on "subtree"."id" = "album"."parentId"
+    where
+      "subtree"."depth" < $2
+  )
+select
+  max("depth") as "depth"
+from
+  "subtree"
+
+-- AlbumRepository.getSmartAlbumAssetIds
+select
+  "asset"."id"
+from
+  "asset"
+where
+  "asset"."visibility" != $1
+  and "asset"."ownerId" = any ($2::uuid[])
+  and "asset"."isFavorite" = $3
+  and "asset"."deletedAt" is null
+  and "asset"."visibility" != 'hidden'
