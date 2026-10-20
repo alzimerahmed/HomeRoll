@@ -6,8 +6,9 @@ import { AlbumUser, AuthSharedLink } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { SmartAlbumRules, SmartAlbumRulesSchema } from 'src/dtos/smart-album.dto.js';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
-import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum.js';
+import { AlbumType, AlbumTypeSchema, AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { stringToBool } from 'src/validation.js';
 
@@ -52,6 +53,21 @@ const CreateAlbumSchema = z
       }),
     albumUsers: z.array(AlbumUserCreateSchema).optional().describe('Album users'),
     assetIds: z.array(z.uuidv4()).optional().describe('Initial asset IDs'),
+    parentId: z.uuidv4().optional().describe('Parent album ID for nested albums. Omit to create a root album.'),
+    albumType: AlbumTypeSchema.optional().describe(
+      'Album type. When omitted, the album is created as a smart album if rules are provided, or a manual album otherwise.',
+    ),
+    rules: SmartAlbumRulesSchema.optional().describe(
+      'Smart album membership rules. Required when albumType is smart; not allowed when albumType is manual.',
+    ),
+  })
+  .refine((data) => !(data.albumType === AlbumType.Manual && data.rules !== undefined), {
+    error: 'Cannot set rules on a manual album',
+    path: ['rules'],
+  })
+  .refine((data) => data.albumType !== AlbumType.Smart || data.rules !== undefined, {
+    error: 'Smart albums require rules',
+    path: ['rules'],
   })
   .meta({ id: 'CreateAlbumDto' });
 
@@ -91,6 +107,26 @@ const UpdateAlbumSchema = z
     albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
     isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
     order: AssetOrderSchema.optional(),
+    parentId: z
+      .uuidv4()
+      .nullable()
+      .optional()
+      .describe('Parent album ID for nested albums. Set to null to move the album to the root.'),
+    albumType: AlbumTypeSchema.optional().describe(
+      'Album type. Changing a manual album to smart requires rules (either already stored or provided in this request). ' +
+        'Changing a smart album to manual freezes its current membership and clears its rules.',
+    ),
+    rules: SmartAlbumRulesSchema.nullable().optional().describe(
+      'Smart album membership rules. Set to null to convert a smart album back to a manual album.',
+    ),
+  })
+  .refine((data) => !(data.rules !== undefined && data.rules !== null && data.albumType === AlbumType.Manual), {
+    error: 'Cannot set rules on a manual album',
+    path: ['rules'],
+  })
+  .refine((data) => !(data.rules === null && data.albumType === AlbumType.Smart), {
+    error: 'Smart albums require rules',
+    path: ['rules'],
   })
   .meta({ id: 'UpdateAlbumDto' });
 
@@ -105,6 +141,14 @@ const GetAlbumsSchema = z
       .optional()
       .describe('Filter by shared status: true = only shared, false = not shared, undefined = no filter'),
     assetId: z.uuidv4().optional().describe('Filter albums containing this asset ID (ignores other parameters)'),
+    parentId: z
+      .union([z.uuidv4(), z.literal('null')])
+      .optional()
+      .transform((value) => (value === 'null' ? null : value))
+      .describe(
+        'Parent album ID filter. Set to a parent album ID to list its children, ' +
+          'or the literal string "null" to list root albums only. Omit for no filtering.',
+      ),
   })
   .meta({ id: 'GetAlbumsDto' });
 
@@ -187,6 +231,9 @@ export const AlbumResponseSchema = z
     isActivityEnabled: z.boolean().describe('Activity feed enabled'),
     order: AssetOrderSchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
+    parentId: z.uuidv4().nullable().describe('Parent album ID, or null for root albums'),
+    albumType: AlbumTypeSchema.describe('Album type'),
+    rules: SmartAlbumRulesSchema.nullable().describe('Smart album membership rules (null for manual albums)'),
   })
   .meta({ id: 'AlbumResponseDto' });
 
@@ -227,6 +274,9 @@ export type MapAlbumDto = {
   id: string;
   isActivityEnabled: boolean;
   order: AssetOrder;
+  parentId: string | null;
+  albumType: AlbumType;
+  rules: SmartAlbumRules | null;
 };
 
 export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto => {
@@ -270,5 +320,8 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
+    parentId: entity.parentId,
+    albumType: entity.albumType,
+    rules: entity.rules ?? null,
   };
 };

@@ -10,7 +10,9 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
-import { AssetOrder } from 'src/enum.js';
+import type { SmartAlbumRules } from 'src/dtos/smart-album.dto.js';
+import { AlbumType, AssetOrder } from 'src/enum.js';
+import { album_type_enum } from 'src/schema/enums.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 @Table({ name: 'album' })
@@ -50,4 +52,19 @@ export class AlbumTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @ForeignKeyColumn(() => AlbumTable, {
+    nullable: true,
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+    index: true,
+    comment: 'Parent album ID for nested albums',
+  })
+  parentId!: string | null;
+
+  @Column({ enum: album_type_enum, default: AlbumType.Manual })
+  albumType!: Generated<AlbumType>;
+
+  @Column({ type: 'jsonb', nullable: true })
+  rules!: SmartAlbumRules | null;
 }

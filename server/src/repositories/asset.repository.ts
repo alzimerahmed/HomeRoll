@@ -514,6 +514,36 @@ export class AssetRepository {
     return this.db.selectFrom('asset').selectAll('asset').where('asset.id', '=', anyUuid(ids)).execute();
   }
 
+  /**
+   * Returns the owner's hidden assets (visibility=hidden) that are NOT the
+   * video part of a live/motion photo. Motion parts are assets referenced by a
+   * still asset's livePhotoVideoId and are excluded from this surface.
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getHiddenAssets(ownerId: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(columns.searchAsset)
+      .$call(withExif)
+      .where('asset.ownerId', '=', asUuid(ownerId))
+      .where('asset.visibility', '=', sql.lit(AssetVisibility.Hidden))
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom('asset as still')
+              .select(sql.lit(1).as('one'))
+              .whereRef('still.livePhotoVideoId', '=', 'asset.id')
+              .where('still.deletedAt', 'is', null),
+          ),
+        ),
+      )
+      .orderBy('asset.fileCreatedAt', 'desc')
+      .orderBy('asset.id', 'desc')
+      .execute();
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray({ paramIndex: 0 })
   getByIdsWithAllRelationsButStacks(ids: string[], viewingUserId?: string) {

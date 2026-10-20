@@ -1,7 +1,7 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { beforeEach, vitest } from 'vitest';
 import { mapAsset } from 'src/dtos/asset-response.dto.js';
-import { SearchSuggestionType } from 'src/dtos/search.dto.js';
+import { AssetOrientation, SearchSuggestionType } from 'src/dtos/search.dto.js';
 import { AssetVisibility } from 'src/enum.js';
 import { SearchService } from 'src/services/search.service.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
@@ -214,6 +214,46 @@ describe(SearchService.name, () => {
         sut.getSearchSuggestions(authStub.user1, { includeNull: true, type: SearchSuggestionType.CAMERA_LENS_MODEL }),
       ).resolves.toEqual(['10-24mm', null]);
       expect(mocks.search.getCameraLensModels).toHaveBeenCalledWith([authStub.user1.user.id], expect.anything());
+    });
+  });
+
+  describe('filter facets', () => {
+    it('should forward hasNoFaces and orientation to the metadata repository', async () => {
+      mocks.search.searchMetadata.mockResolvedValue({ hasNextPage: false, items: [] });
+
+      await sut.searchMetadata(authStub.user1, { size: 100, hasNoFaces: true, orientation: AssetOrientation.Landscape });
+
+      expect(mocks.search.searchMetadata).toHaveBeenCalledWith(
+        { page: 1, size: 100 },
+        expect.objectContaining({ hasNoFaces: true, orientation: AssetOrientation.Landscape }),
+      );
+    });
+
+    it('should forward hasNoFaces to the statistics repository', async () => {
+      mocks.search.searchStatistics.mockResolvedValue({ total: 0 });
+
+      await sut.searchStatistics(authStub.user1, { hasNoFaces: true });
+
+      expect(mocks.search.searchStatistics).toHaveBeenCalledWith(
+        expect.objectContaining({ hasNoFaces: true, userIds: [authStub.user1.user.id] }),
+      );
+    });
+
+    it('should forward hasNoFaces and orientation to the smart search repository', async () => {
+      mocks.search.searchSmart.mockResolvedValue({ hasNextPage: false, items: [] });
+      mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
+
+      await sut.searchSmart(authStub.user1, {
+        size: 100,
+        query: 'test',
+        hasNoFaces: true,
+        orientation: AssetOrientation.Portrait,
+      });
+
+      expect(mocks.search.searchSmart).toHaveBeenCalledWith(
+        { page: 1, size: 100 },
+        expect.objectContaining({ hasNoFaces: true, orientation: AssetOrientation.Portrait }),
+      );
     });
   });
 

@@ -5,10 +5,11 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database.js';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators.js';
 import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto.js';
-import { AlbumUserRole } from 'src/enum.js';
+import type { SmartAlbumRules } from 'src/dtos/smart-album.dto.js';
+import { AlbumUserRole, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
-import { asUuid, dummy, withDefaultVisibility } from 'src/utils/database.js';
+import { asUuid, dummy, searchAssetBuilderLegacy, withDefaultVisibility } from 'src/utils/database.js';
 
 export interface AlbumAssetCount {
   albumId: string;
@@ -174,7 +175,7 @@ export class AlbumRepository {
   @GenerateSql({ params: [DummyValue.UUID, { isOwned: true, isShared: true }] })
   getAll(
     ownerId: string,
-    options: { id?: string; isOwned?: boolean; isShared?: boolean; name?: string } = {},
+    options: { id?: string; isOwned?: boolean; isShared?: boolean; name?: string; parentId?: string | null } = {},
   ): Promise<MapAlbumDto[]> {
     return this.buildAlbumBaseQuery(ownerId, options)
       .selectAll('album')
@@ -182,6 +183,11 @@ export class AlbumRepository {
       .select(withSharedLink)
       .$if(!!options.id, (qb) => qb.where('album.id', '=', options.id!))
       .$if(!!options.name, (qb) => qb.where('album.albumName', '=', options.name!))
+      .$if(options.parentId !== undefined, (qb) =>
+        options.parentId === null
+          ? qb.where('album.parentId', 'is', null)
+          : qb.where('album.parentId', '=', options.parentId!),
+      )
       .orderBy('album.createdAt', 'desc')
       .execute();
   }
@@ -428,5 +434,107 @@ export class AlbumRepository {
       )
       .onConflict((oc) => oc.doNothing())
       .execute();
+  }
+
+  /**
+   * Returns the IDs of all albums above the given album in the nesting hierarchy
+   * (the album's parent chain, excluding the album itself). Used for cycle and
+   * depth validation. Guarded against runaway recursion.
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getAncestorIds(id: string): Promise<string[]> {
+    const rows = await this.db
+      .withRecursive('ancestors', (qb) => {
+        const base = qb
+          .selectFrom('album')
+          .select(['album.id', 'album.parentId', sql<number>`0`.as('depth')])
+          .where('album.id', '=', asUuid(id));
+        const recursive = qb
+          .selectFrom('album')
+          .innerJoin('ancestors', 'ancestors.parentId', 'album.id')
+          .select(['album.id', 'album.parentId', sql<number>`ancestors.depth + 1`.as('depth')])
+          .where('ancestors.depth', '<', 100);
+        return base.unionAll(recursive);
+      })
+      .selectFrom('ancestors')
+      .select('ancestors.id')
+      .where('ancestors.id', '!=', asUuid(id))
+      .execute();
+
+    return rows.map(({ id }) => id);
+  }
+
+  /**
+   * Returns the maximum depth of the nesting subtree rooted at the given album
+   * (0 for a leaf album). Used together with the parent chain length to enforce
+   * the maximum nesting depth when re-parenting.
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getMaxSubtreeDepth(id: string): Promise<number> {
+    const result = await this.db
+      .withRecursive('subtree', (qb) => {
+        const base = qb
+          .selectFrom('album')
+          .select(['album.id', sql<number>`0`.as('depth')])
+          .where('album.id', '=', asUuid(id));
+        const recursive = qb
+          .selectFrom('album')
+          .innerJoin('subtree', 'subtree.id', 'album.parentId')
+          .select(['album.id', sql<number>`subtree.depth + 1`.as('depth')])
+          .where('subtree.depth', '<', 100);
+        return base.unionAll(recursive);
+      })
+      .selectFrom('subtree')
+      .select((eb) => eb.fn.max('depth').as('depth'))
+      .executeTakeFirstOrThrow();
+
+    return result.depth ?? 0;
+  }
+
+  /**
+   * Returns the IDs of the owner's assets that match the smart album rules.
+   * Mirrors the search filters of `searchAssetBuilderLegacy`; locked, hidden and
+   * trashed assets are never included in smart album membership.
+   */
+  @GenerateSql({ params: [DummyValue.UUID, { isFavorite: true }] })
+  getSmartAlbumAssetIds(ownerId: string, rules: SmartAlbumRules) {
+    const { takenAfter, takenBefore, rating, ...rest } = rules;
+    return searchAssetBuilderLegacy(this.db, {
+      userIds: [ownerId],
+      visibility: 'not-locked',
+      ...rest,
+      takenAfter: takenAfter ? new Date(takenAfter) : undefined,
+      takenBefore: takenBefore ? new Date(takenBefore) : undefined,
+    })
+      .select('asset.id')
+      // hidden assets stay out of smart albums even though 'not-locked' permits them
+      .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden))
+      .$if(rating !== undefined, (qb) =>
+        qb
+          .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+          .where('asset_exif.rating', '>=', rating!),
+      )
+      .execute();
+  }
+
+  /**
+   * Replaces the membership of an album with the given asset IDs. Used to
+   * materialize smart album membership after rules change.
+   */
+  async replaceAssets(albumId: string, assetIds: string[]): Promise<void> {
+    await this.db.transaction().execute(async (trx) => {
+      await trx.deleteFrom('album_asset').where('album_asset.albumId', '=', albumId).execute();
+      if (assetIds.length === 0) {
+        return;
+      }
+
+      await trx
+        .insertInto('album_asset')
+        .expression((eb) =>
+          eb.selectFrom(dummy).select([asUuid(albumId).as('albumId'), sql`unnest(${assetIds}::uuid[])`.as('assetId')]),
+        )
+        .onConflict((oc) => oc.doNothing())
+        .execute();
+    });
   }
 }

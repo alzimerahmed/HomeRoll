@@ -5,7 +5,7 @@ import z from 'zod';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
-import { SearchFilter, SearchOrder } from 'src/dtos/search.dto.js';
+import { AssetOrientation, SearchFilter, SearchOrder } from 'src/dtos/search.dto.js';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum.js';
 import { probes } from 'src/repositories/database.repository.js';
 import { DB } from 'src/schema/index.js';
@@ -41,6 +41,8 @@ export interface SearchStatusOptions {
   isMotion?: boolean;
   isOffline?: boolean;
   isNotInAlbum?: boolean;
+  /** assets with no visible faces (FG-17) */
+  hasNoFaces?: boolean;
   type?: AssetType;
   status?: AssetStatus;
   withArchived?: boolean;
@@ -88,6 +90,8 @@ export interface SearchExifOptions {
   state?: string | null;
   description?: string | null;
   rating?: number | null;
+  /** derived from the stored asset.width/height columns (FG-17) */
+  orientation?: AssetOrientation;
 }
 
 export interface SearchEmbeddingOptions {

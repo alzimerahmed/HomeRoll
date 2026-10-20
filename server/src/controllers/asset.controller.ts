@@ -85,6 +85,19 @@ export class AssetController {
     return this.service.deleteAll(auth, dto);
   }
 
+  @Get('hidden')
+  @Authenticated({ permission: Permission.AssetRead })
+  @Endpoint({
+    summary: 'List hidden assets',
+    description:
+      'Retrieve all assets with visibility=hidden owned by the authenticated user. ' +
+      'Live/motion photo video parts (assets referenced by livePhotoVideoId) are excluded.',
+    history: new HistoryBuilder().added('v4.0.0').alpha('v4.0.0'),
+  })
+  getHiddenAssets(@Auth() auth: AuthDto): Promise<AssetResponseDto[]> {
+    return this.service.getHidden(auth);
+  }
+
   @Get(':id')
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   @Endpoint({

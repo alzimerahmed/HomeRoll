@@ -170,6 +170,27 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('getHidden', () => {
+    it('should return the hidden assets for the auth user', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create({ ownerId: auth.user.id, visibility: AssetVisibility.Hidden });
+      mocks.asset.getHiddenAssets.mockResolvedValue([getForAsset(asset)] as never);
+
+      const result = await sut.getHidden(auth);
+
+      expect(mocks.asset.getHiddenAssets).toHaveBeenCalledWith(auth.user.id);
+      expect(result).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset.id })]));
+    });
+
+    it('should return an empty array when there are no hidden assets', async () => {
+      const auth = AuthFactory.create();
+      mocks.asset.getHiddenAssets.mockResolvedValue([]);
+
+      await expect(sut.getHidden(auth)).resolves.toEqual([]);
+      expect(mocks.asset.getHiddenAssets).toHaveBeenCalledWith(auth.user.id);
+    });
+  });
+
   describe('update', () => {
     it('should require asset write access for the id', async () => {
       await expect(
@@ -376,6 +397,17 @@ describe(AssetService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
     });
+
+    it('should remove the asset from all albums when visibility is set to hidden', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.asset.update.mockResolvedValue(getForAsset(asset));
+
+      await sut.update(AuthFactory.create(asset.owner), asset.id, { visibility: AssetVisibility.Hidden });
+
+      expect(mocks.album.removeAssetsFromAll).toHaveBeenCalledWith([asset.id]);
+    });
   });
 
   describe('updateAll', () => {
@@ -492,6 +524,30 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.updateDateTimeOriginal).toHaveBeenCalledWith(['asset-1'], dateTimeRelative, timeZone);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
+    });
+
+    it('should remove assets from all albums when visibility is hidden', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+
+      await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], visibility: AssetVisibility.Hidden });
+
+      expect(mocks.album.removeAssetsFromAll).toHaveBeenCalledWith(['asset-1', 'asset-2']);
+    });
+
+    it('should remove assets from all albums when visibility is locked', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.updateAll(authStub.admin, { ids: ['asset-1'], visibility: AssetVisibility.Locked });
+
+      expect(mocks.album.removeAssetsFromAll).toHaveBeenCalledWith(['asset-1']);
+    });
+
+    it('should not remove assets from albums when visibility is archive', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.updateAll(authStub.admin, { ids: ['asset-1'], visibility: AssetVisibility.Archive });
+
+      expect(mocks.album.removeAssetsFromAll).not.toHaveBeenCalled();
     });
   });
 

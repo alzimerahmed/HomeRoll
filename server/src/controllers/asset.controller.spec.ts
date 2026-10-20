@@ -64,6 +64,14 @@ describe(AssetController.name, () => {
     });
   });
 
+  describe('GET /assets/hidden', () => {
+    it('should list hidden assets for the auth user', async () => {
+      const { status } = await request(ctx.getHttpServer()).get('/assets/hidden');
+      expect(status).toEqual(200);
+      expect(service.getHidden).toHaveBeenCalled();
+    });
+  });
+
   describe('GET /assets/:id', () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/assets/123`);

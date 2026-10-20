@@ -83,6 +83,15 @@ export class AssetService extends BaseService {
     return mapAsset(asset, { withStack: true, auth });
   }
 
+  /**
+   * Returns the authenticated user's hidden assets (visibility=hidden),
+   * excluding live/motion photo video parts.
+   */
+  async getHidden(auth: AuthDto): Promise<AssetResponseDto[]> {
+    const assets = await this.assetRepository.getHiddenAssets(auth.user.id);
+    return assets.map((asset) => mapAsset(asset, { auth }));
+  }
+
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
 
@@ -102,6 +111,11 @@ export class AssetService extends BaseService {
     const wroteMetadata = await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     const asset = await this.assetRepository.update({ id, ...rest });
+
+    // hidden assets must not leak through album memberships, mirroring updateAll
+    if (rest.visibility === AssetVisibility.Hidden) {
+      await this.albumRepository.removeAssetsFromAll([id]);
+    }
 
     if (previousMotion && asset) {
       await onAfterUnlink(repos, {
@@ -171,7 +185,7 @@ export class AssetService extends BaseService {
       await this.assetRepository.updateAll(ids, assetDto);
     }
 
-    if (visibility === AssetVisibility.Locked) {
+    if (visibility === AssetVisibility.Locked || visibility === AssetVisibility.Hidden) {
       await this.albumRepository.removeAssetsFromAll(ids);
     }
 

@@ -99,6 +99,19 @@ export class AlbumController {
     return this.service.delete(auth, id);
   }
 
+  @Post(':id/refresh')
+  @Authenticated({ permission: Permission.AlbumUpdate })
+  @Endpoint({
+    summary: 'Refresh a smart album',
+    description:
+      'Recomputes the membership of a smart album by evaluating its rules against the album owner\u2019s assets. ' +
+      'Only applies to albums with albumType=smart.',
+    history: new HistoryBuilder().added('v4.0.0').alpha('v4.0.0'),
+  })
+  refreshSmartAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumResponseDto> {
+    return this.service.refreshSmartAlbum(auth, id);
+  }
+
   @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
   @Get(':id/map-markers')
   @Endpoint({

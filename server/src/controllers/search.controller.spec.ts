@@ -115,6 +115,42 @@ describe(SearchController.name, () => {
       );
     });
 
+    it('should reject hasNoFaces as not a boolean', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ hasNoFaces: 'immich' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['hasNoFaces'], message: 'Invalid input: expected boolean, received string' },
+        ]),
+      );
+    });
+
+    it('should reject orientation as not an enum', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ orientation: 'diagonal' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['orientation'], message: expect.stringContaining('Invalid option: expected one of') },
+        ]),
+      );
+    });
+
+    it('should reject a new flat field combined with a new structure field', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: {}, orientation: 'landscape' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['orientation'], message: 'Deprecated field orientation cannot be combined with filter' },
+        ]),
+      );
+    });
+
     it('should reject a deprecated field combined with a new structure field', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/search/metadata')

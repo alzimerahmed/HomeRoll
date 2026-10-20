@@ -23,6 +23,7 @@ import { LockableProperty, Person, columns, lockableProperties } from 'src/datab
 import { DummyValue, GenerateSqlQueries } from 'src/decorators.js';
 import { AssetEditActionItem } from 'src/dtos/editing.dto.js';
 import {
+  AssetOrientation,
   DEFAULT_SEARCH_ORDER,
   IdsFilter,
   SearchFilterBranch,
@@ -537,6 +538,29 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     .$if(!!options.isNotInAlbum && (!options.albumIds || options.albumIds.length === 0), (qb) =>
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetId', '=', 'asset.id')))),
     )
+    .$if(!!options.hasNoFaces, (qb) =>
+      qb.where((eb) =>
+        eb.not(
+          eb.exists((eb) =>
+            eb
+              .selectFrom('asset_face')
+              .whereRef('assetId', '=', 'asset.id')
+              .where('deletedAt', 'is', null)
+              .where('isVisible', '=', true),
+          ),
+        ),
+      ),
+    )
+    .$if(options.orientation !== undefined, (qb) => {
+      const orientation = options.orientation!;
+      if (orientation === AssetOrientation.Landscape) {
+        return qb.whereRef('asset.width', '>', 'asset.height');
+      }
+      if (orientation === AssetOrientation.Portrait) {
+        return qb.whereRef('asset.width', '<', 'asset.height');
+      }
+      return qb.whereRef('asset.width', '=', 'asset.height');
+    })
     .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople), (qb) =>
@@ -731,6 +755,48 @@ function existsPredicates(
   return [filter.eq ? exists : eb.not(exists)];
 }
 
+// orientation is read off the stored asset.width/asset.height columns (orientation-aware
+// since metadata extraction), not computed from the raw exif dimensions
+const orientationClause = (value: AssetOrientation): Expression<SqlBool> => {
+  const width = sql.ref('asset.width');
+  const height = sql.ref('asset.height');
+  switch (value) {
+    case AssetOrientation.Landscape: {
+      return sql<SqlBool>`${width} > ${height}`;
+    }
+    case AssetOrientation.Portrait: {
+      return sql<SqlBool>`${width} < ${height}`;
+    }
+    case AssetOrientation.Square: {
+      return sql<SqlBool>`${width} = ${height}`;
+    }
+  }
+};
+
+function orientationPredicates(
+  eb: AssetExpressionBuilder,
+  filter: SearchFilterBranch['orientation'],
+): Expression<SqlBool>[] {
+  if (!filter) {
+    return [];
+  }
+
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(orientationClause(filter.eq));
+  }
+  if (filter.ne !== undefined) {
+    predicates.push(eb.not(orientationClause(filter.ne)));
+  }
+  if (filter.in !== undefined) {
+    predicates.push(eb.or(filter.in.map(orientationClause)));
+  }
+  if (filter.notIn !== undefined) {
+    predicates.push(eb.not(eb.or(filter.notIn.map(orientationClause))));
+  }
+  return predicates;
+}
+
 // predicates are collected as expressions rather than chained `where` calls so the same
 // helpers can build each `or` branch, which must compose into eb.and/eb.or
 function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch) {
@@ -746,6 +812,8 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
     ...existsPredicates(eb, branch.isEncoded, () => encodedVideoFiles(eb)),
     ...existsPredicates(eb, branch.hasAlbums, () => albumAssets(eb)),
     ...existsPredicates(eb, branch.hasPeople, () => visibleFaces(eb)),
+    // hasNoFaces is the same existence check, inverted (FG-17)
+    ...existsPredicates(eb, branch.hasNoFaces && { eq: !branch.hasNoFaces.eq }, () => visibleFaces(eb)),
     ...existsPredicates(eb, branch.hasTags, () => tagAssets(eb)),
     ...comparisonPredicates(eb, 'asset_exif.city', branch.city),
     ...comparisonPredicates(eb, 'asset_exif.state', branch.state),
@@ -753,6 +821,7 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
     ...comparisonPredicates(eb, 'asset_exif.make', branch.make),
     ...comparisonPredicates(eb, 'asset_exif.model', branch.model),
     ...comparisonPredicates(eb, 'asset_exif.lensModel', branch.lensModel),
+    ...orientationPredicates(eb, branch.orientation),
     ...stringPatternPredicates(eb, 'asset_exif.description', branch.description),
     ...stringPatternPredicates(eb, 'asset.originalFileName', branch.originalFileName),
     ...stringPatternPredicates(eb, 'asset.originalPath', branch.originalPath),

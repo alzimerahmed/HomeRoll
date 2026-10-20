@@ -15,13 +15,16 @@ import {
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
-import { AlbumUserRole, Permission } from 'src/enum.js';
+import type { SmartAlbumRules } from 'src/dtos/smart-album.dto.js';
+import { AlbumType, AlbumUserRole, Permission } from 'src/enum.js';
 import { AlbumAssetCount } from 'src/repositories/album.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { getPreferences } from 'src/utils/preferences.js';
+
+const MAX_ALBUM_DEPTH = 10;
 
 const mapAlbumMetadata = (metadata?: AlbumAssetCount) => ({
   startDate: asDateTimeString(metadata?.startDate ?? undefined),
@@ -99,6 +102,23 @@ export class AlbumService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
+    const albumType = dto.albumType ?? (dto.rules ? AlbumType.Smart : AlbumType.Manual);
+    if (albumType === AlbumType.Smart && !dto.rules) {
+      throw new BadRequestException('Smart albums require rules');
+    }
+    if (dto.rules && albumType === AlbumType.Manual) {
+      throw new BadRequestException('Cannot set rules on a manual album');
+    }
+    if (albumType === AlbumType.Smart && dto.assetIds && dto.assetIds.length > 0) {
+      throw new BadRequestException('Smart album membership is rule-driven; assetIds are not allowed');
+    }
+    if (dto.parentId) {
+      const ancestors = await this.validateParentId(auth, dto.parentId);
+      if (ancestors.length + 1 > MAX_ALBUM_DEPTH) {
+        throw new BadRequestException(`Albums cannot be nested more than ${MAX_ALBUM_DEPTH} levels deep`);
+      }
+    }
+
     const albumUsers = (dto.albumUsers || []).filter(({ userId }) => userId !== auth.user.id);
 
     for (const { userId } of albumUsers) {
@@ -124,6 +144,9 @@ export class AlbumService extends BaseService {
         description: dto.description,
         albumThumbnailAssetId: assetIds[0] || null,
         order: getPreferences(userMetadata).albums.defaultAssetOrder,
+        parentId: dto.parentId ?? null,
+        albumType,
+        rules: albumType === AlbumType.Smart ? (dto.rules ?? null) : null,
       },
       assetIds,
       [{ userId: auth.user.id, role: AlbumUserRole.Owner }, ...albumUsers],
@@ -134,6 +157,10 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id: album.id, userId, senderName: auth.user.name });
     }
 
+    if (albumType === AlbumType.Smart && dto.rules) {
+      await this.syncSmartAlbumAssets(album.id, auth.user.id, dto.rules);
+    }
+
     return this.mapWithMetadata(album);
   }
 
@@ -142,12 +169,45 @@ export class AlbumService extends BaseService {
 
     const album = await this.findOrFail(id, auth.user.id);
 
+    // Structural changes modify the album owner's data; require ownership.
+    // Permission.AlbumDelete is the owner-only album permission.
+    if (dto.parentId !== undefined || dto.albumType !== undefined || dto.rules !== undefined) {
+      await this.requireAccess({ auth, permission: Permission.AlbumDelete, ids: [id] });
+    }
+
     if (dto.albumThumbnailAssetId) {
       const results = await this.albumRepository.getAssetIds(id, [dto.albumThumbnailAssetId]);
       if (results.size === 0) {
         throw new BadRequestException('Invalid album thumbnail');
       }
     }
+
+    if (dto.parentId !== undefined && dto.parentId !== null && dto.parentId !== album.parentId) {
+      if (dto.parentId === id) {
+        throw new BadRequestException('Cannot parent an album to itself');
+      }
+      const ancestors = await this.validateParentId(auth, dto.parentId);
+      if (ancestors.includes(id)) {
+        throw new BadRequestException('Cannot parent an album to one of its descendants');
+      }
+      const subtreeDepth = await this.albumRepository.getMaxSubtreeDepth(id);
+      if (ancestors.length + 1 + subtreeDepth > MAX_ALBUM_DEPTH) {
+        throw new BadRequestException(`Albums cannot be nested more than ${MAX_ALBUM_DEPTH} levels deep`);
+      }
+    }
+
+    let recompute = false;
+    let albumType = album.albumType;
+    let rules = album.rules;
+    if (dto.albumType !== undefined || dto.rules !== undefined) {
+      albumType = dto.rules === null ? AlbumType.Manual : (dto.albumType ?? (dto.rules ? AlbumType.Smart : albumType));
+      rules = albumType === AlbumType.Manual ? null : (dto.rules ?? (albumType === AlbumType.Smart ? rules : null));
+      if (albumType === AlbumType.Smart && !rules) {
+        throw new BadRequestException('Smart albums require rules');
+      }
+      recompute = albumType === AlbumType.Smart && (dto.rules != null || album.albumType !== AlbumType.Smart);
+    }
+
     const updatedAlbum = await this.albumRepository.update(
       album.id,
       {
@@ -157,9 +217,19 @@ export class AlbumService extends BaseService {
         albumThumbnailAssetId: dto.albumThumbnailAssetId,
         isActivityEnabled: dto.isActivityEnabled,
         order: dto.order,
+        parentId: dto.parentId,
+        albumType,
+        rules,
       },
       auth.user.id,
     );
+
+    if (recompute && rules) {
+      const ownerId = this.getAlbumOwnerId(updatedAlbum) ?? auth.user.id;
+      await this.syncSmartAlbumAssets(album.id, ownerId, rules);
+      await this.albumRepository.updateThumbnails();
+      return this.mapWithMetadata(await this.findOrFail(id, auth.user.id));
+    }
 
     return this.mapWithMetadata(updatedAlbum);
   }
@@ -171,6 +241,9 @@ export class AlbumService extends BaseService {
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id, auth.user.id);
+    if (album.albumType === AlbumType.Smart) {
+      throw new BadRequestException('Cannot manually add assets to a smart album');
+    }
     await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [id] });
 
     const results = await addAssets(
@@ -230,6 +303,10 @@ export class AlbumService extends BaseService {
         continue;
       }
       const album = await this.findOrFail(albumId, auth.user.id);
+      // smart album membership is rule-driven; skip smart albums instead of failing the whole operation
+      if (album.albumType === AlbumType.Smart) {
+        continue;
+      }
       results.error = undefined;
       results.success = true;
 
@@ -262,6 +339,9 @@ export class AlbumService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.AlbumAssetDelete, ids: [id] });
 
     const album = await this.findOrFail(id, auth.user.id);
+    if (album.albumType === AlbumType.Smart) {
+      throw new BadRequestException('Cannot manually remove assets from a smart album');
+    }
     const results = await removeAssets(
       auth,
       { access: this.accessRepository, bulk: this.albumRepository },
@@ -352,8 +432,49 @@ export class AlbumService extends BaseService {
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
+  /**
+   * Recomputes the membership of a smart album from its stored rules.
+   * Smart album rules are always evaluated against the album owner's assets.
+   */
+  async refreshSmartAlbum(auth: AuthDto, id: string): Promise<AlbumResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
+
+    const album = await this.findOrFail(id, auth.user.id);
+    if (album.albumType !== AlbumType.Smart || !album.rules) {
+      throw new BadRequestException('Only smart albums can be refreshed');
+    }
+
+    const ownerId = this.getAlbumOwnerId(album) ?? auth.user.id;
+    await this.syncSmartAlbumAssets(album.id, ownerId, album.rules);
+    await this.albumRepository.updateThumbnails();
+
+    return this.mapWithMetadata(await this.findOrFail(id, auth.user.id));
+  }
+
   private findOrFail(id: string, authUserId: string) {
     return findOrFail(() => this.albumRepository.getById(id, authUserId), 'Album');
+  }
+
+  /**
+   * Validates write access to a parent album candidate and returns its ancestor
+   * chain (excluding the album itself), which callers use for cycle/depth checks.
+   */
+  private validateParentId(auth: AuthDto, parentId: string): Promise<string[]> {
+    return this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [parentId] }).then(() =>
+      this.albumRepository.getAncestorIds(parentId),
+    );
+  }
+
+  private getAlbumOwnerId(album: MapAlbumDto): string | undefined {
+    return album.albumUsers?.find(({ role }) => role === AlbumUserRole.Owner)?.user.id;
+  }
+
+  private async syncSmartAlbumAssets(albumId: string, ownerId: string, rules: SmartAlbumRules): Promise<void> {
+    const assets = await this.albumRepository.getSmartAlbumAssetIds(ownerId, rules);
+    await this.albumRepository.replaceAssets(
+      albumId,
+      assets.map(({ id }) => id),
+    );
   }
 
   private async mapWithMetadata(album: MapAlbumDto): Promise<AlbumResponseDto> {

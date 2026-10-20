@@ -22,6 +22,23 @@ const DEPRECATED_FLAT_FIELD = {
   deprecated: true,
 };
 
+// flat fields added after the flat shape was deprecated — deprecated on arrival
+const DEPRECATED_NEW_FLAT_FIELD = {
+  ...new HistoryBuilder().added('v4.0.0').deprecated('v4.0.0').getExtensions(),
+  deprecated: true,
+};
+
+export enum AssetOrientation {
+  Landscape = 'landscape',
+  Portrait = 'portrait',
+  Square = 'square',
+}
+
+export const AssetOrientationSchema = z
+  .enum(AssetOrientation)
+  .describe('Asset orientation, derived from the stored width/height')
+  .meta({ id: 'AssetOrientation' });
+
 const BaseSearchSchema = z.object({
   libraryId: z.uuidv4().nullish().describe('Library ID to filter by').meta(DEPRECATED_FLAT_FIELD),
   type: AssetTypeSchema.optional().meta(DEPRECATED_FLAT_FIELD),
@@ -65,6 +82,10 @@ const BaseSearchSchema = z.object({
       deprecated: true,
     }),
   ocr: z.string().optional().describe('Filter by OCR text content').meta(DEPRECATED_FLAT_FIELD),
+  hasNoFaces: z.boolean().optional().describe('Filter by assets with no detected faces').meta(DEPRECATED_NEW_FLAT_FIELD),
+  orientation: AssetOrientationSchema.optional()
+    .describe('Filter by asset orientation')
+    .meta(DEPRECATED_NEW_FLAT_FIELD),
 });
 
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
@@ -225,6 +246,7 @@ const enumFilterSchema = <T extends z.core.util.EnumLike>(values: z.ZodEnum<T>, 
 
 const EnumFilterAssetTypeSchema = enumFilterSchema(AssetTypeSchema, 'EnumFilterAssetType');
 const EnumFilterAssetVisibilitySchema = enumFilterSchema(AssetVisibilitySchema, 'EnumFilterAssetVisibility');
+const EnumFilterAssetOrientationSchema = enumFilterSchema(AssetOrientationSchema, 'EnumFilterAssetOrientation');
 
 const StringSimilarityFilterSchema = z
   .object({
@@ -255,6 +277,7 @@ const searchFilterBranchShape = {
   isEncoded: BoolFilterSchema,
   hasAlbums: BoolFilterSchema,
   hasPeople: BoolFilterSchema,
+  hasNoFaces: BoolFilterSchema,
   hasTags: BoolFilterSchema,
   city: StringFilterNullableSchema,
   state: StringFilterNullableSchema,
@@ -262,6 +285,7 @@ const searchFilterBranchShape = {
   make: StringFilterNullableSchema,
   model: StringFilterNullableSchema,
   lensModel: StringFilterNullableSchema,
+  orientation: EnumFilterAssetOrientationSchema,
   description: StringPatternFilterSchema,
   originalFileName: StringPatternFilterSchema,
   originalPath: StringPatternFilterSchema,
