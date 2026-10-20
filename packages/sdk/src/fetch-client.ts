@@ -688,6 +688,14 @@ export type PurchaseResponse = {
     /** Whether to show support badge */
     showSupportBadge: boolean;
 };
+export type PushNotificationsResponse = {
+    /** Whether to receive push notifications for album invites */
+    albumInvite: boolean;
+    /** Whether to receive push notifications for album updates */
+    albumUpdate: boolean;
+    /** Whether push notifications are enabled */
+    enabled: boolean;
+};
 export type RatingsResponse = {
     /** Whether ratings are enabled */
     enabled: boolean;
@@ -717,6 +725,7 @@ export type UserPreferencesResponseDto = {
     memories: MemoriesResponse;
     people: PeopleResponse;
     purchase: PurchaseResponse;
+    pushNotifications: PushNotificationsResponse;
     ratings: RatingsResponse;
     recentlyAdded: RecentlyAddedResponse;
     sharedLinks: SharedLinksResponse;
@@ -775,6 +784,14 @@ export type PurchaseUpdate = {
     /** Whether to show support badge */
     showSupportBadge?: boolean;
 };
+export type PushNotificationsUpdate = {
+    /** Whether to receive push notifications for album invites */
+    albumInvite?: boolean;
+    /** Whether to receive push notifications for album updates */
+    albumUpdate?: boolean;
+    /** Whether push notifications are enabled */
+    enabled?: boolean;
+};
 export type RatingsUpdate = {
     /** Whether ratings are enabled */
     enabled?: boolean;
@@ -805,6 +822,7 @@ export type UserPreferencesUpdateDto = {
     memories?: MemoriesUpdate;
     people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
+    pushNotifications?: PushNotificationsUpdate;
     ratings?: RatingsUpdate;
     recentlyAdded?: RecentlyAddedUpdate;
     sharedLinks?: SharedLinksUpdate;
@@ -848,11 +866,40 @@ export type ContributorCountResponseDto = {
     /** User ID */
     userId: string;
 };
+export type SmartAlbumRulesDto = {
+    /** Only include assets taken in this city (exact match on EXIF city) */
+    city?: string;
+    /** Only include assets taken in this country (exact match on EXIF country) */
+    country?: string;
+    /** Only include favorite assets */
+    isFavorite?: boolean;
+    /** Only include assets that are not in any album */
+    isNotInAlbum?: boolean;
+    /** Only include assets taken with this lens (exact match on EXIF lensModel) */
+    lensModel?: string;
+    /** Only include assets from this camera make (exact match on EXIF make) */
+    make?: string;
+    /** Only include assets from this camera model (exact match on EXIF model) */
+    model?: string;
+    /** Only include assets that contain all of these person group IDs (same semantics as search personIds) */
+    personIds?: string[];
+    /** Only include assets with at least this rating */
+    rating?: number;
+    /** Only include assets tagged with all of these tags (tag descendants included) */
+    tagIds?: string[];
+    /** Only include assets taken after this ISO 8601 datetime */
+    takenAfter?: string;
+    /** Only include assets taken before this ISO 8601 datetime */
+    takenBefore?: string;
+    /** Only include assets of this type */
+    "type"?: AssetTypeEnum;
+};
 export type AlbumResponseDto = {
     /** Album name */
     albumName: string;
     /** Thumbnail asset ID */
     albumThumbnailAssetId: string | null;
+    albumType: AlbumType;
     /** First entry is always the album owner. Second entry is the auth user, if it differs from the owner. The rest are ordered alphabetically. */
     albumUsers: AlbumUserResponseDto[];
     /** Number of assets */
@@ -873,6 +920,10 @@ export type AlbumResponseDto = {
     /** Last modified asset timestamp */
     lastModifiedAssetTimestamp?: string;
     order?: AssetOrder;
+    /** Parent album ID, or null for root albums */
+    parentId: string | null;
+    /** Smart album membership rules (null for manual albums) */
+    rules: (SmartAlbumRulesDto) | null;
     /** Is shared album */
     shared: boolean;
     /** UTC representation of (local) start date (earliest asset) */
@@ -888,12 +939,18 @@ export type AlbumUserCreateDto = {
 export type CreateAlbumDto = {
     /** Album name */
     albumName: string;
+    /** Album type. When omitted, the album is created as a smart album if rules are provided, or a manual album otherwise. */
+    albumType?: AlbumType;
     /** Album users */
     albumUsers?: AlbumUserCreateDto[];
     /** Initial asset IDs */
     assetIds?: string[];
     /** Album description */
     description?: string | null;
+    /** Parent album ID for nested albums. Omit to create a root album. */
+    parentId?: string;
+    /** Smart album membership rules. Required when albumType is smart; not allowed when albumType is manual. */
+    rules?: SmartAlbumRulesDto;
 };
 export type AlbumsAddAssetsDto = {
     /** Album IDs */
@@ -919,11 +976,17 @@ export type UpdateAlbumDto = {
     albumName?: string;
     /** Album thumbnail asset ID */
     albumThumbnailAssetId?: string;
+    /** Album type. Changing a manual album to smart requires rules (either already stored or provided in this request). Changing a smart album to manual freezes its current membership and clears its rules. */
+    albumType?: AlbumType;
     /** Album description */
     description?: string | null;
     /** Enable activity feed */
     isActivityEnabled?: boolean;
     order?: AssetOrder;
+    /** Parent album ID for nested albums. Set to null to move the album to the root. */
+    parentId?: string | null;
+    /** Smart album membership rules. Set to null to convert a smart album back to a manual album. */
+    rules?: (SmartAlbumRulesDto) | null;
 };
 export type BulkIdsDto = {
     /** IDs to process */
@@ -1123,47 +1186,6 @@ export type AssetCopyDto = {
     /** Target asset ID */
     targetId: string;
 };
-export type AssetJobsDto = {
-    /** Asset IDs */
-    assetIds: string[];
-    name: AssetJobName;
-};
-export type AssetMetadataBulkDeleteItemDto = {
-    /** Asset ID */
-    assetId: string;
-    /** Metadata key */
-    key: string;
-};
-export type AssetMetadataBulkDeleteDto = {
-    /** Metadata items to delete */
-    items: AssetMetadataBulkDeleteItemDto[];
-};
-export type AssetMetadataBulkUpsertItemDto = {
-    /** Asset ID */
-    assetId: string;
-    /** Metadata key */
-    key: string;
-    /** Metadata value (object) */
-    value: {
-        [key: string]: any;
-    };
-};
-export type AssetMetadataBulkUpsertDto = {
-    /** Metadata items to upsert */
-    items: AssetMetadataBulkUpsertItemDto[];
-};
-export type AssetMetadataBulkResponseDto = {
-    /** Asset ID */
-    assetId: string;
-    /** Metadata key */
-    key: string;
-    /** Last update date */
-    updatedAt: string;
-    /** Metadata value (object) */
-    value: {
-        [key: string]: any;
-    };
-};
 export type ExifResponseDto = {
     /** City name */
     city?: string | null;
@@ -1336,6 +1358,47 @@ export type AssetResponseDto = {
     visibility: AssetVisibility;
     /** Asset width */
     width: number | null;
+};
+export type AssetJobsDto = {
+    /** Asset IDs */
+    assetIds: string[];
+    name: AssetJobName;
+};
+export type AssetMetadataBulkDeleteItemDto = {
+    /** Asset ID */
+    assetId: string;
+    /** Metadata key */
+    key: string;
+};
+export type AssetMetadataBulkDeleteDto = {
+    /** Metadata items to delete */
+    items: AssetMetadataBulkDeleteItemDto[];
+};
+export type AssetMetadataBulkUpsertItemDto = {
+    /** Asset ID */
+    assetId: string;
+    /** Metadata key */
+    key: string;
+    /** Metadata value (object) */
+    value: {
+        [key: string]: any;
+    };
+};
+export type AssetMetadataBulkUpsertDto = {
+    /** Metadata items to upsert */
+    items: AssetMetadataBulkUpsertItemDto[];
+};
+export type AssetMetadataBulkResponseDto = {
+    /** Asset ID */
+    assetId: string;
+    /** Metadata key */
+    key: string;
+    /** Last update date */
+    updatedAt: string;
+    /** Metadata value (object) */
+    value: {
+        [key: string]: any;
+    };
 };
 export type UpdateAssetDto = {
     /** Original date and time */
@@ -1518,6 +1581,23 @@ export type AuthStatusResponseDto = {
 export type ValidateAccessTokenResponseDto = {
     /** Authentication status */
     authStatus: boolean;
+};
+export type BrowseLabelResponseDto = {
+    /** Number of assets matching the label */
+    count: number;
+    /** Stable label key, usable in the label assets endpoint */
+    key: string;
+    /** Human-readable label name */
+    label: string;
+    /** Asset ID of the closest match, usable as the label thumbnail */
+    previewAssetId: string | null;
+};
+export type BrowseLabelAssetsResponseDto = {
+    /** Number of assets in this page */
+    count: number;
+    items: AssetResponseDto[];
+    /** Cursor for the next page of results */
+    nextCursor: string | null;
 };
 export type ClusterGroupRequestResponseDto = {
     /** Cluster group the user is invited to join */
@@ -2206,6 +2286,39 @@ export type PublicConfigDto = {
     passwordLogin: PublicConfigPasswordLoginDto;
     server: PublicConfigServerDto;
 };
+export type PushSubscriptionDeleteDto = {
+    /** Push service endpoint URL */
+    endpoint: string;
+};
+export type PushSubscriptionResponseDto = {
+    /** Registration date */
+    createdAt: string;
+    /** Push service endpoint URL */
+    endpoint: string;
+    /** Subscription ID */
+    id: string;
+    /** User agent that registered the subscription */
+    userAgent: string | null;
+};
+export type PushSubscriptionKeys = {
+    /** Subscriber auth secret (base64url) */
+    auth: string;
+    /** Subscriber P-256 public key (base64url) */
+    p256dh: string;
+};
+export type PushSubscriptionCreateDto = {
+    /** Push service endpoint URL */
+    endpoint: string;
+    keys: PushSubscriptionKeys;
+};
+export type PushTestResponseDto = {
+    /** Number of subscriptions the test notification was delivered to */
+    delivered: number;
+};
+export type VapidPublicKeyResponseDto = {
+    /** VAPID public key (base64url), null when push is not configured */
+    publicKey: string | null;
+};
 export type QueueResponseDto = {
     /** Whether the queue is paused */
     isPaused: boolean;
@@ -2300,6 +2413,12 @@ export type IdFilterNullable = {
 export type StringSimilarityFilter = {
     matches: string;
 };
+export type EnumFilterAssetOrientation = {
+    eq?: AssetOrientation;
+    "in"?: AssetOrientation[];
+    ne?: AssetOrientation;
+    notIn?: AssetOrientation[];
+};
 export type NumberFilterNullable = {
     eq?: number | null;
     gt?: number;
@@ -2340,6 +2459,7 @@ export type SearchFilterBranch = {
     encodedVideoPath?: StringFilter;
     fileSizeInBytes?: NumberFilter;
     hasAlbums?: BoolFilter;
+    hasNoFaces?: BoolFilter;
     hasPeople?: BoolFilter;
     hasTags?: BoolFilter;
     id?: IdFilter;
@@ -2352,6 +2472,7 @@ export type SearchFilterBranch = {
     make?: StringFilterNullable;
     model?: StringFilterNullable;
     ocr?: StringSimilarityFilter;
+    orientation?: EnumFilterAssetOrientation;
     originalFileName?: StringPatternFilter;
     originalPath?: StringPatternFilter;
     personIds?: IdsFilter;
@@ -2374,6 +2495,7 @@ export type SearchFilter = {
     encodedVideoPath?: StringFilter;
     fileSizeInBytes?: NumberFilter;
     hasAlbums?: BoolFilter;
+    hasNoFaces?: BoolFilter;
     hasPeople?: BoolFilter;
     hasTags?: BoolFilter;
     id?: IdFilter;
@@ -2387,6 +2509,7 @@ export type SearchFilter = {
     model?: StringFilterNullable;
     ocr?: StringSimilarityFilter;
     or?: SearchFilterBranch[];
+    orientation?: EnumFilterAssetOrientation;
     originalFileName?: StringPatternFilter;
     originalPath?: StringPatternFilter;
     personIds?: IdsFilter;
@@ -2423,6 +2546,8 @@ export type MetadataSearchDto = {
     /** Filter by encoded video file path */
     encodedVideoPath?: string;
     filter?: SearchFilter;
+    /** Filter by assets with no detected faces */
+    hasNoFaces?: boolean;
     /** Filter by asset ID */
     id?: string;
     /** Filter by encoded status */
@@ -2448,6 +2573,8 @@ export type MetadataSearchDto = {
     /** Sort order */
     order?: AssetOrder;
     orderBy?: SearchOrder;
+    /** Filter by asset orientation */
+    orientation?: AssetOrientation;
     /** Filter by original file name */
     originalFileName?: string;
     /** Filter by original file path */
@@ -2550,6 +2677,8 @@ export type RandomSearchDto = {
     /** Filter by creation date (before) */
     createdBefore?: string;
     filter?: SearchFilter;
+    /** Filter by assets with no detected faces */
+    hasNoFaces?: boolean;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -2570,6 +2699,8 @@ export type RandomSearchDto = {
     model?: string | null;
     /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by asset orientation */
+    orientation?: AssetOrientation;
     /** Filter by person IDs */
     personIds?: string[];
     /** Filter by rating [1-5], or null for unrated */
@@ -2615,6 +2746,8 @@ export type SmartSearchDto = {
     /** Filter by creation date (before) */
     createdBefore?: string;
     filter?: SearchFilter;
+    /** Filter by assets with no detected faces */
+    hasNoFaces?: boolean;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -2637,6 +2770,8 @@ export type SmartSearchDto = {
     model?: string | null;
     /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by asset orientation */
+    orientation?: AssetOrientation;
     /** Page number */
     page?: number;
     /** Filter by person IDs */
@@ -2686,6 +2821,8 @@ export type StatisticsSearchDto = {
     /** Filter by description text */
     description?: string;
     filter?: SearchFilter;
+    /** Filter by assets with no detected faces */
+    hasNoFaces?: boolean;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -2706,6 +2843,8 @@ export type StatisticsSearchDto = {
     model?: string | null;
     /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by asset orientation */
+    orientation?: AssetOrientation;
     /** Filter by person IDs */
     personIds?: string[];
     /** Filter by rating [1-5], or null for unrated */
@@ -4405,12 +4544,13 @@ export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }
 /**
  * List all albums
  */
-export function getAllAlbums({ assetId, id, isOwned, isShared, name }: {
+export function getAllAlbums({ assetId, id, isOwned, isShared, name, parentId }: {
     assetId?: string;
     id?: string;
     isOwned?: boolean;
     isShared?: boolean;
     name?: string;
+    parentId?: string | "null";
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -4420,7 +4560,8 @@ export function getAllAlbums({ assetId, id, isOwned, isShared, name }: {
         id,
         isOwned,
         isShared,
-        name
+        name,
+        parentId
     }))}`, {
         ...opts
     }));
@@ -4559,6 +4700,20 @@ export function getAlbumMapMarkers({ id, key, slug }: {
         slug
     }))}`, {
         ...opts
+    }));
+}
+/**
+ * Refresh a smart album
+ */
+export function refreshSmartAlbum({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AlbumResponseDto;
+    }>(`/albums/${encodeURIComponent(id)}/refresh`, {
+        ...opts,
+        method: "POST"
     }));
 }
 /**
@@ -4831,6 +4986,17 @@ export function copyAsset({ assetCopyDto }: {
         method: "PUT",
         body: assetCopyDto
     })));
+}
+/**
+ * List hidden assets
+ */
+export function getHiddenAssets(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/assets/hidden", {
+        ...opts
+    }));
 }
 /**
  * Run an asset job
@@ -5311,6 +5477,35 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
     }>("/auth/validateToken", {
         ...opts,
         method: "POST"
+    }));
+}
+/**
+ * Get browse labels
+ */
+export function getBrowseLabels(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BrowseLabelResponseDto[];
+    }>("/browse/labels", {
+        ...opts
+    }));
+}
+/**
+ * Get browse label assets
+ */
+export function getBrowseLabelAssets({ cursor, key, size }: {
+    cursor?: string;
+    key: string;
+    size?: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BrowseLabelAssetsResponseDto;
+    }>(`/browse/labels/${encodeURIComponent(key)}${QS.query(QS.explode({
+        cursor,
+        size
+    }))}`, {
+        ...opts
     }));
 }
 /**
@@ -6486,6 +6681,67 @@ export function getPublicConfigDefaults(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Delete a push subscription
+ */
+export function deletePushSubscription({ pushSubscriptionDeleteDto }: {
+    pushSubscriptionDeleteDto: PushSubscriptionDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/push/subscriptions", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: pushSubscriptionDeleteDto
+    })));
+}
+/**
+ * Retrieve push subscriptions
+ */
+export function getPushSubscriptions(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PushSubscriptionResponseDto[];
+    }>("/push/subscriptions", {
+        ...opts
+    }));
+}
+/**
+ * Register a push subscription
+ */
+export function createPushSubscription({ pushSubscriptionCreateDto }: {
+    pushSubscriptionCreateDto: PushSubscriptionCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PushSubscriptionResponseDto;
+    }>("/push/subscriptions", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: pushSubscriptionCreateDto
+    })));
+}
+/**
+ * Send a test push notification
+ */
+export function sendTestPushNotification(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PushTestResponseDto;
+    }>("/push/test", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Retrieve the VAPID public key
+ */
+export function getVapidPublicKey(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: VapidPublicKeyResponseDto;
+    }>("/push/vapid-public-key", {
+        ...opts
+    }));
+}
+/**
  * List all queues
  */
 export function getQueues(opts?: Oazapfts.RequestOpts) {
@@ -6579,12 +6835,13 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, hasNoFaces, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, orientation, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
+    hasNoFaces?: boolean;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
@@ -6596,6 +6853,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     minFileSize?: number;
     model?: string | null;
     ocr?: string;
+    orientation?: AssetOrientation;
     personIds?: string[];
     rating?: number | null;
     size?: number;
@@ -6621,6 +6879,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         country,
         createdAfter,
         createdBefore,
+        hasNoFaces,
         isEncoded,
         isFavorite,
         isMotion,
@@ -6632,6 +6891,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         minFileSize,
         model,
         ocr,
+        orientation,
         personIds,
         rating,
         size,
@@ -8121,10 +8381,20 @@ export enum AssetVisibility {
     Hidden = "hidden",
     Locked = "locked"
 }
+export enum AlbumType {
+    Manual = "manual",
+    Smart = "smart"
+}
 export enum AlbumUserRole {
     Editor = "editor",
     Owner = "owner",
     Viewer = "viewer"
+}
+export enum AssetTypeEnum {
+    Image = "IMAGE",
+    Video = "VIDEO",
+    Audio = "AUDIO",
+    Other = "OTHER"
 }
 export enum BulkIdErrorReason {
     Duplicate = "duplicate",
@@ -8319,22 +8589,16 @@ export enum AssetRejectReason {
     Duplicate = "duplicate",
     UnsupportedFormat = "unsupported-format"
 }
-export enum AssetJobName {
-    RefreshFaces = "refresh-faces",
-    RefreshMetadata = "refresh-metadata",
-    RegenerateThumbnail = "regenerate-thumbnail",
-    TranscodeVideo = "transcode-video"
-}
 export enum PersonUserRole {
     Read = "read",
     Write = "write",
     Admin = "admin"
 }
-export enum AssetTypeEnum {
-    Image = "IMAGE",
-    Video = "VIDEO",
-    Audio = "AUDIO",
-    Other = "OTHER"
+export enum AssetJobName {
+    RefreshFaces = "refresh-faces",
+    RefreshMetadata = "refresh-metadata",
+    RegenerateThumbnail = "regenerate-thumbnail",
+    TranscodeVideo = "transcode-video"
 }
 export enum AssetEditAction {
     Crop = "crop",
@@ -8505,6 +8769,11 @@ export enum JobName {
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
     IntegrityDeleteReports = "IntegrityDeleteReports",
     TakeoutImport = "TakeoutImport"
+}
+export enum AssetOrientation {
+    Landscape = "landscape",
+    Portrait = "portrait",
+    Square = "square"
 }
 export enum SearchOrderField {
     FileCreatedAt = "fileCreatedAt",

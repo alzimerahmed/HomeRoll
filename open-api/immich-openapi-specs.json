@@ -2206,6 +2206,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "parentId",
+            "required": false,
+            "in": "query",
+            "description": "Parent album ID filter. Set to a parent album ID to list its children, or the literal string \"null\" to list root albums only. Omit for no filtering.",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "null"
+                  ]
+                }
+              ]
+            }
           }
         ],
         "responses": {
@@ -2837,6 +2858,63 @@
           }
         ],
         "x-immich-permission": "album.read"
+      }
+    },
+    "/albums/{id}/refresh": {
+      "post": {
+        "description": "Recomputes the membership of a smart album by evaluating its rules against the album owner’s assets. Only applies to albums with albumType=smart.",
+        "operationId": "refreshSmartAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Refresh a smart album",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "album.update",
+        "x-immich-state": "Alpha"
       }
     },
     "/albums/{id}/user/{userId}": {
@@ -4034,6 +4112,55 @@
         ],
         "x-immich-permission": "asset.copy",
         "x-immich-state": "Stable"
+      }
+    },
+    "/assets/hidden": {
+      "get": {
+        "description": "Retrieve all assets with visibility=hidden owned by the authenticated user. Live/motion photo video parts (assets referenced by livePhotoVideoId) are excluded.",
+        "operationId": "getHiddenAssets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List hidden assets",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Alpha"
       }
     },
     "/assets/jobs": {
@@ -6107,6 +6234,135 @@
           }
         ],
         "x-immich-state": "Stable"
+      }
+    },
+    "/browse/labels": {
+      "get": {
+        "description": "List the curated CLIP-label taxonomy with per-user match counts and a preview asset for each label.",
+        "operationId": "getBrowseLabels",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BrowseLabelResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get browse labels",
+        "tags": [
+          "Browse"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/browse/labels/{key}": {
+      "get": {
+        "description": "List the assets matching a browse label, ordered by CLIP similarity to the label prompt.",
+        "operationId": "getBrowseLabelAssets",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor for the next page of results",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "description": "Browse label key",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 64,
+              "type": "string"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of results to return",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 250,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseLabelAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get browse label assets",
+        "tags": [
+          "Browse"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Alpha"
       }
     },
     "/cluster-groups/requests": {
@@ -11130,6 +11386,243 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/push/subscriptions": {
+      "delete": {
+        "description": "Delete the push subscription matching the given endpoint for the current user.",
+        "operationId": "deletePushSubscription",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscriptionDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a push subscription",
+        "tags": [
+          "Push"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Retrieve the push subscriptions of the current user.",
+        "operationId": "getPushSubscriptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PushSubscriptionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve push subscriptions",
+        "tags": [
+          "Push"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      },
+      "post": {
+        "description": "Register a web push subscription for the current user. Subscriptions are upserted by endpoint, so re-registering refreshes the existing record.",
+        "operationId": "createPushSubscription",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscriptionCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushSubscriptionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Register a push subscription",
+        "tags": [
+          "Push"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/push/test": {
+      "post": {
+        "description": "Send a test web push notification to the current user's subscriptions.",
+        "operationId": "sendTestPushNotification",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushTestResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Send a test push notification",
+        "tags": [
+          "Push"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/push/vapid-public-key": {
+      "get": {
+        "description": "Retrieve the server VAPID public key used to subscribe to web push notifications. `publicKey` is null when push is not configured.",
+        "operationId": "getVapidPublicKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VapidPublicKeyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve the VAPID public key",
+        "tags": [
+          "Push"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
     "/queues": {
       "get": {
         "description": "Retrieves a list of queues.",
@@ -11679,6 +12172,27 @@
             }
           },
           {
+            "name": "hasNoFaces",
+            "required": false,
+            "in": "query",
+            "description": "Filter by assets with no detected faces",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "isEncoded",
             "required": false,
             "in": "query",
@@ -11943,6 +12457,27 @@
             "deprecated": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "orientation",
+            "required": false,
+            "in": "query",
+            "description": "Filter by asset orientation",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrientation"
             }
           },
           {
@@ -18119,6 +18654,10 @@
       "description": "An asset file is a file associated with an asset, including edited versions, thumbnails, etc."
     },
     {
+      "name": "Browse",
+      "description": "Endpoints for browsing assets via the curated CLIP label taxonomy."
+    },
+    {
       "name": "Authentication",
       "description": "Endpoints related to user authentication, including OAuth."
     },
@@ -18205,6 +18744,10 @@
     {
       "name": "Plugins",
       "description": "A plugin is an installed module that makes filters and actions available for the workflow feature."
+    },
+    {
+      "name": "Push",
+      "description": "Endpoints for managing web push subscriptions. Push notifications are delivered via the Web Push protocol (RFC 8291) and require the VAPID keys to be configured on the server."
     },
     {
       "name": "Queues",
@@ -19648,6 +20191,9 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "albumType": {
+            "$ref": "#/components/schemas/AlbumType"
+          },
           "albumUsers": {
             "description": "First entry is always the album owner. Second entry is the auth user, if it differs from the owner. The rest are ordered alphabetically.",
             "items": {
@@ -19715,6 +20261,22 @@
           "order": {
             "$ref": "#/components/schemas/AssetOrder"
           },
+          "parentId": {
+            "description": "Parent album ID, or null for root albums",
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "rules": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SmartAlbumRulesDto"
+              }
+            ],
+            "description": "Smart album membership rules (null for manual albums)",
+            "nullable": true
+          },
           "shared": {
             "description": "Is shared album",
             "type": "boolean"
@@ -19733,6 +20295,7 @@
         "required": [
           "albumName",
           "albumThumbnailAssetId",
+          "albumType",
           "albumUsers",
           "assetCount",
           "createdAt",
@@ -19740,6 +20303,8 @@
           "hasSharedLink",
           "id",
           "isActivityEnabled",
+          "parentId",
+          "rules",
           "shared",
           "updatedAt"
         ],
@@ -19772,6 +20337,14 @@
           "shared"
         ],
         "type": "object"
+      },
+      "AlbumType": {
+        "description": "Album type",
+        "enum": [
+          "manual",
+          "smart"
+        ],
+        "type": "string"
       },
       "AlbumUserAddDto": {
         "properties": {
@@ -21074,6 +21647,15 @@
         ],
         "type": "string"
       },
+      "AssetOrientation": {
+        "description": "Asset orientation, derived from the stored width/height",
+        "enum": [
+          "landscape",
+          "portrait",
+          "square"
+        ],
+        "type": "string"
+      },
       "AssetRejectReason": {
         "description": "Rejection reason if rejected",
         "enum": [
@@ -21445,6 +22027,65 @@
         ],
         "type": "object"
       },
+      "BrowseLabelAssetsResponseDto": {
+        "properties": {
+          "count": {
+            "description": "Number of assets in this page",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "description": "Cursor for the next page of results",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "items",
+          "nextCursor"
+        ],
+        "type": "object"
+      },
+      "BrowseLabelResponseDto": {
+        "properties": {
+          "count": {
+            "description": "Number of assets matching the label",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "key": {
+            "description": "Stable label key, usable in the label assets endpoint",
+            "type": "string"
+          },
+          "label": {
+            "description": "Human-readable label name",
+            "type": "string"
+          },
+          "previewAssetId": {
+            "description": "Asset ID of the closest match, usable as the label thumbnail",
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "key",
+          "label",
+          "previewAssetId"
+        ],
+        "type": "object"
+      },
       "BulkIdErrorReason": {
         "description": "Error reason",
         "enum": [
@@ -21696,6 +22337,10 @@
             "description": "Album name",
             "type": "string"
           },
+          "albumType": {
+            "$ref": "#/components/schemas/AlbumType",
+            "description": "Album type. When omitted, the album is created as a smart album if rules are provided, or a manual album otherwise."
+          },
           "albumUsers": {
             "description": "Album users",
             "items": {
@@ -21727,6 +22372,16 @@
                 "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4."
               }
             ]
+          },
+          "parentId": {
+            "description": "Parent album ID for nested albums. Omit to create a root album.",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/SmartAlbumRulesDto",
+            "description": "Smart album membership rules. Required when albumType is smart; not allowed when albumType is manual."
           }
         },
         "required": [
@@ -22245,6 +22900,31 @@
           "enabled": {
             "description": "Whether email notifications are enabled",
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "EnumFilterAssetOrientation": {
+        "properties": {
+          "eq": {
+            "$ref": "#/components/schemas/AssetOrientation"
+          },
+          "in": {
+            "items": {
+              "$ref": "#/components/schemas/AssetOrientation"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "ne": {
+            "$ref": "#/components/schemas/AssetOrientation"
+          },
+          "notIn": {
+            "items": {
+              "$ref": "#/components/schemas/AssetOrientation"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
         "type": "object"
@@ -23645,6 +24325,22 @@
               }
             ]
           },
+          "hasNoFaces": {
+            "deprecated": true,
+            "description": "Filter by assets with no detected faces",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
           "id": {
             "deprecated": true,
             "description": "Filter by asset ID",
@@ -23901,6 +24597,22 @@
                 "state": "Added"
               }
             ]
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/AssetOrientation",
+            "deprecated": true,
+            "description": "Filter by asset orientation",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "originalFileName": {
             "deprecated": true,
@@ -25970,6 +26682,139 @@
         },
         "type": "object"
       },
+      "PushNotificationsResponse": {
+        "properties": {
+          "albumInvite": {
+            "description": "Whether to receive push notifications for album invites",
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "description": "Whether to receive push notifications for album updates",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Whether push notifications are enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "albumInvite",
+          "albumUpdate",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "PushNotificationsUpdate": {
+        "properties": {
+          "albumInvite": {
+            "description": "Whether to receive push notifications for album invites",
+            "type": "boolean"
+          },
+          "albumUpdate": {
+            "description": "Whether to receive push notifications for album updates",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Whether push notifications are enabled",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "PushSubscriptionCreateDto": {
+        "properties": {
+          "endpoint": {
+            "description": "Push service endpoint URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "keys": {
+            "$ref": "#/components/schemas/PushSubscriptionKeys"
+          }
+        },
+        "required": [
+          "endpoint",
+          "keys"
+        ],
+        "type": "object"
+      },
+      "PushSubscriptionDeleteDto": {
+        "properties": {
+          "endpoint": {
+            "description": "Push service endpoint URL",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint"
+        ],
+        "type": "object"
+      },
+      "PushSubscriptionKeys": {
+        "properties": {
+          "auth": {
+            "description": "Subscriber auth secret (base64url)",
+            "type": "string"
+          },
+          "p256dh": {
+            "description": "Subscriber P-256 public key (base64url)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "auth",
+          "p256dh"
+        ],
+        "type": "object"
+      },
+      "PushSubscriptionResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Registration date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "endpoint": {
+            "description": "Push service endpoint URL",
+            "type": "string"
+          },
+          "id": {
+            "description": "Subscription ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "userAgent": {
+            "description": "User agent that registered the subscription",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "endpoint",
+          "id",
+          "userAgent"
+        ],
+        "type": "object"
+      },
+      "PushTestResponseDto": {
+        "properties": {
+          "delivered": {
+            "description": "Number of subscriptions the test notification was delivered to",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "delivered"
+        ],
+        "type": "object"
+      },
       "QueueCommand": {
         "description": "Queue command to execute",
         "enum": [
@@ -26418,6 +27263,22 @@
               }
             ]
           },
+          "hasNoFaces": {
+            "deprecated": true,
+            "description": "Filter by assets with no detected faces",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
           "isEncoded": {
             "deprecated": true,
             "description": "Filter by encoded status",
@@ -26619,6 +27480,22 @@
               },
               {
                 "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/AssetOrientation",
+            "deprecated": true,
+            "description": "Filter by asset orientation",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
                 "state": "Deprecated"
               }
             ],
@@ -27303,6 +28180,9 @@
           "hasAlbums": {
             "$ref": "#/components/schemas/BoolFilter"
           },
+          "hasNoFaces": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
           "hasPeople": {
             "$ref": "#/components/schemas/BoolFilter"
           },
@@ -27345,6 +28225,9 @@
             },
             "minItems": 1,
             "type": "array"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/EnumFilterAssetOrientation"
           },
           "originalFileName": {
             "$ref": "#/components/schemas/StringPatternFilter"
@@ -27412,6 +28295,9 @@
           "hasAlbums": {
             "$ref": "#/components/schemas/BoolFilter"
           },
+          "hasNoFaces": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
           "hasPeople": {
             "$ref": "#/components/schemas/BoolFilter"
           },
@@ -27447,6 +28333,9 @@
           },
           "ocr": {
             "$ref": "#/components/schemas/StringSimilarityFilter"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/EnumFilterAssetOrientation"
           },
           "originalFileName": {
             "$ref": "#/components/schemas/StringPatternFilter"
@@ -28514,6 +29403,83 @@
         ],
         "type": "object"
       },
+      "SmartAlbumRulesDto": {
+        "properties": {
+          "city": {
+            "description": "Only include assets taken in this city (exact match on EXIF city)",
+            "type": "string"
+          },
+          "country": {
+            "description": "Only include assets taken in this country (exact match on EXIF country)",
+            "type": "string"
+          },
+          "isFavorite": {
+            "description": "Only include favorite assets",
+            "type": "boolean"
+          },
+          "isNotInAlbum": {
+            "description": "Only include assets that are not in any album",
+            "type": "boolean"
+          },
+          "lensModel": {
+            "description": "Only include assets taken with this lens (exact match on EXIF lensModel)",
+            "type": "string"
+          },
+          "make": {
+            "description": "Only include assets from this camera make (exact match on EXIF make)",
+            "type": "string"
+          },
+          "model": {
+            "description": "Only include assets from this camera model (exact match on EXIF model)",
+            "type": "string"
+          },
+          "personIds": {
+            "description": "Only include assets that contain all of these person group IDs (same semantics as search personIds)",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "rating": {
+            "description": "Only include assets with at least this rating",
+            "maximum": 5,
+            "minimum": -1,
+            "type": "integer"
+          },
+          "tagIds": {
+            "description": "Only include assets tagged with all of these tags (tag descendants included)",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "takenAfter": {
+            "description": "Only include assets taken after this ISO 8601 datetime",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "takenBefore": {
+            "description": "Only include assets taken before this ISO 8601 datetime",
+            "example": "2024-12-31T23:59:59.999Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetTypeEnum",
+            "description": "Only include assets of this type"
+          }
+        },
+        "type": "object"
+      },
       "SmartSearchDto": {
         "properties": {
           "albumIds": {
@@ -28637,6 +29603,22 @@
                 "state": "Added"
               }
             ]
+          },
+          "hasNoFaces": {
+            "deprecated": true,
+            "description": "Filter by assets with no detected faces",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isEncoded": {
             "deprecated": true,
@@ -28843,6 +29825,22 @@
               },
               {
                 "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/AssetOrientation",
+            "deprecated": true,
+            "description": "Filter by asset orientation",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
                 "state": "Deprecated"
               }
             ],
@@ -29406,6 +30404,22 @@
               }
             ]
           },
+          "hasNoFaces": {
+            "deprecated": true,
+            "description": "Filter by assets with no detected faces",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
           "isEncoded": {
             "deprecated": true,
             "description": "Filter by encoded status",
@@ -29607,6 +30621,22 @@
               },
               {
                 "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/AssetOrientation",
+            "deprecated": true,
+            "description": "Filter by asset orientation",
+            "x-immich-history": [
+              {
+                "version": "v4.0.0",
+                "state": "Added"
+              },
+              {
+                "version": "v4.0.0",
                 "state": "Deprecated"
               }
             ],
@@ -32675,6 +33705,10 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "albumType": {
+            "$ref": "#/components/schemas/AlbumType",
+            "description": "Album type. Changing a manual album to smart requires rules (either already stored or provided in this request). Changing a smart album to manual freezes its current membership and clears its rules."
+          },
           "description": {
             "description": "Album description",
             "nullable": true,
@@ -32697,6 +33731,22 @@
           },
           "order": {
             "$ref": "#/components/schemas/AssetOrder"
+          },
+          "parentId": {
+            "description": "Parent album ID for nested albums. Set to null to move the album to the root.",
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "rules": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SmartAlbumRulesDto"
+              }
+            ],
+            "description": "Smart album membership rules. Set to null to convert a smart album back to a manual album.",
+            "nullable": true
           }
         },
         "type": "object"
@@ -33528,6 +34578,9 @@
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"
           },
+          "pushNotifications": {
+            "$ref": "#/components/schemas/PushNotificationsResponse"
+          },
           "ratings": {
             "$ref": "#/components/schemas/RatingsResponse"
           },
@@ -33550,6 +34603,7 @@
           "memories",
           "people",
           "purchase",
+          "pushNotifications",
           "ratings",
           "recentlyAdded",
           "sharedLinks",
@@ -33585,6 +34639,9 @@
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseUpdate"
+          },
+          "pushNotifications": {
+            "$ref": "#/components/schemas/PushNotificationsUpdate"
           },
           "ratings": {
             "$ref": "#/components/schemas/RatingsUpdate"
@@ -33743,6 +34800,19 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "VapidPublicKeyResponseDto": {
+        "properties": {
+          "publicKey": {
+            "description": "VAPID public key (base64url), null when push is not configured",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "publicKey"
+        ],
         "type": "object"
       },
       "VersionCheckStateResponseDto": {
