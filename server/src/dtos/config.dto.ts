@@ -196,6 +196,7 @@ const AdminConfigSchemaWithVisibility = z
         workflow: AdminConfigJobSettingsSchema,
         editor: AdminConfigJobSettingsSchema,
         integrityCheck: AdminConfigJobSettingsSchema,
+        takeout: AdminConfigJobSettingsSchema,
       })
       .meta({ id: 'AdminConfigJobDto' }),
     logging: z
@@ -609,6 +610,7 @@ export const defaults = Object.freeze<SystemConfig>({
     workflow: { concurrency: 5 },
     editor: { concurrency: 2 },
     integrityCheck: { concurrency: 1 },
+    takeout: { concurrency: 1 },
   },
   logging: {
     enabled: true,
@@ -647,8 +649,8 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   map: {
     enabled: true,
-    lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
-    darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+    lightStyle: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    darkStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
   },
   reverseGeocoding: {
     enabled: true,

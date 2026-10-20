@@ -37,12 +37,14 @@ import { SyncController } from 'src/controllers/sync.controller.js';
 import { SystemConfigController } from 'src/controllers/system-config.controller.js';
 import { SystemMetadataController } from 'src/controllers/system-metadata.controller.js';
 import { TagController } from 'src/controllers/tag.controller.js';
+import { TakeoutController } from 'src/controllers/takeout.controller.js';
 import { TimelineController } from 'src/controllers/timeline.controller.js';
 import { TrashController } from 'src/controllers/trash.controller.js';
 import { UserAdminController } from 'src/controllers/user-admin.controller.js';
 import { UserController } from 'src/controllers/user.controller.js';
 import { VideoStreamController } from 'src/controllers/video-stream.controller.js';
 import { ViewController } from 'src/controllers/view.controller.js';
+import { WebDavController } from 'src/controllers/webdav.controller.js';
 import { WorkflowController } from 'src/controllers/workflow.controller.js';
 
 export const controllers = [
@@ -85,11 +87,13 @@ export const controllers = [
   SystemConfigController,
   SystemMetadataController,
   TagController,
+  TakeoutController,
   TimelineController,
   TrashController,
   UserAdminController,
   UserController,
   VideoStreamController,
   ViewController,
+  WebDavController,
   WorkflowController,
 ];

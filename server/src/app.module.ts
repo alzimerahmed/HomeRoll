@@ -18,6 +18,7 @@ import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.ser
 import { AuthGuard } from 'src/middleware/auth.guard.js';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor.js';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor.js';
+import { TakeoutUploadInterceptor } from 'src/middleware/takeout-upload.interceptor.js';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter.js';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
@@ -50,7 +51,12 @@ const commonMiddleware = [
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
 
-const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
+const apiMiddleware = [
+  FileUploadInterceptor,
+  TakeoutUploadInterceptor,
+  ...commonMiddleware,
+  { provide: APP_GUARD, useClass: AuthGuard },
+];
 
 const configRepository = new ConfigRepository();
 const { bull, cls, database, otel } = configRepository.getEnv();

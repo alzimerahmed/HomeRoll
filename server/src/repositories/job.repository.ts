@@ -2,6 +2,7 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
+import type { Job } from 'bullmq';
 import { setTimeout } from 'node:timers/promises';
 import type { JobCounts, JobItem, JobOf } from 'src/types.js';
 import { JobConfig } from 'src/decorators.js';
@@ -276,10 +277,21 @@ export class JobRepository {
       case JobName.DatabaseBackup: {
         return { deduplication: { id: JobName.DatabaseBackup } };
       }
+      case JobName.TakeoutImport: {
+        return {
+          jobId: item.data.importId,
+          removeOnComplete: { age: 7 * 24 * 3600 },
+          removeOnFail: { age: 30 * 24 * 3600 },
+        };
+      }
       default: {
         return null;
       }
     }
+  }
+
+  async getJob(name: JobName, jobId: string): Promise<Job | undefined> {
+    return this.getQueue(this.getQueueName(name)).getJob(jobId);
   }
 
   private getQueue(queue: QueueName): Queue {

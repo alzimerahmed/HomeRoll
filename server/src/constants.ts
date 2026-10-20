@@ -145,8 +145,8 @@ export const ORIENTATION_TO_SHARP_ROTATION: Record<ExifOrientation, SharpRotatio
 export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Activities]: 'An activity is a like or a comment made by a user on an asset or album.',
   [ApiTag.Albums]: 'An album is a collection of assets that can be shared with other users or via shared links.',
-  [ApiTag.ApiKeys]: 'An api key can be used to programmatically access the Immich API.',
-  [ApiTag.Assets]: 'An asset is an image or video that has been uploaded to Immich.',
+  [ApiTag.ApiKeys]: 'An api key can be used to programmatically access the HomeRoll API.',
+  [ApiTag.Assets]: 'An asset is an image or video that has been uploaded to HomeRoll.',
   [ApiTag.AssetFiles]: 'An asset file is a file associated with an asset, including edited versions, thumbnails, etc.',
   [ApiTag.Authentication]: 'Endpoints related to user authentication, including OAuth.',
   [ApiTag.AuthenticationAdmin]: 'Administrative endpoints related to authentication.',
@@ -155,7 +155,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.ConfigUser]: 'The system configuration properties that are visible to logged in users.',
   [ApiTag.ConfigAdmin]: 'Endpoints to view and modify the full system configuration.',
   [ApiTag.ConfigPublic]: 'The system configuration properties that are visible to everyone.',
-  [ApiTag.DatabaseBackups]: 'Manage backups of the Immich database.',
+  [ApiTag.DatabaseBackups]: 'Manage backups of the HomeRoll database.',
   [ApiTag.Deprecated]: 'Deprecated endpoints that are planned for removal in the next major release.',
   [ApiTag.Download]: 'Endpoints for downloading assets or collections of assets.',
   [ApiTag.Duplicates]: 'Endpoints for managing and identifying duplicate assets.',
@@ -166,13 +166,13 @@ export const endpointTags: Record<ApiTag, string> = {
     'Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed.',
   [ApiTag.Libraries]:
     'An external library is made up of input file paths or expressions that are scanned for asset files. Discovered files are automatically imported. Assets much be unique within a library, but can be duplicated across libraries. Each user has a default upload library, and can have one or more external libraries.',
-  [ApiTag.Maintenance]: 'Maintenance mode allows you to put Immich in a read-only state to perform various operations.',
+  [ApiTag.Maintenance]: 'Maintenance mode allows you to put HomeRoll in a read-only state to perform various operations.',
   [ApiTag.Map]:
     'Map endpoints include supplemental functionality related to geolocation, such as reverse geocoding and retrieving map markers for assets with geolocation data.',
   [ApiTag.Memories]:
     'A memory is a specialized collection of assets with dedicated viewing implementations in the web and mobile clients. A memory includes fields related to visibility and are automatically generated per user via a background job.',
   [ApiTag.Notifications]:
-    'A notification is a specialized message sent to users to inform them of important events. Currently, these notifications are only shown in the Immich web application.',
+    'A notification is a specialized message sent to users to inform them of important events. Currently, these notifications are only shown in the HomeRoll web application.',
   [ApiTag.NotificationsAdmin]: 'Notification administrative endpoints.',
   [ApiTag.Partners]: 'A partner is a link with another user that allows sharing of assets between two users.',
   [ApiTag.People]:
@@ -197,6 +197,7 @@ export const endpointTags: Record<ApiTag, string> = {
     'Endpoints to view, modify, and validate the system metadata, which includes information about things like admin onboarding status.',
   [ApiTag.Tags]:
     'A tag is a user-defined label that can be applied to assets for organizational purposes. Tags can also be hierarchical, allowing for parent-child relationships between tags.',
+  [ApiTag.Takeout]: 'Endpoints for importing external archives (e.g. Google Takeout) into HomeRoll.',
   [ApiTag.Timeline]:
     'Specialized endpoints related to the timeline implementation used in the web application. External applications or tools should not use or rely on these endpoints, as they are subject to change without notice.',
   [ApiTag.Trash]:
@@ -204,7 +205,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.UsersAdmin]:
     'Administrative endpoints for managing users, including creating, updating, deleting, and restoring users. Also includes endpoints for resetting passwords and PIN codes.',
   [ApiTag.Users]:
-    'Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more.',
+    'Endpoints for viewing and updating the current users, including profile picture data, onboarding progress, and more.',
   [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',
   [ApiTag.Workflows]:
     'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',

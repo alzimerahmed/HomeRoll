@@ -267,10 +267,6 @@ export enum Permission {
   ServerStatistics = 'server.statistics',
   ServerVersionCheck = 'server.versionCheck',
 
-  ServerLicenseRead = 'serverLicense.read',
-  ServerLicenseUpdate = 'serverLicense.update',
-  ServerLicenseDelete = 'serverLicense.delete',
-
   SessionCreate = 'session.create',
   SessionRead = 'session.read',
   SessionUpdate = 'session.update',
@@ -304,13 +300,12 @@ export enum Permission {
   TagDelete = 'tag.delete',
   TagAsset = 'tag.asset',
 
+  TakeoutCreate = 'takeout.create',
+  TakeoutRead = 'takeout.read',
+  TakeoutDelete = 'takeout.delete',
+
   UserRead = 'user.read',
   UserUpdate = 'user.update',
-
-  UserLicenseCreate = 'userLicense.create',
-  UserLicenseRead = 'userLicense.read',
-  UserLicenseUpdate = 'userLicense.update',
-  UserLicenseDelete = 'userLicense.delete',
 
   UserOnboardingRead = 'userOnboarding.read',
   UserOnboardingUpdate = 'userOnboarding.update',
@@ -337,6 +332,8 @@ export enum Permission {
   WorkflowUpdate = 'workflow.update',
   WorkflowDelete = 'workflow.delete',
   WorkflowLogs = 'workflow.logs',
+
+  WebdavAccess = 'webdav.access',
 
   AdminUserCreate = 'adminUser.create',
   AdminUserRead = 'adminUser.read',
@@ -381,7 +378,6 @@ export enum SystemMetadataKey {
   SystemConfig = 'system-config',
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
-  License = 'license',
   IntegrityChecksumCheckpoint = 'integrity-checksum-checkpoint',
 }
 
@@ -859,6 +855,7 @@ export enum QueueName {
   Workflow = 'workflow',
   IntegrityCheck = 'integrityCheck',
   Editor = 'editor',
+  Takeout = 'takeout',
 }
 
 export const QueueNameSchema = z.enum(QueueName).describe('Queue name').meta({ id: 'QueueName' });
@@ -964,6 +961,9 @@ export enum JobName {
   IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
   IntegrityDeleteReportType = 'IntegrityDeleteReportType',
   IntegrityDeleteReports = 'IntegrityDeleteReports',
+
+  // Takeout
+  TakeoutImport = 'TakeoutImport',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -1281,6 +1281,7 @@ export enum ApiTag {
   SystemConfig = 'System config',
   SystemMetadata = 'System metadata',
   Tags = 'Tags',
+  Takeout = 'Takeout',
   Timeline = 'Timeline',
   Trash = 'Trash',
   UsersAdmin = 'Users (admin)',

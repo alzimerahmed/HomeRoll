@@ -337,6 +337,14 @@ export interface IFacialRecognitionQueueAll extends INightlyJob {
   clusterGroupId?: string;
 }
 
+export interface ITakeoutImportJob {
+  importId: string;
+  ownerId: string;
+  archivePath: string;
+  archiveName: string;
+  cancelled?: boolean;
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -460,7 +468,10 @@ export type JobItem =
   | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob }
 
   // Editor
-  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
+  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob }
+
+  // Takeout
+  | { name: JobName.TakeoutImport; data: ITakeoutImportJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
@@ -552,7 +563,6 @@ export type MediaLocation = { location: string };
 export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
   [SystemMetadataKey.AdminOnboarding]: { isOnboarded: boolean };
   [SystemMetadataKey.FacialRecognitionState]: { lastRun?: string };
-  [SystemMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: Date };
   [SystemMetadataKey.MaintenanceMode]: MaintenanceModeState;
   [SystemMetadataKey.MediaLocation]: MediaLocation;
   [SystemMetadataKey.ReverseGeocodingState]: { lastUpdate?: string; lastImportFileName?: string };

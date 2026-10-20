@@ -21,6 +21,7 @@
 Verified against the codebase (fork of Immich v3.3.0-rc.0):
 
 - **Backup & ingest** — mobile auto/background backup with selective albums, duplicate detection, external libraries, CLI bulk import (`packages/cli`), user-defined storage templates
+- **Desktop ingestion** — `immich upload --watch ~/Photos` keeps a local folder continuously synced to the server (new/changed files are uploaded automatically; the supported desktop watch-folder path)
 - **Organize** — albums and shared albums, stacked photos, hierarchical tags, favorites/archive, folder view, trash, PIN-locked folder
 - **Discover** — CLIP semantic search, OCR text search, facial recognition and clustering, metadata search (EXIF), memories ("x years ago"), global map, duplicate detection
 - **View & play** — Live Photos / Motion Photos, 360° photos, RAW formats, HLS video transcoding, slideshow, Chromecast, virtual-scrolled timeline
@@ -112,7 +113,7 @@ Fork-critical and planned work (tracked in `docs/idea.md`):
 - [ ] Smart (rule-based) albums and nested albums
 - [ ] RSS/Atom + Open Graph embeds for shared links
 - [ ] WebDAV read endpoint
-- [ ] Desktop watch-folder uploader
+- [x] Desktop watch-folder uploader (CLI `immich upload --watch`)
 - [ ] Conversational search ("Ask HomeRoll")
 - [ ] Visual regression + accessibility test layer
 

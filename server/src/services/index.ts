@@ -41,6 +41,7 @@ import { SyncService } from 'src/services/sync.service.js';
 import { SystemConfigService } from 'src/services/system-config.service.js';
 import { SystemMetadataService } from 'src/services/system-metadata.service.js';
 import { TagService } from 'src/services/tag.service.js';
+import { TakeoutService } from 'src/services/takeout.service.js';
 import { TelemetryService } from 'src/services/telemetry.service.js';
 import { TimelineService } from 'src/services/timeline.service.js';
 import { TranscodingService } from 'src/services/transcoding.service.js';
@@ -49,6 +50,7 @@ import { UserAdminService } from 'src/services/user-admin.service.js';
 import { UserService } from 'src/services/user.service.js';
 import { VersionService } from 'src/services/version.service.js';
 import { ViewService } from 'src/services/view.service.js';
+import { WebDavService } from 'src/services/webdav.service.js';
 import { WorkflowExecutionService } from 'src/services/workflow-execution.service.js';
 import { WorkflowService } from 'src/services/workflow.service.js';
 
@@ -96,6 +98,7 @@ export const services = [
   SystemConfigService,
   SystemMetadataService,
   TagService,
+  TakeoutService,
   TelemetryService,
   TimelineService,
   TranscodingService,
@@ -104,6 +107,7 @@ export const services = [
   UserService,
   VersionService,
   ViewService,
+  WebDavService,
   WorkflowExecutionService,
   WorkflowService,
 ];
