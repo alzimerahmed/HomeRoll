@@ -28,11 +28,7 @@
   <ModalBody>
     <p>{$t('official_immich_resources')}</p>
     <div class="mt-5 flex flex-col gap-2">
-      {@render link(
-        'https://github.com/alzimerahmed/HomeRoll',
-        mdiInformationOutline,
-        $t('documentation'),
-      )}
+      {@render link('https://github.com/alzimerahmed/HomeRoll', mdiInformationOutline, $t('documentation'))}
 
       {@render link('https://github.com/alzimerahmed/HomeRoll', mdiGithub, $t('source'))}
 

@@ -1,7 +1,7 @@
 name: Docs build
 on:
   push:
-    branches: [main, 'release/*']
+    branches: [main, "release/*"]
   pull_request:
   release:
     types: [published]
@@ -20,7 +20,6 @@ jobs:
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
-
       - name: Check what should run
         id: check
         uses: immich-app/devtools/actions/pre-job@75493d49052d536863fc96100086782c5279b145 # pre-job-action-v2.1.1
@@ -33,8 +32,8 @@ jobs:
               - 'open-api/immich-openapi-specs.json'
           force-filters: |
             - '.github/workflows/docs-build.yml'
-          force-events: 'release'
-          force-branches: 'main'
+          force-events: "release"
+          force-branches: "main"
 
   build:
     name: Docs Build
@@ -48,7 +47,6 @@ jobs:
         working-directory: ./docs
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

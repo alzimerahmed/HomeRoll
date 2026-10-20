@@ -32,7 +32,10 @@
       return;
     }
 
-    return { availableVersion, releaseUrl: `https://github.com/alzimerahmed/HomeRoll/releases/tag/${availableVersion}` };
+    return {
+      availableVersion,
+      releaseUrl: `https://github.com/alzimerahmed/HomeRoll/releases/tag/${availableVersion}`,
+    };
   };
 
   const releaseInfo = $derived(getReleaseInfo(releaseManager.value));

@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches: [main, 'release/*']
+    branches: [main, "release/*"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,7 +19,6 @@ jobs:
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
-
       - name: Check what should run
         id: check
         uses: immich-app/devtools/actions/pre-job@75493d49052d536863fc96100086782c5279b145 # pre-job-action-v2.1.1
@@ -33,7 +32,7 @@ jobs:
               - 'native/**'
           force-filters: |
             - '.github/workflows/static_analysis.yml'
-          force-events: 'workflow_dispatch,release'
+          force-events: "workflow_dispatch,release"
 
   mobile-dart-analyze:
     name: Run Dart Code Analysis
@@ -46,7 +45,6 @@ jobs:
       run:
         working-directory: ./mobile
     steps:
-
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
