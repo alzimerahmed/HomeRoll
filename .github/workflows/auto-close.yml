@@ -51,7 +51,7 @@ jobs:
         run: |
           gh api graphql \
             -f prId="$NODE_ID" \
-            -f body="This PR has been automatically closed as the description doesn't follow [our template](https://github.com/immich-app/immich/blob/main/.github/pull_request_template.md). After you edit it to match the template, the PR will automatically be reopened." \
+            -f body="This PR has been automatically closed as the description doesn't follow [our template](https://github.com/alzimerahmed/HomeRoll/blob/main/.github/pull_request_template.md). After you edit it to match the template, the PR will automatically be reopened." \
             -f query='
               mutation CommentAndClosePR($prId: ID!, $body: String!) {
                 addComment(input: {
@@ -86,7 +86,7 @@ jobs:
         run: |
           gh api graphql \
             -f prId="$NODE_ID" \
-            -f body="Thank you for your interest in contributing to Immich! Unfortunately this PR looks like it was generated using an LLM. As noted in our [CONTRIBUTING.md](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md#use-of-generative-ai), we request that you don't use LLMs to generate PRs as those are not a good use of maintainer time." \
+            -f body="Thank you for your interest in contributing to HomeRoll! Unfortunately this PR looks like it was generated using an LLM. As noted in our [CONTRIBUTING.md](https://github.com/alzimerahmed/HomeRoll/blob/main/CONTRIBUTING.md#use-of-generative-ai), we request that you don't use LLMs to generate PRs as those are not a good use of maintainer time." \
             -f query='
               mutation CommentAndClosePR($prId: ID!, $body: String!) {
                 addComment(input: {
