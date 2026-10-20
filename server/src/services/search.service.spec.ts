@@ -221,7 +221,11 @@ describe(SearchService.name, () => {
     it('should forward hasNoFaces and orientation to the metadata repository', async () => {
       mocks.search.searchMetadata.mockResolvedValue({ hasNextPage: false, items: [] });
 
-      await sut.searchMetadata(authStub.user1, { size: 100, hasNoFaces: true, orientation: AssetOrientation.Landscape });
+      await sut.searchMetadata(authStub.user1, {
+        size: 100,
+        hasNoFaces: true,
+        orientation: AssetOrientation.Landscape,
+      });
 
       expect(mocks.search.searchMetadata).toHaveBeenCalledWith(
         { page: 1, size: 100 },

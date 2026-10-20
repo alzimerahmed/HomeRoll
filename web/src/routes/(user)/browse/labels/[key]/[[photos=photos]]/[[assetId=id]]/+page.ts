@@ -1,9 +1,4 @@
-import {
-  getBrowseLabelAssets,
-  getBrowseLabels,
-  isHttpError,
-  type BrowseLabelAssetsResponseDto,
-} from '@immich/sdk';
+import { getBrowseLabelAssets, getBrowseLabels, isHttpError, type BrowseLabelAssetsResponseDto } from '@immich/sdk';
 import { error } from '@sveltejs/kit';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';

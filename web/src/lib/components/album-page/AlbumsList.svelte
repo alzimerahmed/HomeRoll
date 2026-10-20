@@ -13,12 +13,7 @@
     SortOrder,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import {
-    getSelectedAlbumGroupOption,
-    sortAlbums,
-    stringToSortOrder,
-    type AlbumGroup,
-  } from '$lib/utils/album-utils';
+  import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import { ALBUM_FOLDER_GROUP, buildAlbumTreeView, sortAlbumTree, type AlbumTreeNode } from '$lib/utils/album-tree';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
@@ -172,7 +167,9 @@
     ];
 
     const pushSection = (node: AlbumTreeNode, parentPath: string) => {
-      const name = parentPath ? `${parentPath} › ${node.album.albumName || unnamedAlbum}` : node.album.albumName || unnamedAlbum;
+      const name = parentPath
+        ? `${parentPath} › ${node.album.albumName || unnamedAlbum}`
+        : node.album.albumName || unnamedAlbum;
       if (node.children.length > 0) {
         groups.push({ id: node.album.id, name, albums: node.children.map((child) => child.album) });
       }

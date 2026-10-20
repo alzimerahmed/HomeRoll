@@ -189,7 +189,14 @@
                 <Button shape="round" size="small" variant="ghost" loading={testing} onclick={handleTest}>
                   {$t('push_notifications_send_test')}
                 </Button>
-                <Button shape="round" size="small" color="danger" variant="ghost" loading={busy} onclick={handleUnsubscribe}>
+                <Button
+                  shape="round"
+                  size="small"
+                  color="danger"
+                  variant="ghost"
+                  loading={busy}
+                  onclick={handleUnsubscribe}
+                >
                   {$t('push_notifications_disable_on_this_device')}
                 </Button>
               {:else}

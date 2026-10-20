@@ -220,20 +220,21 @@ describe(PushService.name, () => {
 
     it('pushes to recipients, excluding subscribers who opted out', async () => {
       mocks.album.getById.mockResolvedValue(album as never);
-      mocks.user.get.mockImplementation((id: string) =>
-        Promise.resolve(
-          id === 'opted-out'
-            ? {
-                id,
-                metadata: [
-                  {
-                    key: UserMetadataKey.Preferences,
-                    value: { pushNotifications: { enabled: true, albumUpdate: false } },
-                  },
-                ],
-              }
-            : { id, metadata: [] },
-        ) as never,
+      mocks.user.get.mockImplementation(
+        (id: string) =>
+          Promise.resolve(
+            id === 'opted-out'
+              ? {
+                  id,
+                  metadata: [
+                    {
+                      key: UserMetadataKey.Preferences,
+                      value: { pushNotifications: { enabled: true, albumUpdate: false } },
+                    },
+                  ],
+                }
+              : { id, metadata: [] },
+          ) as never,
       );
       pushRepository.getByUserIds.mockResolvedValue([subscription]);
       fetchMock.mockResolvedValue({ ok: true, status: 201 });
@@ -242,10 +243,7 @@ describe(PushService.name, () => {
 
       // the actor is already excluded upstream via recipientIds; opt-outs are filtered here
       expect(pushRepository.getByUserIds).toHaveBeenCalledWith([userId]);
-      expect(fetchMock).toHaveBeenCalledWith(
-        subscription.endpoint,
-        expect.objectContaining({ method: 'POST' }),
-      );
+      expect(fetchMock).toHaveBeenCalledWith(subscription.endpoint, expect.objectContaining({ method: 'POST' }));
     });
   });
 

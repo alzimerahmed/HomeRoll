@@ -499,35 +499,35 @@ export class AlbumRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { isFavorite: true }] })
   getSmartAlbumAssetIds(albumId: string, ownerId: string, rules: SmartAlbumRules) {
     const { takenAfter, takenBefore, rating, isNotInAlbum, ...rest } = rules;
-    return searchAssetBuilderLegacy(this.db, {
-      userIds: [ownerId],
-      visibility: 'not-locked',
-      ...rest,
-      takenAfter: takenAfter ? new Date(takenAfter) : undefined,
-      takenBefore: takenBefore ? new Date(takenBefore) : undefined,
-    })
-      .select('asset.id')
-      // hidden assets stay out of smart albums even though 'not-locked' permits them
-      .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden))
-      // "not in any album" must ignore this album's own materialized rows, else membership flaps on refresh
-      .$if(!!isNotInAlbum, (qb) =>
-        qb.where((eb) =>
-          eb.not(
-            eb.exists((eb) =>
-              eb
-                .selectFrom('album_asset')
-                .whereRef('assetId', '=', 'asset.id')
-                .where('album_asset.albumId', '!=', albumId),
+    return (
+      searchAssetBuilderLegacy(this.db, {
+        userIds: [ownerId],
+        visibility: 'not-locked',
+        ...rest,
+        takenAfter: takenAfter ? new Date(takenAfter) : undefined,
+        takenBefore: takenBefore ? new Date(takenBefore) : undefined,
+      })
+        .select('asset.id')
+        // hidden assets stay out of smart albums even though 'not-locked' permits them
+        .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden))
+        // "not in any album" must ignore this album's own materialized rows, else membership flaps on refresh
+        .$if(!!isNotInAlbum, (qb) =>
+          qb.where((eb) =>
+            eb.not(
+              eb.exists((eb) =>
+                eb
+                  .selectFrom('album_asset')
+                  .whereRef('assetId', '=', 'asset.id')
+                  .where('album_asset.albumId', '!=', albumId),
+              ),
             ),
           ),
-        ),
-      )
-      .$if(rating !== undefined, (qb) =>
-        qb
-          .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-          .where('asset_exif.rating', '>=', rating!),
-      )
-      .execute();
+        )
+        .$if(rating !== undefined, (qb) =>
+          qb.innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId').where('asset_exif.rating', '>=', rating!),
+        )
+        .execute()
+    );
   }
 
   /**

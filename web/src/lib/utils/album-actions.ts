@@ -1,3 +1,7 @@
+import { createAlbum, refreshSmartAlbum, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+import { modalManager, toastManager, type ActionItem } from '@immich/ui';
+import { mdiAutoFix, mdiFolderMoveOutline, mdiFolderPlusOutline, mdiRefresh, mdiSwapHorizontal } from '@mdi/js';
+import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import AlbumMoveModal from '$lib/components/album-page/AlbumMoveModal.svelte';
 import SmartAlbumModal from '$lib/components/album-page/SmartAlbumModal.svelte';
@@ -7,21 +11,6 @@ import { handleUpdateAlbum, isAlbumEditor, isAlbumOwner } from '$lib/services/al
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import { isSmartAlbum } from '$lib/utils/smart-album';
-import {
-  createAlbum,
-  refreshSmartAlbum,
-  updateAlbumInfo,
-  type AlbumResponseDto,
-} from '@immich/sdk';
-import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import {
-  mdiAutoFix,
-  mdiFolderMoveOutline,
-  mdiFolderPlusOutline,
-  mdiRefresh,
-  mdiSwapHorizontal,
-} from '@mdi/js';
-import type { MessageFormatter } from 'svelte-i18n';
 
 /**
  * Action handlers for the nested album hierarchy (FG-07) and smart albums

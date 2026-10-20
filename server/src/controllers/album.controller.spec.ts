@@ -85,10 +85,7 @@ describe(AlbumController.name, () => {
         .post('/albums')
         .send({ albumName: 'Child', parentId: factory.uuid() });
       expect(status).toEqual(201);
-      expect(service.create).toHaveBeenCalledWith(
-        undefined,
-        expect.objectContaining({ parentId: expect.any(String) }),
-      );
+      expect(service.create).toHaveBeenCalledWith(undefined, expect.objectContaining({ parentId: expect.any(String) }));
     });
   });
 
@@ -101,11 +98,13 @@ describe(AlbumController.name, () => {
     });
 
     it('should accept clearing the parentId', async () => {
-      const { status } = await request(ctx.getHttpServer())
-        .patch(`/albums/${factory.uuid()}`)
-        .send({ parentId: null });
+      const { status } = await request(ctx.getHttpServer()).patch(`/albums/${factory.uuid()}`).send({ parentId: null });
       expect(status).toEqual(200);
-      expect(service.update).toHaveBeenCalledWith(undefined, expect.any(String), expect.objectContaining({ parentId: null }));
+      expect(service.update).toHaveBeenCalledWith(
+        undefined,
+        expect.any(String),
+        expect.objectContaining({ parentId: null }),
+      );
     });
   });
 

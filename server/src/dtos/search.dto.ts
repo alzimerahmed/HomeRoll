@@ -82,7 +82,11 @@ const BaseSearchSchema = z.object({
       deprecated: true,
     }),
   ocr: z.string().optional().describe('Filter by OCR text content').meta(DEPRECATED_FLAT_FIELD),
-  hasNoFaces: z.boolean().optional().describe('Filter by assets with no detected faces').meta(DEPRECATED_NEW_FLAT_FIELD),
+  hasNoFaces: z
+    .boolean()
+    .optional()
+    .describe('Filter by assets with no detected faces')
+    .meta(DEPRECATED_NEW_FLAT_FIELD),
   orientation: AssetOrientationSchema.optional()
     .describe('Filter by asset orientation')
     .meta(DEPRECATED_NEW_FLAT_FIELD),

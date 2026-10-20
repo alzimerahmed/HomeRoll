@@ -74,14 +74,18 @@ describe('web-push', () => {
 
     it('matches the RFC 8291 worked example', () => {
       // vectors from RFC 8291 Appendix (aes128gcm example)
-      const body = encryptWebPushPayload('When I grow up, I want to be a watermelon', {
-        p256dh: 'BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4',
-        auth: 'BTBZMqHH6r4Tts7J_aSIgg',
-      }, {
-        salt: Buffer.from('DGv6ra1nlYgDCS1FRnbzlw', 'base64url'),
-        localPrivateKey: Buffer.from('yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw', 'base64url'),
-        recordSize: 4096,
-      });
+      const body = encryptWebPushPayload(
+        'When I grow up, I want to be a watermelon',
+        {
+          p256dh: 'BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4',
+          auth: 'BTBZMqHH6r4Tts7J_aSIgg',
+        },
+        {
+          salt: Buffer.from('DGv6ra1nlYgDCS1FRnbzlw', 'base64url'),
+          localPrivateKey: Buffer.from('yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw', 'base64url'),
+          recordSize: 4096,
+        },
+      );
 
       expect(body.toString('base64url')).toBe(
         'DGv6ra1nlYgDCS1FRnbzlwAAEABBBP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A_yl95bQpu6cVPTpK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_Qulcy4a-fN',

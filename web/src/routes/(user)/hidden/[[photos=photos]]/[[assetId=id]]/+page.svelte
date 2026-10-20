@@ -65,11 +65,7 @@
         slidingWindowOffset={hiddenGridElement?.offsetTop ?? 0}
       />
     {:else}
-      <EmptyPlaceholder
-        title={$t('nothing_here_yet')}
-        text={$t('no_hidden_assets_message')}
-        class="mx-auto mt-10"
-      />
+      <EmptyPlaceholder title={$t('nothing_here_yet')} text={$t('no_hidden_assets_message')} class="mx-auto mt-10" />
     {/if}
   </section>
 </UserPageLayout>

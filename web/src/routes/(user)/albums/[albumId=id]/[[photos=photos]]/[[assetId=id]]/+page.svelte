@@ -46,11 +46,7 @@
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
-  import {
-    getAlbumHierarchyActions,
-    getSmartAlbumActions,
-    handleRefreshSmartAlbum,
-  } from '$lib/utils/album-actions';
+  import { getAlbumHierarchyActions, getSmartAlbumActions, handleRefreshSmartAlbum } from '$lib/utils/album-actions';
   import { getAlbumAncestors } from '$lib/utils/album-tree';
   import { isSmartAlbum } from '$lib/utils/smart-album';
   import { handleError } from '$lib/utils/handle-error';

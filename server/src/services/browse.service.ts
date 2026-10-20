@@ -8,11 +8,7 @@ import {
 import { LRUMap } from 'mnemonist';
 import { mapAsset } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
-import {
-  BrowseLabelAssetsDto,
-  BrowseLabelAssetsResponseDto,
-  BrowseLabelResponseDto,
-} from 'src/dtos/browse.dto.js';
+import { BrowseLabelAssetsDto, BrowseLabelAssetsResponseDto, BrowseLabelResponseDto } from 'src/dtos/browse.dto.js';
 import { BrowseRepository } from 'src/repositories/browse.repository.js';
 import { AssetSearchScope } from 'src/repositories/search.repository.js';
 import { BaseService } from 'src/services/base.service.js';

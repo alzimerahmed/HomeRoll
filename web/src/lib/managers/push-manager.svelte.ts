@@ -16,8 +16,7 @@ import {
 
 export type PushSubscribeResult = 'subscribed' | 'denied' | 'unsupported';
 
-const invalidateSubscriptions = () =>
-  queryClient.invalidateQueries({ queryKey: getPushSubscriptionsQuery().queryKey });
+const invalidateSubscriptions = () => queryClient.invalidateQueries({ queryKey: getPushSubscriptionsQuery().queryKey });
 
 /**
  * Browser-side push subscription lifecycle (FG-11). Owns the local

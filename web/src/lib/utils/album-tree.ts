@@ -65,7 +65,12 @@ export const buildAlbumTree = (albums: AlbumResponseDto[]): AlbumTreeNode[] => {
  * Sorts every level of an album tree with the albums-view sort settings.
  */
 export const sortAlbumTree = (nodes: AlbumTreeNode[], sortBy: string, orderBy: string): AlbumTreeNode[] => {
-  const order = new Map(sortAlbums(nodes.map(({ album }) => album), { sortBy, orderBy }).map(({ id }, index) => [id, index]));
+  const order = new Map(
+    sortAlbums(
+      nodes.map(({ album }) => album),
+      { sortBy, orderBy },
+    ).map(({ id }, index) => [id, index]),
+  );
   return nodes
     .slice()
     .sort((a, b) => (order.get(a.album.id) ?? 0) - (order.get(b.album.id) ?? 0))
@@ -101,7 +106,9 @@ export const buildAlbumTreeView = (allAlbums: AlbumResponseDto[], visibleAlbums:
     return undefined;
   };
 
-  const roots = buildAlbumTree(allAlbums).map(prune).filter((node): node is AlbumTreeNode => node !== undefined);
+  const roots = buildAlbumTree(allAlbums)
+    .map(prune)
+    .filter((node): node is AlbumTreeNode => node !== undefined);
   return { roots, contextIds };
 };
 

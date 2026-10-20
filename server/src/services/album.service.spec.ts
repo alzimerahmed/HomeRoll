@@ -1438,9 +1438,9 @@ describe(AlbumService.name, () => {
       mocks.album.getAncestorIds.mockResolvedValue([]);
       mocks.album.create.mockResolvedValue(getForAlbum(album));
 
-      await expect(
-        sut.create(AuthFactory.create(owner), { albumName: 'Child', parentId: parent.id }),
-      ).resolves.toEqual(expect.objectContaining({ id: album.id }));
+      await expect(sut.create(AuthFactory.create(owner), { albumName: 'Child', parentId: parent.id })).resolves.toEqual(
+        expect.objectContaining({ id: album.id }),
+      );
 
       expect(mocks.album.create).toHaveBeenCalledWith(
         expect.objectContaining({ parentId: parent.id, albumType: AlbumType.Manual, rules: null }),
@@ -1466,9 +1466,9 @@ describe(AlbumService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([parentId]));
       mocks.album.getAncestorIds.mockResolvedValue(Array.from({ length: 10 }, () => newUuid()));
 
-      await expect(
-        sut.create(AuthFactory.create(user), { albumName: 'Child', parentId }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.create(AuthFactory.create(user), { albumName: 'Child', parentId })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
       expect(mocks.album.create).not.toHaveBeenCalled();
     });
   });
@@ -1486,9 +1486,9 @@ describe(AlbumService.name, () => {
       mocks.album.getMaxSubtreeDepth.mockResolvedValue(0);
       mocks.album.update.mockResolvedValue(getForAlbum(album));
 
-      await expect(
-        sut.update(AuthFactory.create(owner), album.id, { parentId: parent.id }),
-      ).resolves.toEqual(expect.objectContaining({ id: album.id }));
+      await expect(sut.update(AuthFactory.create(owner), album.id, { parentId: parent.id })).resolves.toEqual(
+        expect.objectContaining({ id: album.id }),
+      );
 
       expect(mocks.album.getAncestorIds).toHaveBeenCalledWith(parent.id);
       expect(mocks.album.update).toHaveBeenCalledWith(
@@ -1508,11 +1508,7 @@ describe(AlbumService.name, () => {
       await sut.update(AuthFactory.create(owner), album.id, { parentId: null });
 
       expect(mocks.album.getAncestorIds).not.toHaveBeenCalled();
-      expect(mocks.album.update).toHaveBeenCalledWith(
-        album.id,
-        expect.objectContaining({ parentId: null }),
-        owner.id,
-      );
+      expect(mocks.album.update).toHaveBeenCalledWith(album.id, expect.objectContaining({ parentId: null }), owner.id);
     });
 
     it('should reject parenting an album to itself', async () => {
@@ -1521,9 +1517,9 @@ describe(AlbumService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
 
-      await expect(
-        sut.update(AuthFactory.create(owner), album.id, { parentId: album.id }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(AuthFactory.create(owner), album.id, { parentId: album.id })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
 
@@ -1537,9 +1533,9 @@ describe(AlbumService.name, () => {
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.album.getAncestorIds.mockResolvedValue([newUuid(), album.id]);
 
-      await expect(
-        sut.update(AuthFactory.create(owner), album.id, { parentId: descendantId }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(AuthFactory.create(owner), album.id, { parentId: descendantId })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
 
@@ -1554,9 +1550,9 @@ describe(AlbumService.name, () => {
       mocks.album.getAncestorIds.mockResolvedValue(Array.from({ length: 5 }, () => newUuid()));
       mocks.album.getMaxSubtreeDepth.mockResolvedValue(6);
 
-      await expect(
-        sut.update(AuthFactory.create(owner), album.id, { parentId }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(AuthFactory.create(owner), album.id, { parentId })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
 
@@ -1566,9 +1562,9 @@ describe(AlbumService.name, () => {
       mocks.access.album.checkSharedAlbumAccess.mockImplementation((_, ids) => Promise.resolve(ids));
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
 
-      await expect(
-        sut.update(AuthFactory.create(user), album.id, { parentId: newUuid() }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(AuthFactory.create(user), album.id, { parentId: newUuid() })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
   });
@@ -1654,9 +1650,9 @@ describe(AlbumService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
 
-      await expect(
-        sut.addAssets(AuthFactory.create(owner), album.id, { ids: [newUuid()] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.addAssets(AuthFactory.create(owner), album.id, { ids: [newUuid()] })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
       expect(mocks.album.addAssetIds).not.toHaveBeenCalled();
     });
 
@@ -1667,9 +1663,9 @@ describe(AlbumService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
 
-      await expect(
-        sut.removeAssets(AuthFactory.create(owner), album.id, { ids: [asset.id] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.removeAssets(AuthFactory.create(owner), album.id, { ids: [asset.id] })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
       expect(mocks.album.removeAssetIds).not.toHaveBeenCalled();
     });
 

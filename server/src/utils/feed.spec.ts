@@ -40,7 +40,9 @@ describe('feed', () => {
       expect(xml).toContain('<feed xmlns="http://www.w3.org/2005/Atom">');
       expect(xml).toContain('<title>Vacation &amp; Friends</title>');
       expect(xml).toContain('<subtitle>3 shared photos &amp; videos</subtitle>');
-      expect(xml).toContain('<link rel="self" href="https://homeroll.test/api/shared-links/abc123/feed?format=atom" />');
+      expect(xml).toContain(
+        '<link rel="self" href="https://homeroll.test/api/shared-links/abc123/feed?format=atom" />',
+      );
       expect(xml).toContain('<id>https://homeroll.test/api/shared-links/abc123/feed?format=atom</id>');
       expect(xml).toContain('<updated>2024-05-02T10:00:00.000Z</updated>');
       expect(xml).toContain('<entry>');
@@ -63,10 +65,9 @@ describe('feed', () => {
     });
 
     it('omits summary and enclosure when absent', () => {
-      const xml = buildAtomFeed(
-        { ...channel, description: undefined },
-        [{ ...items[0], description: undefined, enclosureUrl: undefined }],
-      );
+      const xml = buildAtomFeed({ ...channel, description: undefined }, [
+        { ...items[0], description: undefined, enclosureUrl: undefined },
+      ]);
 
       expect(xml).not.toContain('<subtitle>');
       expect(xml).not.toContain('<summary>');

@@ -14,12 +14,7 @@ import { PushRepository } from 'src/repositories/push.repository.js';
 import { PushSubscriptionTable } from 'src/schema/tables/push-subscription.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { getPreferences } from 'src/utils/preferences.js';
-import {
-  VapidConfig,
-  WebPushPayload,
-  buildVapidAuthorization,
-  encryptWebPushPayload,
-} from 'src/utils/web-push.js';
+import { VapidConfig, WebPushPayload, buildVapidAuthorization, encryptWebPushPayload } from 'src/utils/web-push.js';
 
 /** Web Push TTL: keep undelivered notifications for 4 weeks (RFC 8030 max suggestion). */
 const PUSH_TTL_SECONDS = 2_419_200;
@@ -200,7 +195,9 @@ export class PushService extends BaseService {
           }
         } catch (error: Error | any) {
           // endpoint is a bearer-capability URL — log origin only
-          this.logger.warn(`Failed to send push notification to ${new URL(subscription.endpoint).origin}: ${error?.message}`);
+          this.logger.warn(
+            `Failed to send push notification to ${new URL(subscription.endpoint).origin}: ${error?.message}`,
+          );
         }
       }),
     );
@@ -284,10 +281,7 @@ export class PushService extends BaseService {
   }
 
   /** Drop users who disabled the given push notification category. */
-  private async filterRecipients(
-    userIds: string[],
-    preference: 'albumInvite' | 'albumUpdate',
-  ): Promise<string[]> {
+  private async filterRecipients(userIds: string[], preference: 'albumInvite' | 'albumUpdate'): Promise<string[]> {
     const result: string[] = [];
     for (const userId of userIds) {
       const user = await this.userRepository.get(userId, { withDeleted: false });

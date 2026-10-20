@@ -60,7 +60,12 @@ describe(BrowseService.name, () => {
 
       const items = await sut.getLabels(auth);
 
-      expect(items[0]).toEqual({ key: BROWSE_LABELS[0].key, label: BROWSE_LABELS[0].label, count: 0, previewAssetId: null });
+      expect(items[0]).toEqual({
+        key: BROWSE_LABELS[0].key,
+        label: BROWSE_LABELS[0].label,
+        count: 0,
+        previewAssetId: null,
+      });
     });
 
     it('should serve the second call from the cache', async () => {
@@ -126,9 +131,9 @@ describe(BrowseService.name, () => {
     });
 
     it('should reject an invalid cursor', async () => {
-      await expect(sut.getLabelAssets(AuthFactory.create(), 'beach', { size: 250, cursor: '???' })).rejects.toThrowError(
-        new BadRequestException('Invalid cursor'),
-      );
+      await expect(
+        sut.getLabelAssets(AuthFactory.create(), 'beach', { size: 250, cursor: '???' }),
+      ).rejects.toThrowError(new BadRequestException('Invalid cursor'));
     });
 
     it('should return the page and a next cursor', async () => {

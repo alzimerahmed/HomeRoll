@@ -206,7 +206,8 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('Smart albums require rules');
       }
       recompute =
-        albumType === AlbumType.Smart && ((dto.rules !== undefined && dto.rules !== null) || album.albumType !== AlbumType.Smart);
+        albumType === AlbumType.Smart &&
+        ((dto.rules !== undefined && dto.rules !== null) || album.albumType !== AlbumType.Smart);
     }
 
     const updatedAlbum = await this.albumRepository.update(

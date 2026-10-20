@@ -8,7 +8,14 @@ import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import { SmartAlbumRules, SmartAlbumRulesSchema } from 'src/dtos/smart-album.dto.js';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
-import { AlbumType, AlbumTypeSchema, AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum.js';
+import {
+  AlbumType,
+  AlbumTypeSchema,
+  AlbumUserRole,
+  AlbumUserRoleSchema,
+  AssetOrder,
+  AssetOrderSchema,
+} from 'src/enum.js';
 import { asDateTimeString } from 'src/utils/date.js';
 import { stringToBool } from 'src/validation.js';
 
@@ -116,9 +123,9 @@ const UpdateAlbumSchema = z
       'Album type. Changing a manual album to smart requires rules (either already stored or provided in this request). ' +
         'Changing a smart album to manual freezes its current membership and clears its rules.',
     ),
-    rules: SmartAlbumRulesSchema.nullable().optional().describe(
-      'Smart album membership rules. Set to null to convert a smart album back to a manual album.',
-    ),
+    rules: SmartAlbumRulesSchema.nullable()
+      .optional()
+      .describe('Smart album membership rules. Set to null to convert a smart album back to a manual album.'),
   })
   .refine((data) => !(data.rules !== undefined && data.rules !== null && data.albumType === AlbumType.Manual), {
     error: 'Cannot set rules on a manual album',

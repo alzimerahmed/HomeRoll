@@ -8,14 +8,12 @@ import { AssetTypeSchema } from 'src/enum.js';
  */
 export const SmartAlbumRulesSchema = z
   .object({
-    takenAfter: z
-      .iso
+    takenAfter: z.iso
       .datetime({ offset: true })
       .optional()
       .describe('Only include assets taken after this ISO 8601 datetime')
       .meta({ example: '2024-01-01T00:00:00.000Z' }),
-    takenBefore: z
-      .iso
+    takenBefore: z.iso
       .datetime({ offset: true })
       .optional()
       .describe('Only include assets taken before this ISO 8601 datetime')
@@ -24,7 +22,10 @@ export const SmartAlbumRulesSchema = z
     country: z.string().optional().describe('Only include assets taken in this country (exact match on EXIF country)'),
     make: z.string().optional().describe('Only include assets from this camera make (exact match on EXIF make)'),
     model: z.string().optional().describe('Only include assets from this camera model (exact match on EXIF model)'),
-    lensModel: z.string().optional().describe('Only include assets taken with this lens (exact match on EXIF lensModel)'),
+    lensModel: z
+      .string()
+      .optional()
+      .describe('Only include assets taken with this lens (exact match on EXIF lensModel)'),
     rating: z
       .int()
       .min(-1)

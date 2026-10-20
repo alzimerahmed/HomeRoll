@@ -398,18 +398,18 @@ describe(SharedLinkService.name, () => {
 
   describe('getFeed', () => {
     const authRow = (overrides: Record<string, unknown> = {}) =>
-        ({
-          id: 'link-1',
-          userId: 'user-1',
-          albumId: null,
-          expiresAt: null,
-          password: null,
-          showExif: true,
-          allowUpload: true,
-          allowDownload: true,
-          user: { id: 'user-1' },
-          ...overrides,
-        }) as never;
+      ({
+        id: 'link-1',
+        userId: 'user-1',
+        albumId: null,
+        expiresAt: null,
+        password: null,
+        showExif: true,
+        allowUpload: true,
+        allowDownload: true,
+        user: { id: 'user-1' },
+        ...overrides,
+      }) as never;
 
     const feedCall = (key = 'link-key', format = 'atom') =>
       sut.getFeed(key, { format } as never, 'https://homeroll.test');
@@ -448,9 +448,7 @@ describe(SharedLinkService.name, () => {
       expect(xml).toContain('<title>Public Share</title>');
       expect(xml).toContain(`<link href="https://homeroll.test/share/${keyParam}" />`);
       expect(xml).toContain(`https://homeroll.test/api/shared-links/${keyParam}/feed?format=atom`);
-      expect(xml).toContain(
-        `https://homeroll.test/api/assets/${sharedLink.assets[0].id}/original?key=${keyParam}`,
-      );
+      expect(xml).toContain(`https://homeroll.test/api/assets/${sharedLink.assets[0].id}/original?key=${keyParam}`);
       expect(xml).toContain('rel="enclosure"');
     });
 

@@ -32,9 +32,7 @@
       });
 
       toastManager.primary(
-        isHidden
-          ? $t('unhidden_count', { values: { count: 1 } })
-          : $t('hidden_count', { values: { count: 1 } }),
+        isHidden ? $t('unhidden_count', { values: { count: 1 } }) : $t('hidden_count', { values: { count: 1 } }),
       );
       onAction({ type, asset });
     } catch (error) {

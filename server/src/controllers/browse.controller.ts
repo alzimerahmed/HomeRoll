@@ -21,8 +21,7 @@ export class BrowseController {
   @Authenticated({ permission: Permission.AssetRead })
   @Endpoint({
     summary: 'Get browse labels',
-    description:
-      'List the curated CLIP-label taxonomy with per-user match counts and a preview asset for each label.',
+    description: 'List the curated CLIP-label taxonomy with per-user match counts and a preview asset for each label.',
     history: new HistoryBuilder().added('v4.0.0').alpha('v4.0.0'),
   })
   getBrowseLabels(@Auth() auth: AuthDto): Promise<BrowseLabelResponseDto[]> {

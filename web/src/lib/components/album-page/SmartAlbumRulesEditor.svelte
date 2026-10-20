@@ -12,22 +12,8 @@
     smartRuleFields,
     type SmartRuleField,
   } from '$lib/utils/smart-album';
-  import {
-    AssetType,
-    getAllPeople,
-    type PersonResponseDto,
-    type SmartAlbumRulesDto,
-  } from '@immich/sdk';
-  import {
-    Button,
-    DatePicker,
-    Icon,
-    IconButton,
-    Input,
-    modalManager,
-    Select,
-    type SelectOption,
-  } from '@immich/ui';
+  import { AssetType, getAllPeople, type PersonResponseDto, type SmartAlbumRulesDto } from '@immich/sdk';
+  import { Button, DatePicker, Icon, IconButton, Input, modalManager, Select, type SelectOption } from '@immich/ui';
   import { mdiClose, mdiPlus } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
@@ -167,11 +153,7 @@
             }
           />
         {:else if meta.kind === 'rating'}
-          <Select
-            value={values.rating ?? 1}
-            options={ratingOptions}
-            onChange={(value) => (values.rating = value)}
-          />
+          <Select value={values.rating ?? 1} options={ratingOptions} onChange={(value) => (values.rating = value)} />
         {:else if meta.kind === 'type'}
           <Select
             value={values.type ?? AssetType.Image}
