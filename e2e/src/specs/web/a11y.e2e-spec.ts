@@ -39,7 +39,9 @@ type AxeBuilderLike = {
 const loadAxeBuilder = async (): Promise<(new (options: { page: Page }) => AxeBuilderLike) | null> => {
   try {
     const specifier = '@axe-core/playwright'; // variable specifier: optional dep, resolved at runtime only
-    const mod = (await import(/* @vite-ignore */ specifier)) as { AxeBuilder?: new (options: { page: Page }) => AxeBuilderLike };
+    const mod = (await import(/* @vite-ignore */ specifier)) as {
+      AxeBuilder?: new (options: { page: Page }) => AxeBuilderLike;
+    };
     return mod.AxeBuilder ?? null;
   } catch {
     return null;

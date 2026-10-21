@@ -30,4 +30,5 @@ You can also build and install the CLI using
 
     $ pnpm run build
     $ pnpm install -g .
-****
+
+---

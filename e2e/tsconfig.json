@@ -18,7 +18,7 @@
     "paths": {
       "src/*": ["./src/*"]
     },
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
   "include": ["src/**/*.ts", "vitest*.config.ts"],
   "exclude": ["dist", "node_modules"]

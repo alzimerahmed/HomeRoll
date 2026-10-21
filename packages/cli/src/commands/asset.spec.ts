@@ -314,11 +314,7 @@ describe('startWatch', () => {
     const hiddenFilePath = path.join(testFolder, '.hidden.jpg');
 
     watchers.push(
-      await startWatch(
-        [testFolder],
-        { concurrency: 1 },
-        { batchSize: 1, debounceTimeMs: 10, awaitWriteFinish: false },
-      ),
+      await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10, awaitWriteFinish: false }),
     );
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(hiddenFilePath, 'hidden');
@@ -353,11 +349,7 @@ describe('startWatch', () => {
     const testFilePath = path.join(testFolder, 'test.jpg');
 
     watchers.push(
-      await startWatch(
-        [testFolder],
-        { concurrency: 1 },
-        { batchSize: 1, debounceTimeMs: 10, awaitWriteFinish: false },
-      ),
+      await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10, awaitWriteFinish: false }),
     );
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(testFilePath, 'testjpg');
@@ -377,11 +369,7 @@ describe('startWatch', () => {
     const ignoredFilePath = path.join(ignoredFolder, 'ignored.jpg');
 
     watchers.push(
-      await startWatch(
-        [testFolder],
-        { concurrency: 1, ignore: ignoredPattern },
-        { batchSize: 1, debounceTimeMs: 10 },
-      ),
+      await startWatch([testFolder], { concurrency: 1, ignore: ignoredPattern }, { batchSize: 1, debounceTimeMs: 10 }),
     );
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(testFilePath, 'testjpg');
