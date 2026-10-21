@@ -277,9 +277,12 @@ export class JobRepository {
         return { deduplication: { id: JobName.DatabaseBackup } };
       }
       case JobName.AutoCreationGenerate: {
-        // one pending render per user+type — spamming the run endpoint must not
-        // enqueue unbounded ffmpeg/sharp jobs
         return { deduplication: { id: `auto-creation-${item.data.ownerId}-${item.data.type}` } };
+      }
+      case JobName.VideoTrim: {
+        // one pending trim per owner+asset — spamming the trim endpoint must not
+        // enqueue unbounded ffmpeg jobs
+        return { deduplication: { id: `video-trim-${item.data.ownerId}-${item.data.id}` } };
       }
       case JobName.TakeoutImport: {
         return {

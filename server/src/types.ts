@@ -355,6 +355,13 @@ export interface IQualityScoreJob {
   assetIds: string[];
 }
 
+/** FG-15: server-side video trim producing a new archived asset. */
+export interface IVideoTrimJob extends IEntityJob {
+  ownerId: string;
+  startSeconds: number;
+  endSeconds: number;
+}
+
 export interface JobCounts {
   active: number;
   completed: number;

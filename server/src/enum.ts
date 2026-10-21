@@ -977,6 +977,9 @@ export enum JobName {
   QualityScore = 'QualityScore',
   MemoryCurate = 'MemoryCurate',
   AutoCreationGenerate = 'AutoCreationGenerate',
+
+  // HomeRoll FG-15
+  VideoTrim = 'VideoTrim',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });

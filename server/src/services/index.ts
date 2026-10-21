@@ -56,6 +56,7 @@ import { TrashService } from 'src/services/trash.service.js';
 import { UserAdminService } from 'src/services/user-admin.service.js';
 import { UserService } from 'src/services/user.service.js';
 import { VersionService } from 'src/services/version.service.js';
+import { VideoTrimService } from 'src/services/video-trim.service.js';
 import { ViewService } from 'src/services/view.service.js';
 import { WebDavService } from 'src/services/webdav.service.js';
 import { WorkflowExecutionService } from 'src/services/workflow-execution.service.js';
@@ -120,6 +121,7 @@ export const services = [
   UserAdminService,
   UserService,
   VersionService,
+  VideoTrimService,
   ViewService,
   WebDavService,
   WorkflowExecutionService,
