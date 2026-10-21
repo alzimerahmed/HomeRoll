@@ -58,7 +58,8 @@ export class DownloadRepository {
         'asset.originalFileName',
         'asset.type',
         'asset.fileCreatedAt',
-        'asset_exif.dateTimeOriginal',
+        // FG-19: alias to `takenAt` — ExportAssetMetadata requires that name (B1)
+        'asset_exif.dateTimeOriginal as takenAt',
         'asset_exif.latitude',
         'asset_exif.longitude',
         'asset_exif.description',
@@ -79,7 +80,7 @@ export class DownloadRepository {
         sql<string[]>`coalesce((select array_agg(al.albumName order by al.albumName) from album_asset aa join album al on al.id = aa.albumId where aa.assetId = asset.id), '{}')`.as(
           'albums',
         ),
-        sql<string[]>`coalesce((select array_agg(distinct p.name) from asset_face af join person p on p.personGroupId = af.personGroupId where af.assetId = asset.id and af.deletedAt is null and p.ownerId = asset.ownerId and p.name <> ''), '{}')`.as(
+        sql<string[]>`coalesce((select array_agg(distinct p.name order by p.name) from asset_face af join person p on p.personGroupId = af.personGroupId where af.assetId = asset.id and af.deletedAt is null and p.ownerId = asset.ownerId and p.name <> ''), '{}')`.as(
           'people',
         ),
       ])

@@ -56,7 +56,7 @@ describe(DownloadService.name + ' (sidecars)', () => {
     mocks.downloadRepository.getExportMetadata.mockResolvedValue(new Map([[asset.id, { ...fullMetadata, id: asset.id }]]));
     mocks.storage.createZipStream.mockReturnValue(zip);
 
-    await sut.downloadArchive(authStub.admin, { assetIds: [asset.id], include: ['sidecars'] });
+    await sut.downloadArchive(authStub.admin, { assetIds: [asset.id], include: ['sidecars'], sidecarFormat: 'both' });
 
     expect(mocks.downloadRepository.getExportMetadata).toHaveBeenCalledWith([asset.id]);
     expect(zip.addBuffer).toHaveBeenCalledTimes(2);
@@ -99,7 +99,7 @@ describe(DownloadService.name + ' (sidecars)', () => {
     expect(zip.addBuffer).not.toHaveBeenCalled();
   });
 
-  it('should skip sidecars for shared-link downloads (no metadata leak)', async () => {
+  it('should skip sidecars for shared links with showExif=false (no metadata leak)', async () => {
     const zip = archiveMock();
     const asset = AssetFactory.create();
 
@@ -107,11 +107,30 @@ describe(DownloadService.name + ' (sidecars)', () => {
     mocks.asset.getForOriginals.mockResolvedValue([asset]);
     mocks.storage.createZipStream.mockReturnValue(zip);
 
-    await sut.downloadArchive(authStub.adminSharedLink, { assetIds: [asset.id], include: ['sidecars'] });
+    await sut.downloadArchive(
+      { ...authStub.adminSharedLink, sharedLink: { ...authStub.adminSharedLink.sharedLink!, showExif: false } },
+      { assetIds: [asset.id], include: ['sidecars'] },
+    );
 
     expect(mocks.downloadRepository.getExportMetadata).not.toHaveBeenCalled();
     expect(zip.addBuffer).not.toHaveBeenCalled();
     expect(mocks.logger.warn).toHaveBeenCalled();
+  });
+
+  it('should allow sidecars for shared links with showExif=true (consistent with API EXIF exposure)', async () => {
+    const zip = archiveMock();
+    const asset = AssetFactory.create({ originalFileName: 'IMG_1234.jpg' });
+
+    mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+    mocks.asset.getForOriginals.mockResolvedValue([asset]);
+    mocks.downloadRepository.getExportMetadata.mockResolvedValue(new Map([[asset.id, { ...fullMetadata, id: asset.id }]]));
+    mocks.storage.createZipStream.mockReturnValue(zip);
+
+    await sut.downloadArchive(authStub.adminSharedLink, { assetIds: [asset.id], include: ['sidecars'] });
+
+    expect(mocks.downloadRepository.getExportMetadata).toHaveBeenCalledWith([asset.id]);
+    expect(zip.addBuffer).toHaveBeenCalledTimes(2);
+    expect(mocks.logger.warn).not.toHaveBeenCalled();
   });
 
   it('should skip sidecars for assets without exportable metadata', async () => {

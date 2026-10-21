@@ -100,6 +100,22 @@ describe('buildTakeoutJson', () => {
     const json = JSON.parse(buildTakeoutJson({ ...baseMetadata, latitude: 0, longitude: 0 })!);
     expect(json.geoData).toBeUndefined();
   });
+
+  it('should emit photoTakenTime when EXIF capture time exists (no creationTime)', () => {
+    const json = JSON.parse(buildTakeoutJson(baseMetadata)!);
+    expect(json.photoTakenTime).toBeDefined();
+    expect(json.creationTime).toBeUndefined();
+  });
+
+  it('should fall back to creationTime from fileCreatedAt when there is no EXIF capture time (M1)', () => {
+    const json = JSON.parse(
+      buildTakeoutJson({ ...baseMetadata, takenAt: null, fileCreatedAt: new Date('2024-06-01T10:00:00.000Z') })!,
+    );
+    expect(json.photoTakenTime).toBeUndefined();
+    expect(json.creationTime.timestamp).toBe(Math.floor(new Date('2024-06-01T10:00:00.000Z').getTime() / 1000).toString());
+    // the fallback must round-trip through the importer
+    expect(parseTakeoutJson(json)!.takenAt!.getTime()).toBe(new Date('2024-06-01T10:00:00.000Z').getTime());
+  });
 });
 
 describe('buildXmp', () => {
@@ -126,7 +142,7 @@ describe('buildXmp', () => {
     expect(xmp).toContain('<exif:LensModel>');
     expect(xmp).toContain('<exif:FNumber>1.78</exif:FNumber>');
     expect(xmp).toContain('<exif:ExposureTime>1/120</exif:ExposureTime>');
-    expect(xmp).toContain('<exif:ISOSpeedRatings>125</exif:ISOSpeedRatings>');
+    expect(xmp).toContain('<exif:ISOSpeedRatings><rdf:Seq><rdf:li>125</rdf:li></rdf:Seq></exif:ISOSpeedRatings>');
     expect(xmp).toContain('<exif:FocalLength>24</exif:FocalLength>');
     expect(xmp).toContain('<tiff:Orientation>1</tiff:Orientation>');
     expect(xmp).toContain('<MicrosoftPhoto:Rating>4</MicrosoftPhoto:Rating>');
@@ -146,8 +162,16 @@ describe('buildXmp', () => {
     const xmp = buildXmp({ ...baseMetadata, latitude: -33.8568, longitude: -70.6505 })!;
     expect(xmp).toContain('<exif:GPSLatitudeRef>S</exif:GPSLatitudeRef>');
     expect(xmp).toContain('<exif:GPSLongitudeRef>W</exif:GPSLongitudeRef>');
-    expect(xmp).toContain('33.8568');
-    expect(xmp).toContain('70.6505');
+    // composite deg,min.secX form carries the hemisphere inside the value
+    expect(xmp).toContain('<exif:GPSLatitude>33,51.408S</exif:GPSLatitude>');
+    expect(xmp).toContain('<exif:GPSLongitude>70,39.030W</exif:GPSLongitude>');
+  });
+
+  it('should write GPS as composite deg,min.secX text values (no rdf:datatype)', () => {
+    const xmp = buildXmp(baseMetadata)!;
+    expect(xmp).toContain('<exif:GPSLatitude>48,51.504N</exif:GPSLatitude>');
+    expect(xmp).toContain('<exif:GPSLongitude>2,17.670E</exif:GPSLongitude>');
+    expect(xmp).not.toContain('rdf:datatype');
   });
 
   it('should return null when there is no metadata worth exporting', () => {

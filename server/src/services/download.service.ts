@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import { isMetadataHidden, type AuthDto } from 'src/dtos/auth.dto.js';
 import {
   DownloadArchiveDto,
   DownloadArchiveInfo,
@@ -96,16 +96,19 @@ export class DownloadService extends BaseService {
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
-    // FG-19: sidecars are owner-only — shared-link downloads must not leak GPS/description/people
+    // FG-19: sidecars are owner-only — shared-link downloads must not leak GPS/description/people.
+    // Gate on isMetadataHidden() so shared links with showExif=true (which already expose
+    // EXIF via the API) still get sidecars, consistent with the rest of the app.
     let metadataMap = new Map<string, ExportAssetMetadata>();
-    const wantsSidecars = !!dto.include?.includes('sidecars') && !auth.sharedLink;
-    if (dto.include?.includes('sidecars') && auth.sharedLink) {
+    const wantsSidecars = !!dto.include?.includes('sidecars') && !isMetadataHidden(auth);
+    if (dto.include?.includes('sidecars') && isMetadataHidden(auth)) {
       this.logger.warn('Sidecar export is not available for shared-link downloads — ignoring include=sidecars');
     }
     if (wantsSidecars) {
       metadataMap = await this.downloadRepository.getExportMetadata(dto.assetIds);
     }
-    const sidecarFormat: SidecarFormat = dto.sidecarFormat ?? 'both';
+    // default lives in the DTO (zod .default) — no second fallback here
+    const sidecarFormat: SidecarFormat = dto.sidecarFormat;
 
     for (const assetId of dto.assetIds) {
       const asset = assetMap.get(assetId);

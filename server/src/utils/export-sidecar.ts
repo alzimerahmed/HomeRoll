@@ -71,6 +71,13 @@ export const buildTakeoutJson = (metadata: ExportAssetMetadata): string | null =
       timestamp: toTakeoutTimestamp(metadata.takenAt),
       formatted: toTakeoutFormatted(metadata.takenAt),
     };
+  } else if (metadata.fileCreatedAt) {
+    // M1 fallback: assets without EXIF capture time still export a usable time —
+    // `parseTakeoutJson` reads `creationTime` when `photoTakenTime` is absent.
+    json.creationTime = {
+      timestamp: toTakeoutTimestamp(metadata.fileCreatedAt),
+      formatted: toTakeoutFormatted(metadata.fileCreatedAt),
+    };
   }
 
   if (metadata.latitude !== null && metadata.longitude !== null) {
@@ -124,12 +131,12 @@ export const buildXmp = (metadata: ExportAssetMetadata): string | null => {
   const rdfItems: string[] = [];
   const simpleProps: string[] = [];
 
-  const addSimple = (prefix: string, name: string, value: string | number | null | undefined, xmlTag?: string) => {
+  const addSimple = (prefix: string, name: string, value: string | number | null | undefined) => {
     const v = optional(value);
     if (v === null) {
       return;
     }
-    simpleProps.push(`    <${prefix}:${name}${xmlTag ? ` rdf:datatype="${xmlTag}"` : ''}>${escapeXml(v)}</${prefix}:${name}>`);
+    simpleProps.push(`    <${prefix}:${name}>${escapeXml(v)}</${prefix}:${name}>`);
   };
 
   if (metadata.originalFileName) {
@@ -164,18 +171,20 @@ export const buildXmp = (metadata: ExportAssetMetadata): string | null => {
   }
 
   if (metadata.latitude !== null && metadata.longitude !== null && !(metadata.latitude === 0 && metadata.longitude === 0)) {
-    // XMP GPS coordinates are written as rational degrees with N/S and E/W carried in the reference attribute
-    const latRef = metadata.latitude >= 0 ? 'N' : 'S';
-    const lngRef = metadata.longitude >= 0 ? 'E' : 'W';
+    // EXIF-XMP: GPSLatitude/GPSLongitude are single text values in `deg,min.secX` form
+    // (e.g. `48,51.504N`); the hemisphere rides inside the value, with the matching
+    // `*Ref` elements kept for TIFF-tag compatibility.
+    const toGpsText = (value: number, positive: string, negative: string): string => {
+      const abs = Math.abs(value);
+      const deg = Math.floor(abs);
+      const min = ((abs - deg) * 60).toFixed(3);
+      return `${deg},${min}${value >= 0 ? positive : negative}`;
+    };
     simpleProps.push(
-      `    <exif:GPSLatitude rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">${escapeXml(
-        Math.abs(metadata.latitude).toString(),
-      )}</exif:GPSLatitude>`,
-      `    <exif:GPSLongitude rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">${escapeXml(
-        Math.abs(metadata.longitude).toString(),
-      )}</exif:GPSLongitude>`,
-      `    <exif:GPSLatitudeRef>${latRef}</exif:GPSLatitudeRef>`,
-      `    <exif:GPSLongitudeRef>${lngRef}</exif:GPSLongitudeRef>`,
+      `    <exif:GPSLatitude>${escapeXml(toGpsText(metadata.latitude, 'N', 'S'))}</exif:GPSLatitude>`,
+      `    <exif:GPSLongitude>${escapeXml(toGpsText(metadata.longitude, 'E', 'W'))}</exif:GPSLongitude>`,
+      `    <exif:GPSLatitudeRef>${metadata.latitude >= 0 ? 'N' : 'S'}</exif:GPSLatitudeRef>`,
+      `    <exif:GPSLongitudeRef>${metadata.longitude >= 0 ? 'E' : 'W'}</exif:GPSLongitudeRef>`,
     );
   }
 
@@ -184,7 +193,10 @@ export const buildXmp = (metadata: ExportAssetMetadata): string | null => {
   addSimple('exif', 'LensModel', metadata.lensModel);
   addSimple('exif', 'FNumber', metadata.fNumber);
   addSimple('exif', 'ExposureTime', metadata.exposureTime);
-  addSimple('exif', 'ISOSpeedRatings', metadata.iso);
+  if (metadata.iso !== null) {
+    // EXIF-XMP defines ISOSpeedRatings as an ordered list of integers
+    simpleProps.push(`    <exif:ISOSpeedRatings><rdf:Seq><rdf:li>${metadata.iso}</rdf:li></rdf:Seq></exif:ISOSpeedRatings>`);
+  }
   addSimple('exif', 'FocalLength', metadata.focalLength);
   addSimple('tiff', 'Orientation', metadata.orientation);
   addSimple('MicrosoftPhoto', 'Rating', metadata.rating);
