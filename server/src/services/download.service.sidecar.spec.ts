@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
 import { vitest } from 'vitest';
-import { DownloadService } from 'src/services/download.service.js';
 import type { ExportAssetMetadata } from 'src/utils/export-sidecar.js';
+import { DownloadService } from 'src/services/download.service.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
