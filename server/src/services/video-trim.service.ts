@@ -70,7 +70,7 @@ export class VideoTrimService extends BaseService {
     const { id, ownerId, startSeconds, endSeconds, targetAssetId } = job;
     this.logger.log(`Video trim started for asset ${id} (user ${ownerId}, ${startSeconds}s–${endSeconds}s)`);
 
-    const source = await this.assetRepository.getById(id, { exifInfo: true });
+    const source = await this.assetRepository.getById(id, {});
     if (!source || source.deletedAt !== null || !source.originalPath) {
       this.logger.warn(`Video trim ${targetAssetId}: source asset ${id} is gone — skipping`);
       return JobStatus.Skipped;
