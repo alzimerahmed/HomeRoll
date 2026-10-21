@@ -971,6 +971,12 @@ export enum JobName {
 
   // Takeout
   TakeoutImport = 'TakeoutImport',
+
+  // HomeRoll FG-12/13/14
+  QualityScoreQueueAll = 'QualityScoreQueueAll',
+  QualityScore = 'QualityScore',
+  MemoryCurate = 'MemoryCurate',
+  AutoCreationGenerate = 'AutoCreationGenerate',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -1253,6 +1259,9 @@ export enum ConfigVisibility {
 export enum ApiTag {
   Activities = 'Activities',
   Albums = 'Albums',
+  // HomeRoll FG-13/14
+  Ask = 'Ask',
+  AutoCreations = 'AutoCreations',
   ApiKeys = 'API keys',
   Authentication = 'Authentication',
   AuthenticationAdmin = 'Authentication (admin)',

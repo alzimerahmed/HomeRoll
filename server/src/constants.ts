@@ -144,6 +144,8 @@ export const ORIENTATION_TO_SHARP_ROTATION: Record<ExifOrientation, SharpRotatio
 
 export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Activities]: 'An activity is a like or a comment made by a user on an asset or album.',
+  [ApiTag.Ask]: 'Endpoints for the "Ask HomeRoll" conversational search over the library.',
+  [ApiTag.AutoCreations]: 'Endpoints for auto-created content such as collages, animations, and trip highlight albums.',
   [ApiTag.Albums]: 'An album is a collection of assets that can be shared with other users or via shared links.',
   [ApiTag.ApiKeys]: 'An api key can be used to programmatically access the HomeRoll API.',
   [ApiTag.Assets]: 'An asset is an image or video that has been uploaded to HomeRoll.',

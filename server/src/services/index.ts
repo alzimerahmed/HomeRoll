@@ -1,7 +1,9 @@
 import { ActivityService } from 'src/services/activity.service.js';
 import { AlbumService } from 'src/services/album.service.js';
 import { ApiKeyService } from 'src/services/api-key.service.js';
+import { AutoCreationService } from 'src/services/auto-creation.service.js';
 import { ApiService } from 'src/services/api.service.js';
+import { AskService } from 'src/services/ask.service.js';
 import { AssetFileService } from 'src/services/asset-file.service.js';
 import { AssetMediaService } from 'src/services/asset-media.service.js';
 import { AssetService } from 'src/services/asset.service.js';
@@ -19,9 +21,11 @@ import { IntegrityService } from 'src/services/integrity.service.js';
 import { JobService } from 'src/services/job.service.js';
 import { LibraryService } from 'src/services/library.service.js';
 import { MaintenanceService } from 'src/services/maintenance.service.js';
+import { LlmService } from 'src/services/llm.service.js';
 import { MapService } from 'src/services/map.service.js';
 import { MediaService } from 'src/services/media.service.js';
 import { MemoryService } from 'src/services/memory.service.js';
+import { MemoryCurationService } from 'src/services/memory-curation.service.js';
 import { MetadataService } from 'src/services/metadata.service.js';
 import { NotificationAdminService } from 'src/services/notification-admin.service.js';
 import { NotificationService } from 'src/services/notification.service.js';
@@ -30,6 +34,7 @@ import { PartnerService } from 'src/services/partner.service.js';
 import { PersonService } from 'src/services/person.service.js';
 import { PluginService } from 'src/services/plugin.service.js';
 import { PushService } from 'src/services/push.service.js';
+import { QualityService } from 'src/services/quality.service.js';
 import { QueueService } from 'src/services/queue.service.js';
 import { SearchService } from 'src/services/search.service.js';
 import { ServerService } from 'src/services/server.service.js';
@@ -61,11 +66,13 @@ export const services = [
   ActivityService,
   AlbumService,
   ApiService,
+  AskService,
   AssetFileService,
   AssetMediaService,
   AssetService,
   AuthService,
   AuthAdminService,
+  AutoCreationService,
   BrowseService,
   CliService,
   DatabaseBackupService,
@@ -75,11 +82,13 @@ export const services = [
   IntegrityService,
   HlsService,
   JobService,
+  LlmService,
   LibraryService,
   MaintenanceService,
   MapService,
   MediaService,
   MemoryService,
+  MemoryCurationService,
   MetadataService,
   NotificationService,
   NotificationAdminService,
@@ -89,6 +98,7 @@ export const services = [
   PersonService,
   PluginService,
   PushService,
+  QualityService,
   QueueService,
   SearchService,
   ServerService,

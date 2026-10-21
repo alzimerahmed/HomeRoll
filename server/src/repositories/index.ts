@@ -4,6 +4,7 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository.js';
 import { AlbumRepository } from 'src/repositories/album.repository.js';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository.js';
 import { AppRepository } from 'src/repositories/app.repository.js';
+import { AutoCreationRepository } from 'src/repositories/auto-creation.repository.js';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository.js';
 import { AssetFileRepository } from 'src/repositories/asset-file.repository.js';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository.js';
@@ -37,6 +38,7 @@ import { PersonRepository } from 'src/repositories/person.repository.js';
 import { PluginRepository } from 'src/repositories/plugin.repository.js';
 import { ProcessRepository } from 'src/repositories/process.repository.js';
 import { PushRepository } from 'src/repositories/push.repository.js';
+import { QualityRepository } from 'src/repositories/quality.repository.js';
 import { SearchRepository } from 'src/repositories/search.repository.js';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository.js';
 import { SessionRepository } from 'src/repositories/session.repository.js';
@@ -65,6 +67,7 @@ export const repositories = [
   AlbumUserRepository,
   ApiKeyRepository,
   AppRepository,
+  AutoCreationRepository,
   AssetRepository,
   AssetEditRepository,
   AssetFileRepository,
@@ -98,6 +101,7 @@ export const repositories = [
   PluginRepository,
   ProcessRepository,
   PushRepository,
+  QualityRepository,
   SearchRepository,
   SessionRepository,
   ServerInfoRepository,

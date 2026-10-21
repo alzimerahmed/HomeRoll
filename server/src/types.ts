@@ -345,6 +345,11 @@ export interface ITakeoutImportJob {
   cancelled?: boolean;
 }
 
+export interface IAutoCreationJob extends IEntityJob {
+  ownerId: string;
+  type: 'collage' | 'animation' | 'trip-highlights';
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -471,7 +476,15 @@ export type JobItem =
   | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob }
 
   // Takeout
-  | { name: JobName.TakeoutImport; data: ITakeoutImportJob };
+  | { name: JobName.TakeoutImport; data: ITakeoutImportJob }
+
+  // HomeRoll FG-12: image quality signals for memory curation
+  | { name: JobName.QualityScoreQueueAll; data: IBaseJob }
+  | { name: JobName.QualityScore; data: IEntityJob }
+  | { name: JobName.MemoryCurate; data?: IBaseJob }
+
+  // HomeRoll FG-14: auto-creations
+  | { name: JobName.AutoCreationGenerate; data: IAutoCreationJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

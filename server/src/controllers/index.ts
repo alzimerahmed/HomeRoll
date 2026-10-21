@@ -2,11 +2,13 @@ import { ActivityController } from 'src/controllers/activity.controller.js';
 import { AlbumController } from 'src/controllers/album.controller.js';
 import { ApiKeyController } from 'src/controllers/api-key.controller.js';
 import { AppController } from 'src/controllers/app.controller.js';
+import { AskController } from 'src/controllers/ask.controller.js';
 import { AssetFilesController } from 'src/controllers/asset-file.controller.js';
 import { AssetMediaController } from 'src/controllers/asset-media.controller.js';
 import { AssetController } from 'src/controllers/asset.controller.js';
 import { AuthAdminController } from 'src/controllers/auth-admin.controller.js';
 import { AuthController } from 'src/controllers/auth.controller.js';
+import { AutoCreationController } from 'src/controllers/auto-creation.controller.js';
 import { BrowseController } from 'src/controllers/browse.controller.js';
 import { ClusterGroupController } from 'src/controllers/cluster-group.controller.js';
 import { ConfigAdminController } from 'src/controllers/config-admin.controller.js';
@@ -54,11 +56,13 @@ export const controllers = [
   ActivityController,
   AlbumController,
   AppController,
+  AskController,
   AssetController,
   AssetFilesController,
   AssetMediaController,
   AuthController,
   AuthAdminController,
+  AutoCreationController,
   BrowseController,
   ClusterGroupController,
   ConfigUserController,
