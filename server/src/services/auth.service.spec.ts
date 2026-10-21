@@ -684,12 +684,12 @@ describe(AuthService.name, () => {
   describe('getMobileRedirect', () => {
     it('should pass along the query params', () => {
       expect(sut.getMobileRedirect('https://homeroll.test?code=123&state=456')).toEqual(
-        'app.immich:///oauth-callback?code=123&state=456',
+        'app.homeroll:///oauth-callback?code=123&state=456',
       );
     });
 
     it('should work if called without query params', () => {
-      expect(sut.getMobileRedirect('https://homeroll.test')).toEqual('app.immich:///oauth-callback?');
+      expect(sut.getMobileRedirect('https://homeroll.test')).toEqual('app.homeroll:///oauth-callback?');
     });
   });
 
@@ -852,9 +852,9 @@ describe(AuthService.name, () => {
     });
 
     for (const url of [
-      'app.immich:/oauth-callback?code=abc123',
-      'app.immich://oauth-callback?code=abc123',
-      'app.immich:///oauth-callback?code=abc123',
+      'app.homeroll:/oauth-callback?code=abc123',
+      'app.homeroll://oauth-callback?code=abc123',
+      'app.homeroll:///oauth-callback?code=abc123',
     ]) {
       it(`should use the mobile redirect override for a url of ${url}`, async () => {
         mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);

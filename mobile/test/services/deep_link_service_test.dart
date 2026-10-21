@@ -120,7 +120,7 @@ void main() {
 
   PlatformDeepLink link(String path) {
     final deepLink = MockPlatformDeepLink();
-    when(() => deepLink.uri).thenReturn(Uri.parse('https://my.immich.app$path'));
+    when(() => deepLink.uri).thenReturn(Uri.parse('https://my.homeroll.app$path'));
     return deepLink;
   }
 
@@ -128,7 +128,7 @@ void main() {
     when(() => assetService.getRemoteAsset(_assetId)).thenAnswer((_) async => _asset);
     when(() => remoteAlbumService.get(_albumId)).thenAnswer((_) async => _album);
 
-    final route = await sut.handleMyImmichApp(link('/albums/$_albumId/photos/$_assetId'), ref);
+    final route = await sut.handleMyHomeRollApp(link('/albums/$_albumId/photos/$_assetId'), ref);
 
     expect(route, isA<AssetViewerRoute>());
     expect((route!.args! as AssetViewerRouteArgs).currentAlbum, _album);
@@ -138,7 +138,7 @@ void main() {
     when(() => assetService.getRemoteAsset(_assetId)).thenAnswer((_) async => _asset);
     when(() => remoteAlbumService.get(_albumId)).thenAnswer((_) async => null);
 
-    final route = await sut.handleMyImmichApp(link('/albums/$_albumId/photos/$_assetId'), ref);
+    final route = await sut.handleMyHomeRollApp(link('/albums/$_albumId/photos/$_assetId'), ref);
 
     expect(route, isA<AssetViewerRoute>());
     expect((route!.args! as AssetViewerRouteArgs).currentAlbum, isNull);
@@ -147,7 +147,7 @@ void main() {
   test('plain photo link has no album', () async {
     when(() => assetService.getRemoteAsset(_assetId)).thenAnswer((_) async => _asset);
 
-    final route = await sut.handleMyImmichApp(link('/photos/$_assetId'), ref);
+    final route = await sut.handleMyHomeRollApp(link('/photos/$_assetId'), ref);
 
     expect(route, isA<AssetViewerRoute>());
     expect((route!.args! as AssetViewerRouteArgs).currentAlbum, isNull);
@@ -157,7 +157,7 @@ void main() {
   test('memory scheme link without an id opens the memory lane', () async {
     when(() => memoryService.getMemoryLane(_userId)).thenAnswer((_) async => [_memory]);
     final deepLink = MockPlatformDeepLink();
-    when(() => deepLink.uri).thenReturn(Uri.parse('immich://memory'));
+    when(() => deepLink.uri).thenReturn(Uri.parse('homeroll://memory'));
 
     final route = await sut.handleScheme(deepLink, ref);
 
@@ -170,7 +170,7 @@ void main() {
   test('memory scheme link with an id opens only the specified memory', () async {
     when(() => memoryService.get(_memoryId)).thenAnswer((_) async => _memory);
     final deepLink = MockPlatformDeepLink();
-    when(() => deepLink.uri).thenReturn(Uri.parse('immich://memory?id=$_memoryId'));
+    when(() => deepLink.uri).thenReturn(Uri.parse('homeroll://memory?id=$_memoryId'));
 
     final route = await sut.handleScheme(deepLink, ref);
 

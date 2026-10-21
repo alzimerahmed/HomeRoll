@@ -1,21 +1,17 @@
-This is a client app for the self-hostable Immich Server (which can be found with the app's source repo). You will need to run/manage the server on your own in order to use the app.
+HomeRoll is a self-hosted photo and video backup and gallery app. You run the server on your own hardware; this app keeps your phone's library continuously backed up to it.
 
-Once set up, this app can be used as photo and video backup solution directly from your mobile phone.
+Once set up, this app can be used as a photo and video backup solution directly from your mobile phone.
 
 <b>Features:</b>
 
-* Upload and view assets(videos/images).
-* Multi-user supported.
-* Quick navigation with drag scroll bar.
-* Auto Backup.
-* Support HEIC/HEIF Backup.
-* Extract and display EXIF info.
-* Real-time render from multi-device upload event.
-* Image Tagging/Classification based on ImageNet dataset
-* Object detection based on COCO SSD.
-* Search assets based on tags and exif data (lens, make, model, orientation)
-* Upload assets from your local computer/server using <a href='https://www.npmjs.com/package/immich' target='_blank' rel='nofollow'>immich cli tools</a>
+* Automatic background backup of photos and videos (selective albums supported)
+* Browse a timeline of your library on any device
+* Semantic search (CLIP), OCR text search, and facial recognition
+* Albums, shared albums, partner sharing, and public share links
+* Memories ("x years ago"), global map view, duplicate detection
+* Multi-user support on a single server
+* Upload assets from your local computer/server using the HomeRoll CLI
 * Reverse geocoding from image exif data
-* Show asset's location information on map (OpenStreetMap).
-* Show curated places on the search page
-* Show curated objects on the search page
+* Show asset's location information on map (OpenStreetMap)
+
+<b>Privacy first:</b> no telemetry, no phone-home, no ads. Your photos never leave hardware you control.

@@ -187,7 +187,7 @@ ARG BUILD_SOURCE_COMMIT
 ENV IMMICH_BUILD=${BUILD_ID}
 ENV IMMICH_BUILD_URL=https://github.com/alzimerahmed/HomeRoll/actions/runs/${BUILD_ID}
 ENV IMMICH_BUILD_IMAGE=${BUILD_IMAGE}
-ENV IMMICH_BUILD_IMAGE_URL=https://github.com/alzimerahmed/HomeRoll/pkgs/container/immich-machine-learning
+ENV IMMICH_BUILD_IMAGE_URL=https://github.com/alzimerahmed/HomeRoll/pkgs/container/homeroll-machine-learning
 ENV IMMICH_REPOSITORY=alzimerahmed/HomeRoll
 ENV IMMICH_REPOSITORY_URL=https://github.com/alzimerahmed/HomeRoll
 ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}

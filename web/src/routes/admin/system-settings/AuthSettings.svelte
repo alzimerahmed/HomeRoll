@@ -282,7 +282,7 @@
               <SettingSwitch
                 title={$t('admin.oauth_mobile_redirect_uri_override')}
                 subtitle={$t('admin.oauth_mobile_redirect_uri_override_description', {
-                  values: { callback: 'app.immich:///oauth-callback' },
+                  values: { callback: 'app.homeroll:///oauth-callback' },
                 })}
                 disabled={disabled || !configToEdit.oauth.enabled}
                 onToggle={() => handleToggleOverride()}

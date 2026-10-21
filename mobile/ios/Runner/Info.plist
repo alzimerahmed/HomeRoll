@@ -74,7 +74,7 @@
       <string>zh</string>
     </array>
     <key>CFBundleName</key>
-    <string>immich_mobile</string>
+    <string>HomeRoll</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -100,7 +100,7 @@
         <string>Deep Link</string>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>immich</string>
+          <string>homeroll</string>
         </array>
       </dict>
     </array>

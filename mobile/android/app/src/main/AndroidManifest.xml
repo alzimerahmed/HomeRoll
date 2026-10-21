@@ -64,13 +64,13 @@
 
       <!--TODO:
       Add this filter if you want to handle shared images-->
-      <intent-filter android:label="Upload to Immich">
+      <intent-filter android:label="Upload to HomeRoll">
         <action android:name="android.intent.action.SEND" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="image/*" />
       </intent-filter>
 
-      <intent-filter android:label="Upload to Immich">
+      <intent-filter android:label="Upload to HomeRoll">
         <action android:name="android.intent.action.SEND_MULTIPLE" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="image/*" />
@@ -78,40 +78,40 @@
 
       <!--TODO:
       Add this filter if you want to handle shared videos-->
-      <intent-filter android:label="Upload to Immich">
+      <intent-filter android:label="Upload to HomeRoll">
         <action android:name="android.intent.action.SEND" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="video/*" />
       </intent-filter>
-      <intent-filter android:label="Upload to Immich">
+      <intent-filter android:label="Upload to HomeRoll">
         <action android:name="android.intent.action.SEND_MULTIPLE" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="video/*" />
       </intent-filter>
 
-      <!-- Allow Immich to act as an image viewer -->
-      <intent-filter android:label="View in Immich">
+      <!-- Allow HomeRoll to act as an image viewer -->
+      <intent-filter android:label="View in HomeRoll">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:scheme="content" android:mimeType="image/*" />
       </intent-filter>
 
-      <!-- Allow Immich to act as a video viewer -->
-      <intent-filter android:label="View in Immich">
+      <!-- Allow HomeRoll to act as a video viewer -->
+      <intent-filter android:label="View in HomeRoll">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:scheme="content" android:mimeType="video/*" />
       </intent-filter>
 
-      <!-- immich:// URL scheme handling -->
+      <!-- homeroll:// URL scheme handling -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="immich" />
+        <data android:scheme="homeroll" />
       </intent-filter>
 
-      <!-- my.immich.app deep link -->
+      <!-- my.homeroll.app deep link -->
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -120,19 +120,19 @@
         <data android:scheme="https" />
 
         <data
-          android:host="my.immich.app"
+          android:host="my.homeroll.app"
           android:path="/" />
         <data
-          android:host="my.immich.app"
+          android:host="my.homeroll.app"
           android:pathPrefix="/albums/" />
         <data
-          android:host="my.immich.app"
+          android:host="my.homeroll.app"
           android:pathPrefix="/people/" />
         <data
-          android:host="my.immich.app"
+          android:host="my.homeroll.app"
           android:path="/memory" />
         <data
-          android:host="my.immich.app"
+          android:host="my.homeroll.app"
           android:pathPrefix="/photos/" />
       </intent-filter>
     </activity>
@@ -145,7 +145,7 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="app.immich" android:pathPrefix="/oauth-callback" />
+        <data android:scheme="app.homeroll" android:pathPrefix="/oauth-callback" />
       </intent-filter>
     </activity>
     <!-- Don't delete the meta-data below.

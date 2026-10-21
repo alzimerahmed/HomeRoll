@@ -423,7 +423,7 @@ describe(`/oauth`, () => {
     it('should return the mobile redirect uri', async () => {
       const { status, body } = await request(app)
         .post('/oauth/authorize')
-        .send({ redirectUri: 'app.immich:///oauth-callback' });
+        .send({ redirectUri: 'app.homeroll:///oauth-callback' });
       expect(status).toBe(201);
       expect(body).toEqual({ url: expect.stringContaining(`${authServer.internal}/auth?`) });
 
@@ -435,11 +435,11 @@ describe(`/oauth`, () => {
     });
 
     it('should auto register the user by default', async () => {
-      const callbackParams = await loginWithOAuth('oauth-mobile-override', 'app.immich:///oauth-callback');
+      const callbackParams = await loginWithOAuth('oauth-mobile-override', 'app.homeroll:///oauth-callback');
       expect(callbackParams.url).toEqual(expect.stringContaining(mobileOverrideRedirectUri));
 
       // simulate redirecting back to mobile app
-      const url = callbackParams.url.replace(mobileOverrideRedirectUri, 'app.immich:///oauth-callback');
+      const url = callbackParams.url.replace(mobileOverrideRedirectUri, 'app.homeroll:///oauth-callback');
 
       const { status, body } = await request(app)
         .post('/oauth/callback')

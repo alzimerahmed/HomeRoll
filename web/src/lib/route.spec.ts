@@ -66,18 +66,18 @@ describe('Route', () => {
     beforeEach(() => {
       // @ts-expect-error - override location for testing
       // eslint-disable-next-line unicorn/no-global-object-property-assignment
-      globalThis.location = new URL('https://my.immich.server');
-      vi.spyOn(document, 'baseURI', 'get').mockReturnValue('https://my.immich.server/');
+      globalThis.location = new URL('https://my.homeroll.server');
+      vi.spyOn(document, 'baseURI', 'get').mockReturnValue('https://my.homeroll.server/');
     });
 
     it('should resolve relative URLs', () => {
-      expect(Route.continue('/some/path', '/fallback')).property('href', 'https://my.immich.server/some/path');
+      expect(Route.continue('/some/path', '/fallback')).property('href', 'https://my.homeroll.server/some/path');
     });
 
     it('should resolve absolute URLs on the same origin', () => {
-      expect(Route.continue('https://my.immich.server/some/path', '/fallback')).property(
+      expect(Route.continue('https://my.homeroll.server/some/path', '/fallback')).property(
         'href',
-        'https://my.immich.server/some/path',
+        'https://my.homeroll.server/some/path',
       );
     });
 
@@ -86,7 +86,7 @@ describe('Route', () => {
     });
 
     it('should return fallback for null URLs', () => {
-      expect(Route.continue(null, '/fallback')).property('href', 'https://my.immich.server/fallback');
+      expect(Route.continue(null, '/fallback')).property('href', 'https://my.homeroll.server/fallback');
     });
 
     it('should block javascript: URLs', () => {

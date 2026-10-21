@@ -2,7 +2,7 @@ name: immich_mobile
 description: HomeRoll - self-hosted photo and video backup for mobile
 
 publish_to: 'none'
-version: 3.3.0-rc.0+3030000
+version: 1.0.0+1
 
 environment:
   sdk: '>=3.12.0 <4.0.0'
@@ -150,10 +150,10 @@ flutter:
         - asset: fonts/GoogleSansCode/GoogleSansCode-SemiBold.ttf
           weight: 600
 flutter_launcher_icons:
-  image_path_android: 'assets/immich-logo.png'
-  adaptive_icon_background: '#16130F'
-  adaptive_icon_foreground: 'assets/immich-logo-android-adaptive-icon.png'
-  image_path_ios: 'assets/immich-logo-w-bg.png'
+  image_path_android: 'assets/homeroll-logo.png'
+  adaptive_icon_background: '#207DB8'
+  adaptive_icon_foreground: 'assets/homeroll-logo-android-adaptive-icon.png'
+  image_path_ios: 'assets/homeroll-logo-w-bg.png'
   android: 'ic_launcher'
   ios: false
   remove_alpha_ios: true

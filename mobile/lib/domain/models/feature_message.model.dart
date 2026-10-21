@@ -7,7 +7,7 @@ enum FeatureHighlight {
   slideshow(image: 'assets/feature_message/slideshow.webp'),
   recentlyAdded(image: 'assets/feature_message/recently_added.webp'),
   ocr(image: 'assets/feature_message/ocr.webp'),
-  openInImmich(image: 'assets/feature_message/open_in_immich.webp', platform: [.android]),
+  openInApp(image: 'assets/feature_message/open_in_app.webp', platform: [.android]),
   uploadToAlbum();
 
   /// Asset path of the feature screenshot, or null to show a placeholder.
@@ -23,7 +23,7 @@ enum FeatureHighlight {
     FeatureHighlight.slideshow => t.slideshow_title,
     FeatureHighlight.recentlyAdded => t.recently_added_title,
     FeatureHighlight.ocr => t.ocr_title,
-    FeatureHighlight.openInImmich => t.open_in_immich_title,
+    FeatureHighlight.openInApp => t.open_in_app_title,
     FeatureHighlight.uploadToAlbum => t.upload_to_album_title,
   };
 
@@ -32,7 +32,7 @@ enum FeatureHighlight {
     FeatureHighlight.slideshow => t.slideshow_body,
     FeatureHighlight.recentlyAdded => t.recently_added_body,
     FeatureHighlight.ocr => t.ocr_body,
-    FeatureHighlight.openInImmich => t.open_in_immich_body,
+    FeatureHighlight.openInApp => t.open_in_app_body,
     FeatureHighlight.uploadToAlbum => t.upload_to_album_body,
   };
 }
