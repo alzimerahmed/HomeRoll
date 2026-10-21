@@ -262,7 +262,7 @@ Configuration of OAuth in Immich System Settings
 | Auto Register                | Enabled (optional)                                                           |
 | Auto Launch                  | Enabled                                                                      |
 | Mobile Redirect URI Override | Enabled (required)                                                           |
-| Mobile Redirect URI          | `https://example.homeroll.app/api/oauth/mobile-redirect`                       |
+| Mobile Redirect URI          | `https://example.homeroll.app/api/oauth/mobile-redirect`                     |
 
 </details>
 
