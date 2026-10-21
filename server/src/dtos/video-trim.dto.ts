@@ -7,8 +7,8 @@ import z from 'zod';
  */
 const VideoTrimDtoSchema = z
   .object({
-    startSeconds: z.number().min(0).describe('Trim window start in seconds'),
-    endSeconds: z.number().min(0).describe('Trim window end in seconds (exclusive)'),
+    startSeconds: z.number().min(0).meta({ format: 'double' }).describe('Trim window start in seconds'),
+    endSeconds: z.number().min(0).meta({ format: 'double' }).describe('Trim window end in seconds (exclusive)'),
   })
   .refine(({ startSeconds, endSeconds }) => endSeconds > startSeconds, {
     message: 'endSeconds must be greater than startSeconds',

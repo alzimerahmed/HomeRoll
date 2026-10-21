@@ -127,7 +127,10 @@ export class VideoTrimService extends BaseService {
         } as UploadFile,
       });
 
-      await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' as const } });
+      await this.jobRepository.queue({
+        name: JobName.AssetExtractMetadata,
+        data: { id: asset.id, source: 'upload' as const },
+      });
 
       this.logger.log(`Video trim ${targetAssetId} finished for asset ${id}`);
       return JobStatus.Success;

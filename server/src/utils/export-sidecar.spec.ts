@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { parseTakeoutJson } from 'src/utils/takeout-json.js';
-import { buildTakeoutJson, buildXmp, escapeXml, getSidecarFileNames, type ExportAssetMetadata } from 'src/utils/export-sidecar.js';
+import {
+  buildTakeoutJson,
+  buildXmp,
+  escapeXml,
+  getSidecarFileNames,
+  type ExportAssetMetadata,
+} from 'src/utils/export-sidecar.js';
 
 const baseMetadata: ExportAssetMetadata = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -112,7 +118,9 @@ describe('buildTakeoutJson', () => {
       buildTakeoutJson({ ...baseMetadata, takenAt: null, fileCreatedAt: new Date('2024-06-01T10:00:00.000Z') })!,
     );
     expect(json.photoTakenTime).toBeUndefined();
-    expect(json.creationTime.timestamp).toBe(Math.floor(new Date('2024-06-01T10:00:00.000Z').getTime() / 1000).toString());
+    expect(json.creationTime.timestamp).toBe(
+      Math.floor(new Date('2024-06-01T10:00:00.000Z').getTime() / 1000).toString(),
+    );
     // the fallback must round-trip through the importer
     expect(parseTakeoutJson(json)!.takenAt!.getTime()).toBe(new Date('2024-06-01T10:00:00.000Z').getTime());
   });
@@ -202,6 +210,8 @@ describe('getSidecarFileNames', () => {
 
 describe('escapeXml', () => {
   it('should escape all five XML special characters', () => {
-    expect(escapeXml('&<>"' + String.fromCharCode(39))).toBe('&' + 'amp;' + '&' + 'lt;' + '&' + 'gt;' + '&' + 'quot;' + String.fromCharCode(39));
+    expect(escapeXml('&<>"' + String.fromCharCode(39))).toBe(
+      '&' + 'amp;' + '&' + 'lt;' + '&' + 'gt;' + '&' + 'quot;' + String.fromCharCode(39),
+    );
   });
 });

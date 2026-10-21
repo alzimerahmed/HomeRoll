@@ -52,7 +52,9 @@ export class MemoryCurationService extends BaseService {
       try {
         await this.curateUser(user.id, cutoff);
       } catch (error: unknown) {
-        this.logger.warn(`Memory curation failed for user ${user.id}: ${error instanceof Error ? error.message : String(error)}`);
+        this.logger.warn(
+          `Memory curation failed for user ${user.id}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 

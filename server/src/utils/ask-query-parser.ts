@@ -35,7 +35,12 @@ const MONTHS = [
   'december',
 ];
 
-const MONTH_LOOKUP = new Map(MONTHS.flatMap((month, index) => [[month, index], [month.slice(0, 3), index]]));
+const MONTH_LOOKUP = new Map(
+  MONTHS.flatMap((month, index) => [
+    [month, index],
+    [month.slice(0, 3), index],
+  ]),
+);
 
 const strip = (value: string) => value.replace(/[?!.]+$/g, '').trim();
 
@@ -96,13 +101,15 @@ const parseDateRange = (text: QueryText): { takenAfter: string | null; takenBefo
     // seasons that wrap the year boundary (winter: Dec→Feb) end in the following year
     const before =
       endMonth < startMonth || endMonth === 12
-        ? `${anchorYear + 1}-${String(((endMonth % 12) + 1)).padStart(2, '0')}-01T00:00:00.000Z`
+        ? `${anchorYear + 1}-${String((endMonth % 12) + 1).padStart(2, '0')}-01T00:00:00.000Z`
         : `${anchorYear}-${String(endMonth + 1).padStart(2, '0')}-01T00:00:00.000Z`;
     return { takenAfter: after, takenBefore: before };
   }
 
   // "last july" / "in june 2023"
-  const month = text.consume(/\b(?:in|last|this|during)?\s?(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\b(?:\s+(20\d{2}))?/i);
+  const month = text.consume(
+    /\b(?:in|last|this|during)?\s?(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\b(?:\s+(20\d{2}))?/i,
+  );
   if (month) {
     const monthIndex = MONTH_LOOKUP.get(month[1].toLowerCase())!;
     const monthYear = month[2] ? Number(month[2]) : now.getUTCMonth() + 1 < monthIndex + 1 ? year - 1 : year;
@@ -202,7 +209,9 @@ export const parseAskQuery = (input: string): ParsedAskQuery => {
   }
 
   // OCR text: "that says X" / "with text X" / "sign reading X"
-  const ocr = text.consume(/\b(?:that|which)?\s?(?:says|said|reads?|reading|with the words?|with text)\s+(?:["“']?)(.+?)(?:["”']?)?(?=\s+(?:in|from|at|during|taken|photos?|videos?|pictures?)\b|[,.?!]|$)/i);
+  const ocr = text.consume(
+    /\b(?:that|which)?\s?(?:says|said|reads?|reading|with the words?|with text)\s+(?:["“']?)(.+?)(?:["”']?)?(?=\s+(?:in|from|at|during|taken|photos?|videos?|pictures?)\b|[,.?!]|$)/i,
+  );
   if (ocr) {
     parsed.ocr = strip(ocr[1]);
   }
@@ -228,7 +237,10 @@ export const parseAskQuery = (input: string): ParsedAskQuery => {
   const remainder = text.text();
   // generic filler that carries no search signal
   const cleaned = remainder
-    .replaceAll(/\b(show|find|search|look for|give me|display|of|all|the|my|me|please|with|having|where|are|is|any)\b/gi, ' ')
+    .replaceAll(
+      /\b(show|find|search|look for|give me|display|of|all|the|my|me|please|with|having|where|are|is|any)\b/gi,
+      ' ',
+    )
     .replaceAll(/\s+/g, ' ')
     .trim();
   parsed.query = cleaned.length > 0 ? cleaned : remainder.length > 0 ? remainder : null;

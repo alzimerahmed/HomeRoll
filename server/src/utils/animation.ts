@@ -48,7 +48,18 @@ export async function createAnimation(inputs: string[], output: string, options:
         ]),
         `${inputs.map((_, index) => `[v${index}]`).join('')}concat=n=${inputs.length}:v=1:a=0[outv]`,
       ])
-      .outputOptions(['-map', '[outv]', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', `${fps}`, '-movflags', '+faststart'])
+      .outputOptions([
+        '-map',
+        '[outv]',
+        '-c:v',
+        'libx264',
+        '-pix_fmt',
+        'yuv420p',
+        '-r',
+        `${fps}`,
+        '-movflags',
+        '+faststart',
+      ])
       .output(output)
       .run();
   });

@@ -7,10 +7,7 @@ export enum AutoCreationType {
   TripHighlights = 'trip-highlights',
 }
 
-const AutoCreationTypeSchema = z
-  .enum(AutoCreationType)
-  .describe('Auto-creation type')
-  .meta({ id: 'AutoCreationType' });
+const AutoCreationTypeSchema = z.enum(AutoCreationType).describe('Auto-creation type').meta({ id: 'AutoCreationType' });
 
 const AutoCreationRunDtoSchema = z
   .object({

@@ -68,23 +68,29 @@ export class AutoCreationRepository {
 
   /** Assets for a trip cluster (same city/country, bounded to the cluster's day, chronological). */
   getAssetsForTrip(ownerId: string, city: string, country: string | null, day: Date, limit: number) {
-    return this.db
-      .selectFrom('asset')
-      .select(columns.searchAsset)
-      .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
-      .where('asset.ownerId', '=', ownerId)
-      .where('asset.deletedAt', 'is', null)
-      .where('asset.visibility', '=', AssetVisibility.Timeline)
-      .where('asset.type', '=', AssetType.Image)
-      .where('asset_exif.city', '=', city)
-      .$if(!!country, (qb) => qb.where('asset_exif.country', '=', country!))
-      // bound the album to the qualifying day — without this it would pull
-      // every photo ever taken in that city
-      .where('asset.localDateTime', '>=', day)
-      .where('asset.localDateTime', '<', sql<Date>`date_trunc('day', ${sql.lit(day)} at time zone 'UTC') + interval '1 day'`)
-      .orderBy('asset.localDateTime', 'asc')
-      .limit(limit)
-      .execute();
+    return (
+      this.db
+        .selectFrom('asset')
+        .select(columns.searchAsset)
+        .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+        .where('asset.ownerId', '=', ownerId)
+        .where('asset.deletedAt', 'is', null)
+        .where('asset.visibility', '=', AssetVisibility.Timeline)
+        .where('asset.type', '=', AssetType.Image)
+        .where('asset_exif.city', '=', city)
+        .$if(!!country, (qb) => qb.where('asset_exif.country', '=', country!))
+        // bound the album to the qualifying day — without this it would pull
+        // every photo ever taken in that city
+        .where('asset.localDateTime', '>=', day)
+        .where(
+          'asset.localDateTime',
+          '<',
+          sql<Date>`date_trunc('day', ${sql.lit(day)} at time zone 'UTC') + interval '1 day'`,
+        )
+        .orderBy('asset.localDateTime', 'asc')
+        .limit(limit)
+        .execute()
+    );
   }
 
   /** Whether an auto-created album for this owner+name already exists. */

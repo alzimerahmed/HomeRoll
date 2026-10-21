@@ -94,10 +94,14 @@ export class DownloadRepository {
           'asset_exif.country',
           'asset_exif.timeZone',
           'asset_exif.tags',
-          sql<string[]>`coalesce(array_agg(distinct "album"."albumName" order by "album"."albumName") filter (where "album"."albumName" is not null), '{}')`.as(
+          sql<
+            string[]
+          >`coalesce(array_agg(distinct "album"."albumName" order by "album"."albumName") filter (where "album"."albumName" is not null), '{}')`.as(
             'albums',
           ),
-          sql<string[]>`coalesce(array_agg(distinct "person"."name" order by "person"."name") filter (where "person"."name" is not null), '{}')`.as(
+          sql<
+            string[]
+          >`coalesce(array_agg(distinct "person"."name" order by "person"."name") filter (where "person"."name" is not null), '{}')`.as(
             'people',
           ),
         ])

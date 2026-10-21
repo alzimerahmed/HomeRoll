@@ -170,9 +170,7 @@ describe(WebDavService.name, () => {
       // probed for existence either
       mocks.album.getAll.mockResolvedValue([]);
       await expect(sut.propfind(auth, [DAV_ALBUMS, 'Hidden'], 1)).rejects.toBeInstanceOf(NotFoundException);
-      await expect(sut.getFile(auth, [DAV_ALBUMS, 'Hidden', 'IMG_0001.jpg'])).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+      await expect(sut.getFile(auth, [DAV_ALBUMS, 'Hidden', 'IMG_0001.jpg'])).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 

@@ -1,4 +1,11 @@
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { mapAsset, type MapAsset } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AskDto, AskResponseDto } from 'src/dtos/ask.dto.js';
@@ -22,11 +29,11 @@ const RATE_PER_MINUTE = 10;
 const RATE_BUCKET_PRUNE_THRESHOLD = 1000;
 
 const SYSTEM_PROMPT = [
-  'You are Ask HomeRoll, an assistant that answers questions about a user\'s personal photo library.',
+  "You are Ask HomeRoll, an assistant that answers questions about a user's personal photo library.",
   'You are given a structured interpretation of the question and a list of matching photos/videos with their metadata.',
-  'Answer in the user\'s language in 1-3 short sentences. Reference concrete details (places, dates, people counts, text found in photos).',
+  "Answer in the user's language in 1-3 short sentences. Reference concrete details (places, dates, people counts, text found in photos).",
   'Never invent assets, dates or places that are not in the context. If the context does not answer the question, say so.',
-  'Never reveal file paths, server details, or other users\' information.',
+  "Never reveal file paths, server details, or other users' information.",
 ].join(' ');
 
 interface AskCandidate {
@@ -195,7 +202,9 @@ export class AskService extends BaseService {
   }
 
   private buildContext(query: string, parsed: ReturnType<typeof parseAskQuery>, candidates: AskCandidate[]): string {
-    const lines = candidates.slice(0, LLM_CONTEXT_ASSETS).map(({ summary }, index) => `${index + 1}. ${summary || '(no metadata)'}`);
+    const lines = candidates
+      .slice(0, LLM_CONTEXT_ASSETS)
+      .map(({ summary }, index) => `${index + 1}. ${summary || '(no metadata)'}`);
     return [
       `Question: ${query}`,
       `Parsed filters: ${JSON.stringify(parsed)}`,

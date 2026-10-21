@@ -14,7 +14,9 @@ describe('createCollage', () => {
 
   const makeImage = async (color: { r: number; g: number; b: number }) => {
     const path = join(dir, `${color.r}-${color.g}-${color.b}.jpg`);
-    await sharp({ create: { width: 100, height: 100, channels: 3, background: color } }).jpeg().toFile(path);
+    await sharp({ create: { width: 100, height: 100, channels: 3, background: color } })
+      .jpeg()
+      .toFile(path);
     return path;
   };
 
@@ -31,7 +33,10 @@ describe('createCollage', () => {
     ]);
     const output = join(dir, 'four.jpg');
 
-    await createCollage(inputs.map((path) => ({ path })), output);
+    await createCollage(
+      inputs.map((path) => ({ path })),
+      output,
+    );
 
     const meta = await sharp(await readFile(output)).metadata();
     expect(meta.width).toBe(meta.height);

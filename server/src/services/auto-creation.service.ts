@@ -89,7 +89,16 @@ export class AutoCreationService extends BaseService {
     const previews = await this.autoCreationRepository.getPreviewPaths(highlights.map(({ id }) => id));
     const sources = highlights.map(({ id, originalPath }) => previews.get(id) ?? originalPath);
 
-    const assetId = await this.storeGeneratedImage(ownerId, 'collage', (output) => createCollage(sources.map((path) => ({ path })), output), highlights[0]!.fileCreatedAt);
+    const assetId = await this.storeGeneratedImage(
+      ownerId,
+      'collage',
+      (output) =>
+        createCollage(
+          sources.map((path) => ({ path })),
+          output,
+        ),
+      highlights[0]!.fileCreatedAt,
+    );
 
     this.logger.log(`Auto-created collage ${assetId} for user ${ownerId}`);
     return JobStatus.Success;
@@ -104,7 +113,13 @@ export class AutoCreationService extends BaseService {
     const previews = await this.autoCreationRepository.getPreviewPaths(highlights.map(({ id }) => id));
     const sources = highlights.map(({ id, originalPath }) => previews.get(id) ?? originalPath);
 
-    const assetId = await this.storeGeneratedImage(ownerId, 'animation', (output) => createAnimation(sources, output), highlights[0]!.fileCreatedAt, AssetType.Video);
+    const assetId = await this.storeGeneratedImage(
+      ownerId,
+      'animation',
+      (output) => createAnimation(sources, output),
+      highlights[0]!.fileCreatedAt,
+      AssetType.Video,
+    );
 
     this.logger.log(`Auto-created animation ${assetId} for user ${ownerId}`);
     return JobStatus.Success;
@@ -125,7 +140,13 @@ export class AutoCreationService extends BaseService {
         continue;
       }
 
-      const assets = await this.autoCreationRepository.getAssetsForTrip(ownerId, candidate.city, candidate.country, new Date(candidate.day), TRIP_ALBUM_ASSET_LIMIT);
+      const assets = await this.autoCreationRepository.getAssetsForTrip(
+        ownerId,
+        candidate.city,
+        candidate.country,
+        new Date(candidate.day),
+        TRIP_ALBUM_ASSET_LIMIT,
+      );
       if (assets.length === 0) {
         continue;
       }
@@ -172,7 +193,9 @@ export class AutoCreationService extends BaseService {
       await generate(path);
 
       const stats = await this.storageRepository.stat(path);
-      const checksum = createHash('sha1').update(await this.storageRepository.readFile(path)).digest();
+      const checksum = createHash('sha1')
+        .update(await this.storageRepository.readFile(path))
+        .digest();
 
       // deterministic inputs produce identical output — an unchanged re-run
       // would violate the (ownerId, checksum) unique constraint, so link the
@@ -207,10 +230,19 @@ export class AutoCreationService extends BaseService {
 
       await this.eventRepository.emit('AssetCreate', {
         asset: { id: asset.id, ownerId },
-        file: { uuid, checksum, originalPath: path, originalName: asset.originalFileName, size: stats.size } as UploadFile,
+        file: {
+          uuid,
+          checksum,
+          originalPath: path,
+          originalName: asset.originalFileName,
+          size: stats.size,
+        } as UploadFile,
       });
 
-      await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' as const } });
+      await this.jobRepository.queue({
+        name: JobName.AssetExtractMetadata,
+        data: { id: asset.id, source: 'upload' as const },
+      });
 
       return asset.id;
     } catch (error) {

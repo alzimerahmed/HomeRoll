@@ -69,7 +69,9 @@ export class LlmService {
     }
 
     if (!ask.llmModel) {
-      this.logger.warn('IMMICH_ASK_LLM_BASE_URL is set but IMMICH_ASK_LLM_MODEL is missing — ignoring the LLM provider');
+      this.logger.warn(
+        'IMMICH_ASK_LLM_BASE_URL is set but IMMICH_ASK_LLM_MODEL is missing — ignoring the LLM provider',
+      );
       return null;
     }
 

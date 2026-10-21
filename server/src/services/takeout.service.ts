@@ -461,7 +461,9 @@ export class TakeoutService extends BaseService {
       // sidecar JSON is attacker-influencable — sanitize and bound the stored display name
       const title = [...sanitize(metadata.title)].slice(0, 255).join('');
       if (title) {
-        update.originalFileName = getFilenameExtension(title) ? title : `${title}${getFilenameExtension(item.fileName)}`;
+        update.originalFileName = getFilenameExtension(title)
+          ? title
+          : `${title}${getFilenameExtension(item.fileName)}`;
       }
     }
 

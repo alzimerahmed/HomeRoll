@@ -60,7 +60,9 @@ describe('download.repository.getExportMetadata (sidecar contract)', () => {
     } satisfies ExportAssetMetadata;
 
     const json = JSON.parse(buildTakeoutJson(metadata)!);
-    expect(json.photoTakenTime.timestamp).toBe(Math.floor(new Date('2024-06-01T09:30:15.000Z').getTime() / 1000).toString());
+    expect(json.photoTakenTime.timestamp).toBe(
+      Math.floor(new Date('2024-06-01T09:30:15.000Z').getTime() / 1000).toString(),
+    );
 
     const xmp = buildXmp(metadata)!;
     expect(xmp).toContain('<exif:DateTimeOriginal>');
@@ -102,6 +104,8 @@ describe('download.repository.getExportMetadata (sidecar contract)', () => {
 
     const json = JSON.parse(buildTakeoutJson(metadata)!);
     expect(json.photoTakenTime).toBeUndefined();
-    expect(json.creationTime.timestamp).toBe(Math.floor(new Date('2024-06-01T10:00:00.000Z').getTime() / 1000).toString());
+    expect(json.creationTime.timestamp).toBe(
+      Math.floor(new Date('2024-06-01T10:00:00.000Z').getTime() / 1000).toString(),
+    );
   });
 });

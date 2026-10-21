@@ -34,7 +34,9 @@ describe(QualityService.name, () => {
     it('should score a batch and persist the weighted overall', async () => {
       qualityRepository.getForQualityJobBatch.mockResolvedValue([{ id: 'asset-1', previewFile: '/preview.jpg' }]);
       qualityRepository.getFacesForAssets.mockResolvedValue(
-        new Map([['asset-1', [{ boundingBoxX1: 0, boundingBoxY1: 0, boundingBoxX2: 100, boundingBoxY2: 100, score: 0.9 }]]]),
+        new Map([
+          ['asset-1', [{ boundingBoxX1: 0, boundingBoxY1: 0, boundingBoxX2: 100, boundingBoxY2: 100, score: 0.9 }]],
+        ]),
       );
 
       await expect(sut.handleQualityScore({ assetIds: ['asset-1'] })).resolves.toBe(JobStatus.Success);

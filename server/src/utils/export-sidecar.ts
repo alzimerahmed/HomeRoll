@@ -112,7 +112,11 @@ export const buildTakeoutJson = (metadata: ExportAssetMetadata): string | null =
   }
   const camera = [metadata.make, metadata.model, metadata.lensModel].filter((v): v is string => !!v);
   if (camera.length > 0) {
-    json.camera = { make: metadata.make ?? undefined, model: metadata.model ?? undefined, lensModel: metadata.lensModel ?? undefined };
+    json.camera = {
+      make: metadata.make ?? undefined,
+      model: metadata.model ?? undefined,
+      lensModel: metadata.lensModel ?? undefined,
+    };
   }
 
   return Object.keys(json).length > 0 ? JSON.stringify(json, null, 2) : null;
@@ -170,7 +174,11 @@ export const buildXmp = (metadata: ExportAssetMetadata): string | null => {
     addSimple('exif', 'DateTimeOriginal', xmpDate(metadata.takenAt));
   }
 
-  if (metadata.latitude !== null && metadata.longitude !== null && !(metadata.latitude === 0 && metadata.longitude === 0)) {
+  if (
+    metadata.latitude !== null &&
+    metadata.longitude !== null &&
+    !(metadata.latitude === 0 && metadata.longitude === 0)
+  ) {
     // EXIF-XMP: GPSLatitude/GPSLongitude are single text values in `deg,min.secX` form
     // (e.g. `48,51.504N`); the hemisphere rides inside the value, with the matching
     // `*Ref` elements kept for TIFF-tag compatibility.
@@ -195,7 +203,9 @@ export const buildXmp = (metadata: ExportAssetMetadata): string | null => {
   addSimple('exif', 'ExposureTime', metadata.exposureTime);
   if (metadata.iso !== null) {
     // EXIF-XMP defines ISOSpeedRatings as an ordered list of integers
-    simpleProps.push(`    <exif:ISOSpeedRatings><rdf:Seq><rdf:li>${metadata.iso}</rdf:li></rdf:Seq></exif:ISOSpeedRatings>`);
+    simpleProps.push(
+      `    <exif:ISOSpeedRatings><rdf:Seq><rdf:li>${metadata.iso}</rdf:li></rdf:Seq></exif:ISOSpeedRatings>`,
+    );
   }
   addSimple('exif', 'FocalLength', metadata.focalLength);
   addSimple('tiff', 'Orientation', metadata.orientation);
@@ -235,7 +245,10 @@ export const buildXmp = (metadata: ExportAssetMetadata): string | null => {
 };
 
 /** Sidecar file names for a media file name, per the requested format. */
-export const getSidecarFileNames = (mediaFileName: string, format: SidecarFormat): Array<{ name: string; format: 'takeout-json' | 'xmp' }> => {
+export const getSidecarFileNames = (
+  mediaFileName: string,
+  format: SidecarFormat,
+): Array<{ name: string; format: 'takeout-json' | 'xmp' }> => {
   const names: Array<{ name: string; format: 'takeout-json' | 'xmp' }> = [];
   if (format === 'takeout-json' || format === 'both') {
     names.push({ name: `${mediaFileName}.supplemental-metadata.json`, format: 'takeout-json' });

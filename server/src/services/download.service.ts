@@ -13,7 +13,13 @@ import { Permission } from 'src/enum.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
-import { buildTakeoutJson, buildXmp, getSidecarFileNames, type ExportAssetMetadata, type SidecarFormat } from 'src/utils/export-sidecar.js';
+import {
+  buildTakeoutJson,
+  buildXmp,
+  getSidecarFileNames,
+  type ExportAssetMetadata,
+  type SidecarFormat,
+} from 'src/utils/export-sidecar.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()

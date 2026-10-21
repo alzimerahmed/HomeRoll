@@ -112,7 +112,11 @@ describe(AutoCreationService.name, () => {
       autoCreationRepository.getPreviewPaths.mockResolvedValue(new Map() as never);
       mocks.storage.stat.mockResolvedValue({ size: 128 } as never);
       mocks.storage.readFile.mockResolvedValue(Buffer.from('rendered-collage'));
-      mocks.asset.create.mockResolvedValue({ id: 'asset-new', ownerId: 'user-1', originalFileName: 'Auto collage.jpg' } as never);
+      mocks.asset.create.mockResolvedValue({
+        id: 'asset-new',
+        ownerId: 'user-1',
+        originalFileName: 'Auto collage.jpg',
+      } as never);
     });
 
     it('should reuse the existing asset when the checksum collides (idempotent re-run)', async () => {
@@ -150,9 +154,7 @@ describe(AutoCreationService.name, () => {
         expect.objectContaining({ ownerId: 'user-1', originalFileName: 'Auto collage.jpg' }),
       );
       expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', expect.anything());
-      expect(mocks.job.queue).toHaveBeenCalledWith(
-        expect.objectContaining({ name: JobName.AssetExtractMetadata }),
-      );
+      expect(mocks.job.queue).toHaveBeenCalledWith(expect.objectContaining({ name: JobName.AssetExtractMetadata }));
     });
   });
 });

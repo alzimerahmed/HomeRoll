@@ -53,7 +53,9 @@ describe(DownloadService.name + ' (sidecars)', () => {
 
     mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
     mocks.asset.getForOriginals.mockResolvedValue([asset]);
-    mocks.downloadRepository.getExportMetadata.mockResolvedValue(new Map([[asset.id, { ...fullMetadata, id: asset.id }]]));
+    mocks.downloadRepository.getExportMetadata.mockResolvedValue(
+      new Map([[asset.id, { ...fullMetadata, id: asset.id }]]),
+    );
     mocks.storage.createZipStream.mockReturnValue(zip);
 
     await sut.downloadArchive(authStub.admin, { assetIds: [asset.id], include: ['sidecars'], sidecarFormat: 'both' });
@@ -65,7 +67,9 @@ describe(DownloadService.name + ' (sidecars)', () => {
 
     const [jsonBuffer] = zip.addBuffer.mock.calls[0] as [Buffer, string];
     const json = JSON.parse(jsonBuffer.toString('utf8'));
-    expect(json.photoTakenTime.timestamp).toBe(Math.floor(new Date('2024-06-01T09:30:15.000Z').getTime() / 1000).toString());
+    expect(json.photoTakenTime.timestamp).toBe(
+      Math.floor(new Date('2024-06-01T09:30:15.000Z').getTime() / 1000).toString(),
+    );
     expect(json.description).toBe('A trip to the tower');
     expect(json.people).toEqual([{ name: 'Alice' }]);
   });
@@ -76,7 +80,9 @@ describe(DownloadService.name + ' (sidecars)', () => {
 
     mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
     mocks.asset.getForOriginals.mockResolvedValue([asset]);
-    mocks.downloadRepository.getExportMetadata.mockResolvedValue(new Map([[asset.id, { ...fullMetadata, id: asset.id }]]));
+    mocks.downloadRepository.getExportMetadata.mockResolvedValue(
+      new Map([[asset.id, { ...fullMetadata, id: asset.id }]]),
+    );
     mocks.storage.createZipStream.mockReturnValue(zip);
 
     await sut.downloadArchive(authStub.admin, { assetIds: [asset.id], include: ['sidecars'], sidecarFormat: 'xmp' });
@@ -123,7 +129,9 @@ describe(DownloadService.name + ' (sidecars)', () => {
 
     mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
     mocks.asset.getForOriginals.mockResolvedValue([asset]);
-    mocks.downloadRepository.getExportMetadata.mockResolvedValue(new Map([[asset.id, { ...fullMetadata, id: asset.id }]]));
+    mocks.downloadRepository.getExportMetadata.mockResolvedValue(
+      new Map([[asset.id, { ...fullMetadata, id: asset.id }]]),
+    );
     mocks.storage.createZipStream.mockReturnValue(zip);
 
     await sut.downloadArchive(authStub.adminSharedLink, { assetIds: [asset.id], include: ['sidecars'] });

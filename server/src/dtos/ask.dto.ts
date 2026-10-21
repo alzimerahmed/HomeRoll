@@ -5,7 +5,9 @@ import { AssetResponseSchema } from 'src/dtos/asset-response.dto.js';
 const AskResponseSchema = z
   .object({
     answer: z.string().describe('Natural-language answer over the user library'),
-    provider: z.enum(['llm', 'structured']).describe('Answer provider: llm when configured, structured fallback otherwise'),
+    provider: z
+      .enum(['llm', 'structured'])
+      .describe('Answer provider: llm when configured, structured fallback otherwise'),
     interpretation: z
       .object({
         query: z.string().nullable().describe('CLIP text query extracted from the question'),
