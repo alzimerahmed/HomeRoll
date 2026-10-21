@@ -24,11 +24,33 @@ export interface LlmProvider {
   chat(systemPrompt: string, userPrompt: string): Promise<string>;
 }
 
-export class AskLlmNotConfiguredError extends Error {}
-
 const DEFAULT_TIMEOUT_MS = 30_000;
 /** Cap on context size sent to the model — keeps local models responsive. */
 const MAX_CONTEXT_CHARS = 24_000;
+/** Cap on the LLM response body — a misbehaving endpoint must not OOM the server. */
+const MAX_RESPONSE_BYTES = 1_000_000;
+
+/** Reads a response body with a hard byte cap. */
+const readCapped = async (response: Response, limit: number): Promise<string> => {
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error('LLM endpoint returned no body');
+  }
+
+  const decoder = new TextDecoder();
+  let text = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      return text;
+    }
+    text += decoder.decode(value, { stream: true });
+    if (text.length > limit) {
+      await reader.cancel();
+      throw new Error(`LLM response exceeded ${limit} bytes`);
+    }
+  }
+};
 
 @Injectable()
 export class LlmService {
@@ -46,7 +68,13 @@ export class LlmService {
       return null;
     }
 
-    const baseUrl = ask.llmBaseUrl;
+    if (!ask.llmModel) {
+      this.logger.warn('IMMICH_ASK_LLM_BASE_URL is set but IMMICH_ASK_LLM_MODEL is missing — ignoring the LLM provider');
+      return null;
+    }
+
+    // URL('relative', base) drops the base path without a trailing slash
+    const baseUrl = ask.llmBaseUrl.endsWith('/') ? ask.llmBaseUrl : `${ask.llmBaseUrl}/`;
     const apiKey = ask.llmApiKey;
     const model = ask.llmModel;
     const timeoutMs = ask.llmTimeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -79,7 +107,7 @@ export class LlmService {
             throw new Error(`LLM endpoint returned ${response.status}: ${response.statusText}`);
           }
 
-          const body = (await response.json()) as {
+          const body = JSON.parse(await readCapped(response, MAX_RESPONSE_BYTES)) as {
             choices?: { message?: { content?: string } }[];
           };
           const content = body.choices?.[0]?.message?.content;

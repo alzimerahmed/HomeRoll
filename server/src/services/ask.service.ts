@@ -3,15 +3,12 @@ import { mapAsset, type MapAsset } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AskDto, AskResponseDto } from 'src/dtos/ask.dto.js';
 import { AssetType } from 'src/enum.js';
-import { AssetSearchScope } from 'src/repositories/search.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { LlmService } from 'src/services/llm.service.js';
 import { getMyPartnerIds } from 'src/utils/asset.util.js';
 import { parseAskQuery } from 'src/utils/ask-query-parser.js';
 import { isSmartSearchEnabled } from 'src/utils/misc.js';
 
-/** Candidates fetched per search leg before merging. */
-const LEG_SIZE = 60;
 /** Hard cap on assets returned. */
 const MAX_ASSETS = 500;
 /** How many asset summaries the LLM sees. */
@@ -54,7 +51,6 @@ export class AskService extends BaseService {
 
     const parsed = parseAskQuery(dto.query);
     const userIds = await this.getUserIdsToSearch(auth);
-    const scope: AssetSearchScope = { userIds, lockedOwnerId: auth.user.id, viewingUserId: auth.user.id };
 
     const embedding = await this.machineLearningRepository
       .encodeText(parsed.query ?? dto.query, { modelName: machineLearning.clip.modelName })
@@ -65,8 +61,9 @@ export class AskService extends BaseService {
 
     // one vector search carries the CLIP ranking; EXIF/OCR filters ride along in
     // the same query via the shared search builder
+    const size = Math.min(dto.size ?? 100, MAX_ASSETS);
     const { items } = await this.searchRepository.searchSmart(
-      { page: 1, size: Math.min(dto.size, MAX_ASSETS) },
+      { page: 1, size },
       {
         embedding,
         userIds,
@@ -82,7 +79,11 @@ export class AskService extends BaseService {
       },
     );
 
-    const candidates = this.toCandidates(items.slice(0, Math.min(dto.size, MAX_ASSETS)));
+    // the repository fetches size+1 to detect pagination — report an honest
+    // lower bound ("at least N") rather than the page-limited count
+    const hasNextPage = items.length > size;
+    const total = hasNextPage ? size + 1 : items.length;
+    const candidates = this.toCandidates(items.slice(0, size));
     const provider = this.llmService.getProvider();
 
     if (provider) {
@@ -93,7 +94,7 @@ export class AskService extends BaseService {
           provider: 'llm',
           interpretation: this.toInterpretation(parsed),
           assets: candidates.map(({ asset }) => asset),
-          total: items.length,
+          total,
         };
       } catch (error: Error | any) {
         this.logger.warn(`Ask LLM provider failed, falling back to structured answer: ${error}`);
@@ -101,11 +102,11 @@ export class AskService extends BaseService {
     }
 
     return {
-      answer: this.structuredAnswer(dto.query, parsed, items.length, candidates),
+      answer: this.structuredAnswer(dto.query, parsed, total, hasNextPage, candidates),
       provider: 'structured',
       interpretation: this.toInterpretation(parsed),
       assets: candidates.map(({ asset }) => asset),
-      total: items.length,
+      total,
     };
   }
 
@@ -169,6 +170,7 @@ export class AskService extends BaseService {
     query: string,
     parsed: ReturnType<typeof parseAskQuery>,
     total: number,
+    hasMore: boolean,
     candidates: AskCandidate[],
   ): string {
     if (total === 0) {
@@ -198,7 +200,8 @@ export class AskService extends BaseService {
     const qualifier = scope.length > 0 ? ` ${scope.join(' ')}` : '';
     const sample = candidates[0]?.summary;
     const suffix = sample ? ` Best match: ${sample}.` : '';
-    return `Found ${total} matching asset${total === 1 ? '' : 's'}${qualifier}.${suffix}`;
+    const count = hasMore ? `at least ${total - 1}+` : `${total}`;
+    return `Found ${count} matching asset${total === 1 ? '' : 's'}${qualifier}.${suffix}`;
   }
 
   private toInterpretation(parsed: ReturnType<typeof parseAskQuery>) {

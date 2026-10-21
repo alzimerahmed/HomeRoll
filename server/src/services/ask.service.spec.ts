@@ -51,7 +51,6 @@ describe(AskService.name, () => {
         takenAfter: new Date('2019-01-01T00:00:00.000Z'),
         type: 'IMAGE',
       }),
-      expect.anything(),
     );
   });
 
@@ -91,7 +90,6 @@ describe(AskService.name, () => {
     expect(mocks.search.searchSmart).toHaveBeenCalledWith(
       { page: 1, size: 100 },
       expect.objectContaining({ ocr: 'OPEN' }),
-      expect.anything(),
     );
   });
 });

@@ -40,6 +40,13 @@ describe('parseAskQuery', () => {
     expect(parsed.query).toBeNull();
   });
 
+  it('rolls the year forward for winter ranges', () => {
+    const parsed = parseAskQuery('photos from last winter');
+    expect(parsed.takenAfter).toMatch(/-12-01T00:00:00\.000Z$/);
+    expect(parsed.takenBefore).toMatch(/-03-01T00:00:00\.000Z$/);
+    expect(new Date(parsed.takenBefore!).getTime()).toBeGreaterThan(new Date(parsed.takenAfter!).getTime());
+  });
+
   it('keeps the remainder as the CLIP query', () => {
     expect(parseAskQuery('sunset over mountains')).toMatchObject({
       query: 'sunset over mountains',

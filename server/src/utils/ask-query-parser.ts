@@ -93,9 +93,10 @@ const parseDateRange = (text: QueryText): { takenAfter: string | null; takenBefo
     const [startMonth, endMonth] = bounds[name];
     const anchorYear = isLast && now.getUTCMonth() + 1 < startMonth ? year - 1 : isLast ? year - 1 : year;
     const after = `${anchorYear}-${String(startMonth).padStart(2, '0')}-01T00:00:00.000Z`;
+    // seasons that wrap the year boundary (winter: Dec→Feb) end in the following year
     const before =
-      endMonth === 12
-        ? `${anchorYear + 1}-01-01T00:00:00.000Z`
+      endMonth < startMonth || endMonth === 12
+        ? `${anchorYear + 1}-${String(((endMonth % 12) + 1)).padStart(2, '0')}-01T00:00:00.000Z`
         : `${anchorYear}-${String(endMonth + 1).padStart(2, '0')}-01T00:00:00.000Z`;
     return { takenAfter: after, takenBefore: before };
   }
