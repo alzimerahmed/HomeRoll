@@ -19,6 +19,19 @@
   let range: TrimRange = $state({ start: 0, end: 0 });
   let isSaving = $state(false);
   let isPreviewing = $state(false);
+  let startSlider: HTMLInputElement | undefined = $state();
+
+  // Esc closes the dialog; focus lands on the start slider when it opens
+  $effect(() => {
+    startSlider?.focus();
+  });
+
+  const onWindowKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+    }
+  };
 
   const onLoadedMetadata = () => {
     duration = video.duration;
@@ -96,6 +109,8 @@
   };
 </script>
 
+<svelte:window onkeydown={onWindowKeydown} />
+
 <div
   class="absolute inset-x-4 bottom-24 z-10 mx-auto max-w-xl rounded-xl border border-subtle bg-subtle p-4 shadow-lg"
   role="dialog"
@@ -107,6 +122,7 @@
     <label class="flex items-center gap-2 text-xs text-subtle">
       <span class="w-14 shrink-0 font-mono tabular-nums">{formatTrimTime(range.start)}</span>
       <input
+        bind:this={startSlider}
         type="range"
         class="w-full"
         min="0"

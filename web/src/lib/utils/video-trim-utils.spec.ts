@@ -11,8 +11,9 @@ describe('clampTrimRange', () => {
     expect(clampTrimRange({ start: 9.95, end: 10 }, 10)).toEqual({ start: 9.9, end: 10 });
   });
 
-  it('handles unknown duration (NaN)', () => {
-    expect(clampTrimRange({ start: 1, end: 2 }, Number.NaN)).toEqual({ start: 0, end: 0.1 });
+  it('handles unknown duration (NaN) — collapses to a degenerate range that isValidTrimRange rejects', () => {
+    expect(clampTrimRange({ start: 1, end: 2 }, Number.NaN)).toEqual({ start: 0, end: 0 });
+    expect(isValidTrimRange(clampTrimRange({ start: 1, end: 2 }, Number.NaN), Number.NaN)).toBe(false);
   });
 });
 

@@ -20,7 +20,13 @@
 
   let { data }: Props = $props();
 
+  // the page scrolls the document, so the viewer's visible window is the
+  // browser viewport — binding the (content-driven) section height here would
+  // be circular and could stay 0
   const viewport: { width: number; height: number } = $state({ width: 0, height: 0 });
+  $effect(() => {
+    viewport.height = window.innerHeight;
+  });
 
   let question = $state('');
   let isLoading = $state(false);
@@ -145,7 +151,7 @@
       </div>
 
       {#if assets.length > 0}
-        <section class="mt-4" bind:clientWidth={viewport.width} bind:clientHeight={viewport.height}>
+        <section class="mt-4" bind:clientWidth={viewport.width}>
           <GalleryViewer bind:assets assetInteraction={assetMultiSelectManager} {viewport} showArchiveIcon={true} />
         </section>
       {:else}

@@ -2,7 +2,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { createCollage } from 'src/utils/collage.js';
 
 describe('createCollage', () => {
@@ -10,10 +10,6 @@ describe('createCollage', () => {
 
   beforeAll(async () => {
     dir = await mkdtemp(join(tmpdir(), 'collage-'));
-  });
-
-  afterAll(async () => {
-    // temp dirs are OS-managed; no cleanup needed
   });
 
   const makeImage = async (color: { r: number; g: number; b: number }) => {
