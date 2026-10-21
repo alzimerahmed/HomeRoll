@@ -77,6 +77,14 @@ export interface EnvData {
     vapidSubject?: string;
   };
 
+  /** HomeRoll FG-13: optional OpenAI-compatible LLM endpoint for "Ask HomeRoll". */
+  ask?: {
+    llmBaseUrl?: string;
+    llmApiKey?: string;
+    llmModel?: string;
+    llmTimeoutMs?: number;
+  };
+
   network: {
     trustedProxies: string[];
   };
@@ -309,6 +317,13 @@ const getEnv = (): EnvData => {
       vapidPublicKey: dto.IMMICH_VAPID_PUBLIC_KEY,
       vapidPrivateKey: dto.IMMICH_VAPID_PRIVATE_KEY,
       vapidSubject: dto.IMMICH_VAPID_SUBJECT,
+    },
+
+    ask: {
+      llmBaseUrl: dto.IMMICH_ASK_LLM_BASE_URL,
+      llmApiKey: dto.IMMICH_ASK_LLM_API_KEY,
+      llmModel: dto.IMMICH_ASK_LLM_MODEL,
+      llmTimeoutMs: dto.IMMICH_ASK_LLM_TIMEOUT_MS,
     },
 
     network: {

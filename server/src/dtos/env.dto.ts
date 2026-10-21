@@ -72,6 +72,13 @@ export const EnvSchema = z
     IMMICH_VAPID_PUBLIC_KEY: z.string().optional(),
     IMMICH_VAPID_PRIVATE_KEY: z.string().optional(),
     IMMICH_VAPID_SUBJECT: z.string().optional(),
+
+    // HomeRoll FG-13 "Ask HomeRoll": OpenAI-compatible LLM endpoint (optional; unset = structured answers only)
+    IMMICH_ASK_LLM_BASE_URL: z.string().optional(),
+    IMMICH_ASK_LLM_API_KEY: z.string().optional(),
+    IMMICH_ASK_LLM_MODEL: z.string().optional(),
+    IMMICH_ASK_LLM_TIMEOUT_MS: z.coerce.number().int().min(1000).max(300_000).optional(),
+
     IMMICH_WORKERS_INCLUDE: z.string().optional(),
     IMMICH_WORKERS_EXCLUDE: z.string().optional(),
     DB_DATABASE_NAME: z.string().optional(),
