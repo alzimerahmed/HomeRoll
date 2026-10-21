@@ -37,6 +37,7 @@ const baseMetadata: ExportAssetMetadata = {
 
 const emptyMetadata: ExportAssetMetadata = {
   ...baseMetadata,
+  fileCreatedAt: null,
   takenAt: null,
   latitude: null,
   longitude: null,
@@ -210,6 +211,6 @@ describe('getSidecarFileNames', () => {
 
 describe('escapeXml', () => {
   it('should escape all five XML special characters', () => {
-    expect(escapeXml('&<>"' + String.fromCodePoint(39))).toBe('&amp;&lt;&gt;&quot;' + String.fromCodePoint(39));
+    expect(escapeXml('&<>"' + String.fromCodePoint(39))).toBe('&amp;&lt;&gt;&quot;&apos;');
   });
 });

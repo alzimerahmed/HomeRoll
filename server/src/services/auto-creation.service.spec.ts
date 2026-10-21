@@ -1,7 +1,7 @@
 import { vitest } from 'vitest';
 import type { ServiceMocks } from 'test/utils.js';
 import { AutoCreationType } from 'src/dtos/auto-creation.dto.js';
-import { JobName, JobStatus } from 'src/enum.js';
+import { AlbumType, JobName, JobStatus } from 'src/enum.js';
 import { AutoCreationRepository } from 'src/repositories/auto-creation.repository.js';
 import { AutoCreationService } from 'src/services/auto-creation.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
@@ -74,7 +74,7 @@ describe(AutoCreationService.name, () => {
       ).resolves.toBe(JobStatus.Success);
 
       expect(mocks.album.create).toHaveBeenCalledWith(
-        expect.objectContaining({ ownerId: 'user-1', albumName: 'Trip to Rome' }),
+        expect.objectContaining({ albumName: 'Trip to Rome', albumType: AlbumType.Manual }),
         ['asset-1', 'asset-2'],
         [{ userId: 'user-1', role: 'owner' }],
         'user-1',
@@ -116,6 +116,8 @@ describe(AutoCreationService.name, () => {
       autoCreationRepository.getPreviewPaths.mockResolvedValue(new Map() as never);
       mocks.storage.stat.mockResolvedValue({ size: 128 } as never);
       mocks.storage.readFile.mockResolvedValue(Buffer.from('rendered-collage'));
+      // the cleanup path calls unlink(path).catch(...) — it must return a promise
+      mocks.storage.unlink.mockResolvedValue(undefined);
       mocks.asset.create.mockResolvedValue({
         id: 'asset-new',
         ownerId: 'user-1',

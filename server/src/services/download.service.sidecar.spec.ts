@@ -109,7 +109,7 @@ describe(DownloadService.name + ' (sidecars)', () => {
     const zip = archiveMock();
     const asset = AssetFactory.create();
 
-    mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+    mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
     mocks.asset.getForOriginals.mockResolvedValue([asset]);
     mocks.storage.createZipStream.mockReturnValue(zip);
 
@@ -127,7 +127,7 @@ describe(DownloadService.name + ' (sidecars)', () => {
     const zip = archiveMock();
     const asset = AssetFactory.create({ originalFileName: 'IMG_1234.jpg' });
 
-    mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+    mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
     mocks.asset.getForOriginals.mockResolvedValue([asset]);
     mocks.downloadRepository.getExportMetadata.mockResolvedValue(
       new Map([[asset.id, { ...fullMetadata, id: asset.id }]]),

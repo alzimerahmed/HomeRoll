@@ -44,7 +44,8 @@ describe(QualityService.name, () => {
       await expect(sut.handleQualityScore({ assetIds: ['asset-1'] })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.machineLearning.assessQualityBatch).toHaveBeenCalledWith([
-        { imagePath: '/preview.jpg', faces: [{ boundingBox: [0, 0, 100, 100], score: 0.9 }] },
+        // detection confidence is not persisted on asset_face — stored faces score as 1
+        { imagePath: '/preview.jpg', faces: [{ boundingBox: [0, 0, 100, 100], score: 1 }] },
       ]);
       expect(qualityRepository.upsert).toHaveBeenCalledWith('asset-1', {
         blur: 0.8,
@@ -79,7 +80,8 @@ describe(QualityService.name, () => {
     it('should queue batched scoring jobs (50 assets per job)', async () => {
       qualityRepository.streamForQualityJob.mockReturnValue(
         (function* () {
-          yield [{ id: 'a' }, { id: 'b' }];
+          yield { id: 'a' };
+          yield { id: 'b' };
         })() as never,
       );
 

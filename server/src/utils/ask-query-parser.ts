@@ -76,6 +76,22 @@ const parseDateRange = (text: QueryText): { takenAfter: string | null; takenBefo
   const now = new Date();
   const year = now.getUTCFullYear();
 
+  // "last july" / "in june 2023" — must run before the bare-year pattern,
+  // which would otherwise consume the year out of a month-year phrase
+  const month = text.consume(
+    /\b(?:in|from|last|this|during)?\s?(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\b(?:\s+(20\d{2}))?/i,
+  );
+  if (month) {
+    const monthIndex = MONTH_LOOKUP.get(month[1].toLowerCase())!;
+    const monthYear = month[2] ? Number(month[2]) : now.getUTCMonth() + 1 < monthIndex + 1 ? year - 1 : year;
+    const after = `${monthYear}-${String(monthIndex + 1).padStart(2, '0')}-01T00:00:00.000Z`;
+    const before =
+      monthIndex === 11
+        ? `${monthYear + 1}-01-01T00:00:00.000Z`
+        : `${monthYear}-${String(monthIndex + 2).padStart(2, '0')}-01T00:00:00.000Z`;
+    return { takenAfter: after, takenBefore: before };
+  }
+
   // "in 2019" / "from 2019" / "2019"
   const yearMatch = text.consume(/\b(?:in|from|during|back in)\s+(20\d{2})\b/i) ?? text.consume(/\b(20\d{2})\b/);
   if (yearMatch) {
@@ -83,8 +99,10 @@ const parseDateRange = (text: QueryText): { takenAfter: string | null; takenBefo
     return { takenAfter: `${y}-01-01T00:00:00.000Z`, takenBefore: `${y + 1}-01-01T00:00:00.000Z` };
   }
 
-  // "last summer" / "this summer"
-  const season = text.consume(/\b(this|last)\s+(summer|winter|spring|fall|autumn)\b/i);
+  // "last summer" / "this summer" / "from last winter"
+  const season =
+    text.consume(/\b(?:in|from|at|during)\s+(this|last)\s+(summer|winter|spring|fall|autumn)\b/i) ??
+    text.consume(/\b(this|last)\s+(summer|winter|spring|fall|autumn)\b/i);
   if (season) {
     const isLast = season[1].toLowerCase() === 'last';
     const name = season[2].toLowerCase();
@@ -106,23 +124,10 @@ const parseDateRange = (text: QueryText): { takenAfter: string | null; takenBefo
     return { takenAfter: after, takenBefore: before };
   }
 
-  // "last july" / "in june 2023"
-  const month = text.consume(
-    /\b(?:in|last|this|during)?\s?(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\b(?:\s+(20\d{2}))?/i,
-  );
-  if (month) {
-    const monthIndex = MONTH_LOOKUP.get(month[1].toLowerCase())!;
-    const monthYear = month[2] ? Number(month[2]) : now.getUTCMonth() + 1 < monthIndex + 1 ? year - 1 : year;
-    const after = `${monthYear}-${String(monthIndex + 1).padStart(2, '0')}-01T00:00:00.000Z`;
-    const before =
-      monthIndex === 11
-        ? `${monthYear + 1}-01-01T00:00:00.000Z`
-        : `${monthYear}-${String(monthIndex + 2).padStart(2, '0')}-01T00:00:00.000Z`;
-    return { takenAfter: after, takenBefore: before };
-  }
-
   // "last week" / "last month" / "last year" / "today" / "yesterday"
-  const relative = text.consume(/\b(today|yesterday|this week|last week|this month|last month|this year|last year)\b/i);
+  const relative = text.consume(
+    /\b(?:in|from|at|during)?\s?(today|yesterday|this week|last week|this month|last month|this year|last year)\b/i,
+  );
   if (relative) {
     const unit = relative[1].toLowerCase();
     const start = new Date(now);
@@ -216,7 +221,12 @@ export const parseAskQuery = (input: string): ParsedAskQuery => {
     parsed.ocr = strip(ocr[1]);
   }
 
+  const { takenAfter, takenBefore } = parseDateRange(text);
+  parsed.takenAfter = takenAfter;
+  parsed.takenBefore = takenBefore;
+
   // places: "in Paris" / "at the beach in France" — capitalized proper noun after a place preposition
+  // must run after date extraction so month names ("in June") are not mistaken for cities
   const place = text.consume(/\b(?:in|at|around|near|from)\s+((?:[A-Z][\p{L}'’-]+[ \t]?)+["“]?\s?)+/u);
 
   if (place) {
@@ -230,10 +240,6 @@ export const parseAskQuery = (input: string): ParsedAskQuery => {
       parsed.city = proper;
     }
   }
-
-  const { takenAfter, takenBefore } = parseDateRange(text);
-  parsed.takenAfter = takenAfter;
-  parsed.takenBefore = takenBefore;
 
   const remainder = text.text();
   // generic filler that carries no search signal

@@ -93,10 +93,6 @@ export const buildTakeoutJson = (metadata: ExportAssetMetadata): string | null =
     json.description = metadata.description;
   }
 
-  if (metadata.originalFileName) {
-    json.title = metadata.originalFileName;
-  }
-
   if (metadata.people.length > 0) {
     json.people = metadata.people.map((name) => ({ name }));
   }
@@ -121,7 +117,16 @@ export const buildTakeoutJson = (metadata: ExportAssetMetadata): string | null =
     };
   }
 
-  return Object.keys(json).length > 0 ? JSON.stringify(json, null, 2) : null;
+  if (Object.keys(json).length === 0) {
+    return null;
+  }
+  // the title only rides along when there is real metadata — a sidecar containing
+  // nothing but the file name duplicates what the file itself already says
+  if (metadata.originalFileName) {
+    json.title = metadata.originalFileName;
+  }
+
+  return JSON.stringify(json, null, 2);
 };
 
 const xmpDate = (date: Date): string => date.toISOString();
@@ -144,12 +149,6 @@ export const buildXmp = (metadata: ExportAssetMetadata): string | null => {
     }
     simpleProps.push(`    <${prefix}:${name}>${escapeXml(v)}</${prefix}:${name}>`);
   };
-
-  if (metadata.originalFileName) {
-    rdfItems.push(
-      `    <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${escapeXml(metadata.originalFileName)}</rdf:li></rdf:Alt></dc:title>`,
-    );
-  }
 
   if (metadata.description) {
     rdfItems.push(
@@ -225,6 +224,12 @@ export const buildXmp = (metadata: ExportAssetMetadata): string | null => {
 
   if (rdfItems.length === 0 && simpleProps.length === 0) {
     return null;
+  }
+  // dc:title only accompanies real metadata — a title-only packet is useless
+  if (metadata.originalFileName) {
+    rdfItems.unshift(
+      `    <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${escapeXml(metadata.originalFileName)}</rdf:li></rdf:Alt></dc:title>`,
+    );
   }
 
   return [

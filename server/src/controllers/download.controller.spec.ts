@@ -30,7 +30,7 @@ describe(DownloadController.name, () => {
         .type('form')
         .send({ assetIds: ids.join(',') });
       expect(status).toBe(200);
-      expect(downloadArchiveSpy).toHaveBeenCalledWith(undefined, { assetIds: ids });
+      expect(downloadArchiveSpy).toHaveBeenCalledWith(undefined, { assetIds: ids, sidecarFormat: 'both' });
     });
 
     it('should accept assetIds array', async () => {
@@ -42,7 +42,7 @@ describe(DownloadController.name, () => {
         assetIds: ids,
       });
       expect(status).toBe(200);
-      expect(downloadArchiveSpy).toHaveBeenCalledWith(undefined, { assetIds: ids });
+      expect(downloadArchiveSpy).toHaveBeenCalledWith(undefined, { assetIds: ids, sidecarFormat: 'both' });
     });
   });
 });

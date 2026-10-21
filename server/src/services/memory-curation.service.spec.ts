@@ -3,14 +3,14 @@ import type { ServiceMocks } from 'test/utils.js';
 import { JobName, JobStatus } from 'src/enum.js';
 import { MemoryCurationService } from 'src/services/memory-curation.service.js';
 import { QualityService } from 'src/services/quality.service.js';
-import { automock, newTestService } from 'test/utils.js';
+import { mockBaseService, newTestService } from 'test/utils.js';
 
 vitest.useFakeTimers();
 
 describe(MemoryCurationService.name, () => {
   let sut: MemoryCurationService;
   let mocks: ServiceMocks;
-  const qualityService = automock(QualityService, { strict: false });
+  const qualityService = mockBaseService(QualityService);
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(MemoryCurationService));

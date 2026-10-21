@@ -10,7 +10,10 @@ vitest.useFakeTimers();
 describe(AskService.name, () => {
   let sut: AskService;
   let mocks: ServiceMocks;
-  const llmService = automock(LlmService, { strict: false });
+  const llmService = automock(LlmService, {
+    args: [undefined, { setContext: () => {} } as never],
+    strict: false,
+  });
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AskService));
@@ -64,6 +67,8 @@ describe(AskService.name, () => {
         {
           id: 'asset-1',
           type: 'IMAGE',
+          originalFileName: 'IMG_0001.jpg',
+          checksum: Buffer.alloc(20),
           localDateTime: new Date('2019-06-01T00:00:00Z'),
           exifInfo: { city: 'Berlin' },
           people: [],
@@ -93,6 +98,8 @@ describe(AskService.name, () => {
       items: Array.from({ length: 100 }, (_, i) => ({
         id: `asset-${i}`,
         type: 'IMAGE',
+        originalFileName: `IMG_${i}.jpg`,
+        checksum: Buffer.alloc(20),
         localDateTime: new Date('2019-06-01T00:00:00Z'),
         exifInfo: {},
         people: [],
