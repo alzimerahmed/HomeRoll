@@ -97,6 +97,14 @@ describe(WebDavService.name, () => {
       expect(resources[0].isCollection).toBe(false);
     });
 
+    it('should resolve a file via the direct lookup without a listing (perf C1)', async () => {
+      mocks.library.getAll.mockResolvedValue([{ id: libraryId, name: 'My Library', ownerId: auth.user.id }] as never);
+      webdavRepository.getAssetByLibraryFileName.mockResolvedValue(assetRow as never);
+      const resources = await sut.propfind(auth, [DAV_LIBRARIES, 'My Library', 'IMG_0001.jpg'], 0);
+      expect(resources).toHaveLength(1);
+      expect(webdavRepository.getAssetsByLibraryId).not.toHaveBeenCalled();
+    });
+
     it('should reject traversal segments', async () => {
       await expect(sut.propfind(auth, ['..', 'etc'], 1)).rejects.toBeInstanceOf(BadRequestException);
       await expect(sut.propfind(auth, [DAV_LIBRARIES, '..'], 1)).rejects.toBeInstanceOf(BadRequestException);

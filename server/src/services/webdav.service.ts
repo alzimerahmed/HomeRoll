@@ -5,7 +5,7 @@ import { WebDavRepository } from 'src/repositories/webdav.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
-import { DavDepth, DavResource, assignDavNames } from 'src/utils/webdav.js';
+import { DavDepth, DavResource, assignDavNames, sanitizeDavName } from 'src/utils/webdav.js';
 
 export const DAV_LIBRARIES = 'Libraries';
 export const DAV_ALBUMS = 'Albums';
@@ -94,8 +94,7 @@ export class WebDavService extends BaseService {
       return resources;
     }
 
-    const assets = await this.listAssets(auth, rootName, collection);
-    const match = assets.find(({ name }) => name === fileName);
+    const match = await this.findAsset(auth, rootName, collection, fileName!);
     if (!match) {
       throw new NotFoundException();
     }
@@ -124,8 +123,7 @@ export class WebDavService extends BaseService {
       throw new NotFoundException();
     }
 
-    const assets = await this.listAssets(auth, rootName, collection);
-    const match = assets.find(({ name }) => name === fileName);
+    const match = await this.findAsset(auth, rootName, collection, fileName!);
     if (!match?.id || !match.path) {
       throw new NotFoundException();
     }
@@ -198,6 +196,33 @@ export class WebDavService extends BaseService {
     return assignDavNames(assets.map((asset) => ({ id: asset.id, name: asset.fileName, asset }))).map(
       ({ item, name }) => this.assetResource(item.asset, root, collection.name, name),
     );
+  }
+
+  /**
+   * Direct single-asset lookup (perf audit C1): a depth-0 PROPFIND or GET on a
+   * file must not cost a full collection listing. The repository matches on the
+   * raw `originalFileName`; when the client-addressed display name was
+   * disambiguated by `assignDavNames` (sanitized or `-<id8>`-suffixed), the
+   * lookup misses and we fall back to the (capped) listing — correctness over
+   * the fast path.
+   */
+  private async findAsset(
+    auth: AuthDto,
+    root: DavRoot,
+    collection: DavCollectionEntry,
+    fileName: string,
+  ): Promise<DavResource | undefined> {
+    const direct =
+      root === DAV_LIBRARIES
+        ? await this.webdavRepository.getAssetByLibraryFileName(auth.user.id, collection.id, fileName)
+        : await this.webdavRepository.getAssetByAlbumFileName(auth.user.id, collection.id, fileName);
+
+    if (direct && sanitizeDavName(direct.fileName) === fileName) {
+      return this.assetResource(direct, root, collection.name, fileName);
+    }
+
+    const assets = await this.listAssets(auth, root, collection);
+    return assets.find(({ name }) => name === fileName);
   }
 
   private assetResource(asset: DavAssetRow, root: DavRoot, collectionName: string, name: string): DavResource {
