@@ -1,5 +1,6 @@
 <script lang="ts">
   import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
+  import VideoTrimPanel from '$lib/components/asset-viewer/VideoTrimPanel.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/VideoRemoteViewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -15,6 +16,7 @@
     mdiCheck,
     mdiChevronLeft,
     mdiChevronRight,
+    mdiContentCut,
     mdiFullscreen,
     mdiFullscreenExit,
     mdiPause,
@@ -243,6 +245,7 @@
   $effect(() => {
     // reactive on `assetFileUrl` changes
     hasLoadedMetadata = false;
+    showTrimPanel = false;
     if (videoPlayer && assetFileUrl) {
       hasFocused = false;
       rebuildCount = 0;
@@ -317,6 +320,7 @@
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  let showTrimPanel = $state(false);
 
   $effect(() => {
     if (assetViewerManager.isFaceEditMode) {
@@ -476,6 +480,15 @@
             </div>
 
             {#if extendedControls}
+              <button
+                type="button"
+                class="shrink-0 rounded-full p-2 outline-none"
+                aria-label={$t('trim_video')}
+                title={$t('trim_video')}
+                onclick={() => (showTrimPanel = !showTrimPanel)}
+              >
+                <Icon icon={mdiContentCut} />
+              </button>
               <media-fullscreen-button class="shrink-0 rounded-full p-2 outline-none">
                 <Icon slot="enter" icon={mdiFullscreen} />
                 <Icon slot="exit" icon={mdiFullscreenExit} />
@@ -499,6 +512,14 @@
           {containerWidth}
           {containerHeight}
           {assetId}
+        />
+      {/if}
+
+      {#if showTrimPanel && videoPlayer && hasLoadedMetadata}
+        <VideoTrimPanel
+          video={isHlsElement(videoPlayer) ? videoPlayer.nativeEl : videoPlayer}
+          {assetId}
+          onClose={() => (showTrimPanel = false)}
         />
       {/if}
     {/if}
