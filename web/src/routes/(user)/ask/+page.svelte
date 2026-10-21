@@ -126,7 +126,8 @@
       </div>
     {:else if result}
       <div class="rounded-xl border border-subtle bg-subtle p-4">
-        <p class="text-base">{$t('ask_answer')}</p>
+        <h2 class="text-base font-medium">{$t('ask_answer')}</h2>
+        <p class="mt-2 text-base whitespace-pre-wrap">{result.answer}</p>
         <p class="mt-1 text-xs text-subtle">
           {$t(result.provider === 'llm' ? 'ask_provider_llm' : 'ask_provider_structured')}
         </p>
