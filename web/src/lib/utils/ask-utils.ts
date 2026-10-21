@@ -1,16 +1,12 @@
+import { AssetTypeEnum, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+import type { Translations } from 'svelte-i18n';
 import type { AskInterpretationDto } from '$lib/services/homeroll-api';
 
 /** Search DTO accepted by `Route.search()` (MetadataSearchDto + SmartSearchDto subset). */
-export type AskSearchDto = {
-  query?: string;
-  city?: string;
-  country?: string;
-  takenAfter?: string;
-  takenBefore?: string;
-  type?: 'IMAGE' | 'VIDEO';
-  isFavorite?: boolean;
-  ocr?: string;
-};
+export type AskSearchDto = Pick<
+  MetadataSearchDto & SmartSearchDto,
+  'query' | 'city' | 'country' | 'takenAfter' | 'takenBefore' | 'type' | 'isFavorite' | 'ocr'
+>;
 
 /** Maps an Ask interpretation onto the existing search route's query DTO. */
 export const interpretationToSearchDto = (interpretation: AskInterpretationDto): AskSearchDto => {
@@ -31,7 +27,7 @@ export const interpretationToSearchDto = (interpretation: AskInterpretationDto):
     dto.takenBefore = interpretation.takenBefore;
   }
   if (interpretation.mediaType) {
-    dto.type = interpretation.mediaType;
+    dto.type = interpretation.mediaType === 'VIDEO' ? AssetTypeEnum.Video : AssetTypeEnum.Image;
   }
   if (interpretation.favorited) {
     dto.isFavorite = true;
@@ -44,7 +40,7 @@ export const interpretationToSearchDto = (interpretation: AskInterpretationDto):
 
 export interface AskChip {
   key: string;
-  label: string;
+  label: Translations;
   value: string;
 }
 

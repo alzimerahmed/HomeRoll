@@ -78,6 +78,7 @@ describe('uploadFiles', () => {
       {
         filepath: testFilePath,
         id: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
+        status: 'created',
       },
     ]);
   });
@@ -100,6 +101,7 @@ describe('uploadFiles', () => {
       {
         filepath: testFilePath,
         id: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
+        status: 'created',
       },
     ]);
   });

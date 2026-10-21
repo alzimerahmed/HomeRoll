@@ -1,3 +1,4 @@
+import { AssetTypeEnum } from '@immich/sdk';
 import { describe, expect, it } from 'vitest';
 import { interpretationToChips, interpretationToSearchDto } from '$lib/utils/ask-utils';
 
@@ -20,7 +21,7 @@ describe('interpretationToSearchDto', () => {
       country: 'Portugal',
       takenAfter: '2024-06-01T00:00:00.000Z',
       takenBefore: '2024-08-31T23:59:59.999Z',
-      type: 'IMAGE',
+      type: AssetTypeEnum.Image,
       isFavorite: true,
       ocr: 'welcome',
     });

@@ -5,7 +5,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { Button, Icon, toastManager } from '@immich/ui';
   import { mdiAnimationOutline, mdiCheckCircleOutline, mdiCollage, mdiMapMarkerRadiusOutline } from '@mdi/js';
-  import { t } from 'svelte-i18n';
+  import { t, type Translations } from 'svelte-i18n';
   import type { PageData } from './$types';
 
   interface Props {
@@ -17,8 +17,8 @@
   interface CreationCard {
     type: AutoCreationType;
     icon: string;
-    titleKey: string;
-    descriptionKey: string;
+    titleKey: Translations;
+    descriptionKey: Translations;
   }
 
   const cards: CreationCard[] = [

@@ -58,7 +58,7 @@ class TestScorers:
         assert 0.0 <= exposure_score(blown_out) <= 1.0
 
     def test_subject_neutral_without_faces(self) -> None:
-        assert subject_score([]) == 0.5
+        assert subject_score([], 256, 256) == 0.5
 
     def test_subject_prefers_large_confident_faces(self) -> None:
         size = 256
@@ -96,36 +96,37 @@ class TestEndpoint:
         return TestClient(app)
 
     def test_scores_encoded_image(self, client: TestClient) -> None:
-        response = client.post("/quality", files={"image": ("a.jpg", _encode(_image()), "image/jpeg")})
+        response = client.post("/quality", files=[("images", ("a.jpg", _encode(_image()), "image/jpeg"))])
 
         assert response.status_code == 200
         body = response.json()
-        assert 0.0 <= body["blurScore"] <= 1.0
-        assert 0.0 <= body["exposureScore"] <= 1.0
-        assert 0.0 <= body["subjectScore"] <= 1.0
-        assert body["eyesOpenScore"] is None
+        assert isinstance(body, list) and len(body) == 1
+        assert 0.0 <= body[0]["blurScore"] <= 1.0
+        assert 0.0 <= body[0]["exposureScore"] <= 1.0
+        assert 0.0 <= body[0]["subjectScore"] <= 1.0
+        assert body[0]["eyesOpenScore"] is None
 
     def test_accepts_faces_payload(self, client: TestClient) -> None:
         faces = [{"boundingBox": [0, 0, 100, 100], "score": 0.95}]
         response = client.post(
             "/quality",
-            files={"image": ("a.jpg", _encode(_image()), "image/jpeg")},
-            data={"faces": json.dumps(faces)},
+            files=[("images", ("a.jpg", _encode(_image()), "image/jpeg"))],
+            data={"faces": json.dumps([faces])},
         )
 
         assert response.status_code == 200
-        assert response.json()["subjectScore"] > 0.5
+        assert response.json()[0]["subjectScore"] > 0.5
 
     def test_rejects_invalid_faces(self, client: TestClient) -> None:
         response = client.post(
             "/quality",
-            files={"image": ("a.jpg", _encode(_image()), "image/jpeg")},
+            files=[("images", ("a.jpg", _encode(_image()), "image/jpeg"))],
             data={"faces": "not-json"},
         )
 
         assert response.status_code == 422
 
     def test_rejects_garbage_image(self, client: TestClient) -> None:
-        response = client.post("/quality", files={"image": ("a.jpg", b"garbage", "image/jpeg")})
+        response = client.post("/quality", files=[("images", ("a.jpg", b"garbage", "image/jpeg"))])
 
         assert response.status_code == 400
