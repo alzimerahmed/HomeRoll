@@ -41,7 +41,7 @@ Partner shared photos can be displayed in the main timeline. This feature can be
 
 ### Web
 
-The option can be found at [`Account Settings > Partner Sharing > Show in timeline`](https://my.immich.app/user-settings?isOpen=partner-sharing)
+The option can be found at [`Account Settings > Partner Sharing > Show in timeline`](https://my.homeroll.app/user-settings?isOpen=partner-sharing)
 
 <img src={require('./img/partner-sharing-5.webp').default} width="70%" title='Partner Sharing for the web interface' />
 

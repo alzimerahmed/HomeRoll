@@ -17,11 +17,14 @@ default_platform(:ios)
 
 platform :ios do
   # Constants
+  # TODO(ios-release): provision HomeRoll signing — these are upstream
+  # identities kept as placeholders; iOS shipping requires the owner's Apple
+  # Developer team id + distribution cert.
   TEAM_ID = "2W7AC6T8T5"
-  CODE_SIGN_IDENTITY = "Apple Distribution: FUTO Holdings, Inc. (#{TEAM_ID})"
-  BASE_BUNDLE_ID = "app.alextran.immich"
-  DEV_BUNDLE_ID  = "tech.futo.immich.testflight"
-  DEV_GROUP_ID   = "group.app.immich.share.testflight"
+  CODE_SIGN_IDENTITY = "Apple Distribution: (#{TEAM_ID})"
+  BASE_BUNDLE_ID = "com.github.alzimerahmed.homeroll"
+  DEV_BUNDLE_ID  = "com.github.alzimerahmed.homeroll.dev"
+  DEV_GROUP_ID   = "group.com.github.alzimerahmed.homeroll"
 
   # Helper method to get App Store Connect API key
   def get_api_key

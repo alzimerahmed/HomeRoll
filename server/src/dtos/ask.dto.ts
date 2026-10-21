@@ -15,7 +15,9 @@ const AskResponseSchema = z
         country: z.string().nullable().describe('Country filter extracted from the question'),
         takenAfter: z.string().nullable().describe('ISO date lower bound extracted from the question'),
         takenBefore: z.string().nullable().describe('ISO date upper bound extracted from the question'),
-        mediaType: z.enum(['IMAGE', 'VIDEO']).nullable().describe('Media type filter extracted from the question'),
+        // union, not .nullable(): an enum with a null member generates an
+        // initializer-less `Null` member in the TS SDK (oazapfts)
+        mediaType: z.union([z.enum(['IMAGE', 'VIDEO']), z.null()]).describe('Media type filter extracted from the question'),
         favorited: z.boolean().nullable().describe('Favorites-only filter extracted from the question'),
         ocr: z.string().nullable().describe('OCR text filter extracted from the question'),
       })

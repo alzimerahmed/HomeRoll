@@ -33,12 +33,12 @@ services:
 
   immich-machine-learning:
     container_name: immich_machine_learning
-    # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
-    # Example tag: ${IMMICH_VERSION:-release}-cuda
+    # Hardware-accelerated ML images (cuda, rocm, openvino, rknn, armnn) are not
+    # published yet — only the cpu variant is built on release. Leave the tag as-is.
     image: ghcr.io/alzimerahmed/homeroll-machine-learning:${IMMICH_VERSION:-release}
     # extends: # uncomment this section for hardware acceleration - see https://github.com/alzimerahmed/HomeRoll
     #   file: hwaccel.ml.yml
-    #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+    #   service: cpu # only the cpu image is published today; device variants need local builds
     volumes:
       - model-cache:/cache
     env_file:

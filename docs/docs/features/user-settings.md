@@ -4,7 +4,7 @@ Immich gives each user the ability to manage their own settings. This includes b
 
 <img src={require('./img/user-settings-3.webp').default} width="60%" title='User settings lists' />
 
-You can access the [user settings](https://my.immich.app/user-settings) by clicking on the user icon on the top right corner of the screen and selecting the `Account Settings` option.
+You can access the [user settings](https://my.homeroll.app/user-settings) by clicking on the user icon on the top right corner of the screen and selecting the `Account Settings` option.
 
 <img src={require('./img/user-settings-1.webp').default} width="33%" title='User settings location 1' />
 

@@ -764,7 +764,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(IMMICH_BUNDLE_ID_DEV).profile";
 				PRODUCT_NAME = "HomeRoll-Profile";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -911,7 +911,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(IMMICH_BUNDLE_ID_DEV).debug";
 				PRODUCT_NAME = "HomeRoll-Debug";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -940,7 +940,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(IMMICH_BUNDLE_ID_PROD)";
 				PRODUCT_NAME = HomeRoll;
 				PROVISIONING_PROFILE_SPECIFIER = "";

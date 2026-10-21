@@ -108,7 +108,7 @@ class ImageDownloadWorker(
             glanceId,
             "",
             "",
-            "immich://",
+            "homeroll://",
             WidgetState.LOG_IN
           )
         }

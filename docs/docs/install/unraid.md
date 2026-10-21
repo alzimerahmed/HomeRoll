@@ -7,7 +7,7 @@ sidebar_position: 70
 :::note
 This is a community contribution and not officially supported by the Immich team, but included here for convenience.
 
-Community support can be found in the dedicated channel on the [Discord Server](https://discord.immich.app/).
+Community support can be found in the dedicated channel on the [Discord Server](https://github.com/alzimerahmed/HomeRoll/discussions/).
 :::
 
 Immich can easily be installed and updated on Unraid via:

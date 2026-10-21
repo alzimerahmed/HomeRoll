@@ -4,7 +4,7 @@ Immich supports hierarchical tags, with the ability to read existing tags from t
 
 ## Enable tags feature
 
-You can enable this feature from the [`Account Settings > Features > Tags`](https://my.immich.app/user-settings?isOpen=feature+tags).
+You can enable this feature from the [`Account Settings > Features > Tags`](https://my.homeroll.app/user-settings?isOpen=feature+tags).
 
 <img src={require('./img/tag-enable.webp').default} width="50%" title='Tag view enable' />
 

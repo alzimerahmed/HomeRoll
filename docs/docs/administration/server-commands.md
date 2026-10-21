@@ -67,7 +67,7 @@ immich-admin enable-maintenance-mode
 Maintenance mode has been enabled.
 
 Log in using the following URL:
-https://my.immich.app/maintenance?token=<token>
+https://my.homeroll.app/maintenance?token=<token>
 ```
 
 Enable OAuth login

@@ -107,7 +107,7 @@ After making these changes, you can start Immich as normal. Immich will make som
 After switching to VectorChord, you should not downgrade Immich below 1.133.0.
 :::
 
-Please don’t hesitate to contact us on [GitHub](https://github.com/immich-app/immich/discussions) or [Discord](https://discord.immich.app/) if you encounter migration issues.
+Please don’t hesitate to contact us on [GitHub](https://github.com/immich-app/immich/discussions) or [Discord](https://github.com/alzimerahmed/HomeRoll/discussions/) if you encounter migration issues.
 
 ### VectorChord FAQ
 

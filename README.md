@@ -98,7 +98,7 @@ Then open `http://localhost:2283` and create the admin account.
 - Set `UPLOAD_LOCATION` in `.env` to the directory where your library should be stored.
 - The compose file pulls `ghcr.io/alzimerahmed/homeroll-server` and `ghcr.io/alzimerahmed/homeroll-machine-learning` at tag `release` by default; pin a specific version with `IMMICH_VERSION` in `.env` (e.g. `IMMICH_VERSION=v1.0.0`).
 - A PostgreSQL + VectorChord image is pulled from upstream `ghcr.io/immich-app/postgres` — HomeRoll does not rebuild the database image.
-- Reverse proxy / TLS, hardware transcoding (`hwaccel.transcoding.yml`), and OpenVINO/RKNN ML acceleration (`hwaccel.ml.yml`) overlays live in `docker/`.
+- Reverse proxy / TLS, hardware transcoding (`hwaccel.transcoding.yml`), overlays live in `docker/` (ML hw-accel variants need locally built images — only the cpu image is published).
 
 </details>
 

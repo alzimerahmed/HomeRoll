@@ -280,13 +280,12 @@ export class JobRepository {
         return { deduplication: { id: `auto-creation-${item.data.ownerId}-${item.data.type}` } };
       }
       case JobName.VideoTrim: {
-        // one pending trim per owner+asset+range — spamming the trim endpoint
-        // must not enqueue unbounded ffmpeg jobs, but distinct windows of the
-        // same asset are legitimate requests and must not be deduped away
-        // (the response already promised a targetAssetId for each)
+        // every request carries its own promised targetAssetId — the dedupe key
+        // must include it or a deduped request leaves the caller waiting on an
+        // asset that never materializes
         return {
           deduplication: {
-            id: `video-trim-${item.data.ownerId}-${item.data.id}-${item.data.startSeconds}-${item.data.endSeconds}`,
+            id: `video-trim-${item.data.targetAssetId}`,
           },
         };
       }

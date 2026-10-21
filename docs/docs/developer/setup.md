@@ -9,7 +9,7 @@ Make sure to read the [`CONTRIBUTING.md`](https://github.com/immich-app/immich/b
 :::
 
 :::note
-If there's a feature you're planning to work on, just give us a heads up in [#contributing](https://discord.com/channels/979116623879368755/1071165397228855327) on [our Discord](https://discord.immich.app) so we can:
+If there's a feature you're planning to work on, just give us a heads up in [#contributing](https://discord.com/channels/979116623879368755/1071165397228855327) on [our Discord](https://github.com/alzimerahmed/HomeRoll/discussions) so we can:
 
 1. Let you know if it's something we would accept into Immich
 2. Provide any guidance on how something like that would ideally be implemented
@@ -63,7 +63,7 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 If you only want to do web development connected to an existing, remote backend, run from the repo root:
 
 ```bash
-IMMICH_SERVER_URL=https://demo.immich.app/ mise //web:start
+IMMICH_SERVER_URL=https://github.com/alzimerahmed/HomeRoll#quick-start mise //web:start
 ```
 
 This will install all dependencies (including the SDK) and start the dev server in one step. To connect to the hosted demo server specifically, use the shorthand:
@@ -75,7 +75,7 @@ mise //web:start-demo
 If you're using PowerShell on Windows you may need to set the env var separately like so:
 
 ```powershell
-$env:IMMICH_SERVER_URL = "https://demo.immich.app/"
+$env:IMMICH_SERVER_URL = "https://github.com/alzimerahmed/HomeRoll#quick-start"
 mise //web:start
 ```
 
@@ -129,7 +129,7 @@ To add a new translation text, enter the key-value pair in the `i18n/en.json` in
 mise //mobile:translation
 ```
 
-The mobile app asks you what backend to connect to. You can utilize the demo backend (https://demo.immich.app/) if you don't need to change server code or upload photos. Alternatively, you can run the server yourself per the instructions above.
+The mobile app asks you what backend to connect to. You can utilize the demo backend (https://github.com/alzimerahmed/HomeRoll#quick-start) if you don't need to change server code or upload photos. Alternatively, you can run the server yourself per the instructions above.
 
 #### UI components and widget previews
 

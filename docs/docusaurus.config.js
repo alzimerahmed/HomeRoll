@@ -158,7 +158,7 @@ const config = {
               },
               {
                 label: 'My Immich',
-                href: 'https://my.immich.app/',
+                href: 'https://my.homeroll.app/',
               },
               {
                 label: 'Awesome Immich',

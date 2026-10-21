@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 :::note
 This is a community contribution and not officially supported by the Immich team, but included here for convenience.
 
-Community support can be found in the dedicated channel on the [Discord Server](https://discord.immich.app/).
+Community support can be found in the dedicated channel on the [Discord Server](https://github.com/alzimerahmed/HomeRoll/discussions/).
 
 **Please report app issues to the corresponding [GitHub Repository](https://github.com/truenas/apps/tree/master/trains/community/immich).**
 :::

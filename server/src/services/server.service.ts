@@ -54,10 +54,10 @@ export class ServerService extends BaseService {
   getApkLinks(): ServerApkLinksDto {
     const baseUrl = `https://github.com/alzimerahmed/HomeRoll/releases/download/v${serverVersion.toString()}`;
     return {
-      arm64v8a: `${baseUrl}/app-arm64-v8a-release.apk`,
-      armeabiv7a: `${baseUrl}/app-armeabi-v7a-release.apk`,
-      universal: `${baseUrl}/app-release.apk`,
-      x86_64: `${baseUrl}/app-x86_64-release.apk`,
+      arm64v8a: `${baseUrl}/homeroll-v${serverVersion}-arm64-v8a.apk`,
+      armeabiv7a: `${baseUrl}/homeroll-v${serverVersion}-armeabi-v7a.apk`,
+      universal: `${baseUrl}/homeroll-v${serverVersion}-universal.apk`,
+      x86_64: `${baseUrl}/homeroll-v${serverVersion}-x86_64.apk`,
     };
   }
 

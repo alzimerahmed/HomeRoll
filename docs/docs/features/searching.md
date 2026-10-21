@@ -9,7 +9,7 @@ Contextual CLIP search is powered by the [VectorChord](https://github.com/tensor
 
 ## Advanced Search Filters
 
-In addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.immich.app).
+In addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on your own server.
 
 You can search the following types of content:
 
@@ -1208,5 +1208,5 @@ Feel free to make a feature request if there's a model you want to use that we d
 
 [huggingface-clip]: https://huggingface.co/collections/immich-app/clip-654eaefb077425890874cd07
 [huggingface-multilingual-clip]: https://huggingface.co/collections/immich-app/multilingual-clip-654eb08c2382f591eeb8c2a7
-[smart-search-settings]: https://my.immich.app/admin/system-settings?isOpen=machine-learning+smart-search
-[job-status-page]: https://my.immich.app/admin/queues
+[smart-search-settings]: https://my.homeroll.app/admin/system-settings?isOpen=machine-learning+smart-search
+[job-status-page]: https://my.homeroll.app/admin/queues

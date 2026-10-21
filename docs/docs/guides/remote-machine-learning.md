@@ -47,7 +47,7 @@ volumes:
 Version mismatches between both hosts may cause bugs and instability, so remember to update this container as well when updating the local Immich instance.
 :::
 
-4. Navigate to the [Machine Learning Settings](https://my.immich.app/admin/system-settings?isOpen=machine-learning)
+4. Navigate to the [Machine Learning Settings](https://my.homeroll.app/admin/system-settings?isOpen=machine-learning)
 5. Click _Add URL_
 6. Fill the new field with the URL to the remote machine learning container, e.g. `http://ip:port`
 
@@ -57,7 +57,7 @@ Adding a new URL to the settings is recommended over replacing the existing URL 
 
 <ComposeBuilder query="machineLearning.external=true" />
 
-Do note that this will mean that Smart Search and Face Detection jobs will fail to be processed when the remote instance is not available. This in turn means that tasks dependent on these features—Duplicate Detection and Facial Recognition—will not run for affected assets. If this occurs, you must manually click the _Missing_ button next to Smart Search and Face Detection in the [Job Status](http://my.immich.app/admin/queues) page for the jobs to be retried.
+Do note that this will mean that Smart Search and Face Detection jobs will fail to be processed when the remote instance is not available. This in turn means that tasks dependent on these features—Duplicate Detection and Facial Recognition—will not run for affected assets. If this occurs, you must manually click the _Missing_ button next to Smart Search and Face Detection in the [Job Status](http://my.homeroll.app/admin/queues) page for the jobs to be retried.
 
 ## Load balancing
 
