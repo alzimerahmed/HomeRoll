@@ -23014,7 +23014,6 @@
             "type": "array"
           },
           "sidecarFormat": {
-            "default": "both",
             "description": "Sidecar format: Google-Takeout-compatible JSON, XMP, or both (default)",
             "enum": [
               "takeout-json",
