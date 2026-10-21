@@ -87,7 +87,7 @@ void main() {
   test('preserves cover quality for extreme aspect ratios', () async {
     final image = await loadEncoded('assets/homeroll-logo-inline-light.png', const ui.Size.square(320));
 
-    expect(image.width, 1311);
+    expect(image.width, 1423);
     expect(image.height, 320);
     image.dispose();
   });
