@@ -29,23 +29,23 @@ export class AssetQualityTable {
   assetId!: string;
 
   /** Sharpness (normalized Laplacian variance), 0..1. */
-  @Column({ type: 'double precision' })
+  @Column({ type: 'double precision', comment: 'Sharpness (normalized Laplacian variance), 0..1' })
   blur!: number;
 
   /** Exposure quality (clipping penalty), 0..1. */
-  @Column({ type: 'double precision' })
+  @Column({ type: 'double precision', comment: 'Exposure quality (clipping penalty), 0..1' })
   exposure!: number;
 
   /** Subject presence (face-based), 0..1. */
-  @Column({ type: 'double precision' })
+  @Column({ type: 'double precision', comment: 'Subject presence (face-based), 0..1' })
   subject!: number;
 
   /** Eyes-open signal, 0..1 — null until a dedicated model exists (ADR-017). */
-  @Column({ type: 'double precision', nullable: true })
+  @Column({ type: 'double precision', nullable: true, comment: 'Eyes-open signal, 0..1 — null until a dedicated model exists' })
   eyesOpen!: number | null;
 
   /** Weighted overall score used for ranking, 0..1. */
-  @Column({ type: 'double precision' })
+  @Column({ type: 'double precision', comment: 'Weighted overall score used for ranking, 0..1' })
   overall!: number;
 
   @CreateDateColumn()

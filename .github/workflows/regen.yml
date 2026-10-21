@@ -67,6 +67,19 @@ jobs:
         run: mise //:open-api
         working-directory: open-api
 
+      # Debug aid for generation failures — keeps the broken artifacts so the
+      # offending schema can be identified without a local toolchain.
+      - name: Upload generated artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: regen-openapi-debug
+          path: |
+            open-api/immich-openapi-specs.json
+            packages/sdk/src/fetch-client.ts
+          if-no-files-found: ignore
+          retention-days: 5
+
       # Only commits if the regeneration produced a diff (add-and-commit
       # no-ops on a clean tree). `mobile/generated` is gitignored, so the
       # Dart SDK output does not need committing.
