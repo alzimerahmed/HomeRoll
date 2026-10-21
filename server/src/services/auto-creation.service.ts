@@ -29,6 +29,8 @@ const COLLAGE_SOURCE_ASSETS = 4;
 const ANIMATION_SOURCE_ASSETS = 8;
 const TRIP_MIN_DAY_ASSETS = 5;
 const TRIP_ALBUM_ASSET_LIMIT = 200;
+/** Upper bound on trip albums created per run. */
+const MAX_TRIPS_PER_RUN = 3;
 
 /**
  * FG-14 (HomeRoll): auto-creations — collages, animations and trip highlights.
@@ -45,13 +47,16 @@ export class AutoCreationService extends BaseService {
   private readonly autoCreationRepository!: AutoCreationRepository;
 
   async run(auth: AuthDto, dto: AutoCreationRunDto): Promise<AutoCreationStatusDto> {
+    // BullMQ dedupes on (ownerId, type) — see JobRepository.getJobOptions — so
+    // spamming this endpoint cannot stack heavyweight ffmpeg/sharp jobs; a
+    // duplicate add is silently dropped and the pending job still runs.
     const jobId = this.cryptoRepository.randomUUID();
     await this.jobRepository.queue({
       name: JobName.AutoCreationGenerate,
       data: { id: jobId, ownerId: auth.user.id, type: dto.type },
     });
 
-    return { albumId: null, assetId: null, type: dto.type };
+    return { type: dto.type };
   }
 
   @OnJob({ name: JobName.AutoCreationGenerate, queue: QueueName.BackgroundTask })
@@ -128,7 +133,9 @@ export class AutoCreationService extends BaseService {
       const album = await this.albumRepository.create(
         {
           ownerId,
-          albumName: sanitize(albumName),
+          // album names are titles, not file paths — filename sanitization would
+          // mangle legitimate characters (anti-vibe audit m4); trim only
+          albumName: albumName.trim(),
           albumType: AlbumType.Manual,
         },
         assets.map(({ id }) => id),
@@ -136,7 +143,7 @@ export class AutoCreationService extends BaseService {
         ownerId,
       );
       created.push(album.id);
-      if (created.length >= 3) {
+      if (created.length >= MAX_TRIPS_PER_RUN) {
         break; // a few trips per run is plenty
       }
     }

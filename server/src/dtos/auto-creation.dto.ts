@@ -20,8 +20,8 @@ const AutoCreationRunDtoSchema = z
 
 const AutoCreationStatusDtoSchema = z
   .object({
-    albumId: z.uuidv4().nullable().describe('Album holding the created assets (trip highlights)'),
-    assetId: z.uuidv4().nullable().describe('Primary created asset (collage or animation)'),
+    // honest shape: the job is async, so no result ids exist at enqueue time —
+    // results land in the archive/albums and the toast carries the "queued" semantics
     type: AutoCreationTypeSchema,
   })
   .meta({ id: 'AutoCreationStatusDto' });

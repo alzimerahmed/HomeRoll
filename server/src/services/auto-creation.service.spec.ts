@@ -36,7 +36,7 @@ describe(AutoCreationService.name, () => {
 
       const result = await sut.run(auth, { type: AutoCreationType.Collage });
 
-      expect(result).toEqual({ albumId: null, assetId: null, type: AutoCreationType.Collage });
+      expect(result).toEqual({ type: AutoCreationType.Collage });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.AutoCreationGenerate,
         data: { id: expect.any(String), ownerId: auth.user.id, type: AutoCreationType.Collage },
