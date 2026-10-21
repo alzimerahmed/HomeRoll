@@ -732,7 +732,7 @@ export class AuthService extends BaseService {
     url: string,
   ) {
     if (mobileOverrideEnabled && mobileRedirectUri) {
-      return url.replace(/app\.immich:\/+oauth-callback/, () => mobileRedirectUri);
+      return url.replace(/app\.homeroll:\/+oauth-callback/, () => mobileRedirectUri);
     }
     return url;
   }

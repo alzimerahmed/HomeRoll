@@ -2,10 +2,13 @@ import { vitest } from 'vitest';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { askHomeRoll, AutoCreationType, runAutoCreation, trimVideo } from '$lib/services/homeroll-api';
 
-vitest.mock('@immich/sdk', () => ({
-  getBaseUrl: vitest.fn().mockReturnValue(''),
-  getAssetInfo: vitest.fn(),
-}));
+vitest.mock('@immich/sdk', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@immich/sdk')>();
+  return {
+    ...actual,
+    getBaseUrl: vitest.fn().mockReturnValue(''),
+  };
+});
 
 const okResponse = (body: unknown) =>
   ({

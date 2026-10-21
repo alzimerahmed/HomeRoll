@@ -97,7 +97,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
         build: '1234567890',
         buildUrl: 'https://github.com/alzimerahmed/HomeRoll/actions/runs/1234567890',
         buildImage: 'e2e',
-        buildImageUrl: 'https://github.com/alzimerahmed/HomeRoll/pkgs/container/immich-server',
+        buildImageUrl: 'https://github.com/alzimerahmed/HomeRoll/pkgs/container/homeroll-server',
         repository: 'alzimerahmed/HomeRoll',
         repositoryUrl: 'https://github.com/alzimerahmed/HomeRoll',
         sourceRef: 'e2e',

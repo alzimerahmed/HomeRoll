@@ -356,11 +356,15 @@ describe('startWatch', () => {
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(testFilePath, 'testjpg');
 
-    await vi.waitFor(() => expect(checkBulkUploadMocked).toHaveBeenCalledTimes(1), { timeout: 5000 });
+    await vi.waitFor(() => expect(checkBulkUploadMocked).toHaveBeenCalled(), { timeout: 15_000 });
+    // Windows chokidar emits duplicate events for a single write — compare counts, don't pin them
+    const callsAfterFirstWrite = checkBulkUploadMocked.mock.calls.length;
 
     await fs.promises.writeFile(testFilePath, 'testjpg-updated');
 
-    await vi.waitFor(() => expect(checkBulkUploadMocked).toHaveBeenCalledTimes(2), { timeout: 5000 });
+    await vi.waitFor(() => expect(checkBulkUploadMocked.mock.calls.length).toBeGreaterThan(callsAfterFirstWrite), {
+      timeout: 15_000,
+    });
   });
 
   it('should filter out ignored patterns', async () => {

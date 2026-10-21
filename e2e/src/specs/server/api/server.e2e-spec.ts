@@ -28,7 +28,7 @@ describe('/server', () => {
         build: '1234567890',
         buildUrl: 'https://github.com/alzimerahmed/HomeRoll/actions/runs/1234567890',
         buildImage: 'e2e',
-        buildImageUrl: 'https://github.com/alzimerahmed/HomeRoll/pkgs/container/immich-server',
+        buildImageUrl: 'https://github.com/alzimerahmed/HomeRoll/pkgs/container/homeroll-server',
         sourceRef: 'e2e',
         sourceCommit: 'e2eeeeeeeeeeeeeeeeee',
         sourceUrl: 'https://github.com/alzimerahmed/HomeRoll/commit/e2eeeeeeeeeeeeeeeeee',
