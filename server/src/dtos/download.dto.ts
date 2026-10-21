@@ -52,8 +52,9 @@ const DownloadArchiveSchema = z
       .describe("Extras to include in the archive. 'sidecars' adds metadata sidecar files next to each asset"),
     sidecarFormat: z
       .enum(['takeout-json', 'xmp', 'both'])
-      .default('both')
       .optional()
+      // no zod default — openapi-generator emits `Enum("both")` which is invalid Dart;
+      // the service falls back to 'both' when the field is absent
       .describe('Sidecar format: Google-Takeout-compatible JSON, XMP, or both (default)'),
   })
   .meta({ id: 'DownloadArchiveDto' });
