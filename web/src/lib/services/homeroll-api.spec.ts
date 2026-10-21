@@ -39,7 +39,7 @@ describe('homeroll-api', () => {
 
   describe('runAutoCreation', () => {
     it('posts the creation type', async () => {
-      fetchMock.mockResolvedValue(okResponse({ albumId: null, assetId: null, type: 'collage' }));
+      fetchMock.mockResolvedValue(okResponse({ type: 'collage' }));
 
       await runAutoCreation(AutoCreationType.Collage);
 
@@ -48,7 +48,7 @@ describe('homeroll-api', () => {
     });
   });
 
-  describe('trimVideo (PROPOSED contract, FG-15)', () => {
+  describe('trimVideo (FG-15, ADR-021)', () => {
     it('posts a { startSeconds, endSeconds } payload to /videos/:id/trim', async () => {
       fetchMock.mockResolvedValue(okResponse({ assetId: 'new-asset' }));
 

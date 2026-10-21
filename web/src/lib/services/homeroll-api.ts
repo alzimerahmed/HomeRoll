@@ -42,15 +42,10 @@ export enum AutoCreationType {
 
 /** Mirrors `AutoCreationStatusDto` (server/src/dtos/auto-creation.dto.ts) until SDK regen. */
 export interface AutoCreationStatusDto {
-  albumId: string | null;
-  assetId: string | null;
   type: AutoCreationType;
 }
 
-/**
- * PROPOSED contract for the video-trim endpoint (FG-15) — not implemented server-side yet.
- * See docs/phase-7b-report.md for the full spec the backend should follow.
- */
+/** Mirrors `VideoTrimDto` (server/src/dtos/video-trim.dto.ts) until SDK regen — FG-15, ADR-021. */
 export interface VideoTrimRequestDto {
   startSeconds: number;
   endSeconds: number;
@@ -97,9 +92,6 @@ export const askHomeRoll = (query: string, size = 100) =>
 export const runAutoCreation = (type: AutoCreationType) =>
   request<AutoCreationStatusDto>('/auto-creations/run', { type });
 
-/**
- * POST /api/videos/:id/trim — PROPOSED (FG-15, no server endpoint yet).
- * Returns 404 until the backend lands; callers must handle that gracefully.
- */
+/** POST /api/videos/:id/trim — queue a server-side ffmpeg trim (FG-15, ADR-021). */
 export const trimVideo = (assetId: string, dto: VideoTrimRequestDto) =>
   request<VideoTrimResponseDto>(`/videos/${assetId}/trim`, dto);
