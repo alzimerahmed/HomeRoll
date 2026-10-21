@@ -3,6 +3,7 @@
  */
 
 import {
+  AlbumType,
   AlbumUserRole,
   AssetTypeEnum,
   AssetVisibility,
@@ -415,6 +416,9 @@ export function getAlbum(
     albumName: album.albumName,
     description: album.description,
     albumThumbnailAssetId: album.thumbnailAssetId,
+    albumType: AlbumType.Manual,
+    parentId: null,
+    rules: null,
     createdAt: album.createdAt,
     updatedAt: album.updatedAt,
     albumUsers: [{ user: albumOwner, role: AlbumUserRole.Owner }],
