@@ -33,7 +33,7 @@ export async function createAnimation(inputs: string[], output: string, options:
     const command = ffmpeg();
     for (const input of inputs) {
       // loop each still into its own video stream, then concat
-      command.input(input).inputOptions(['-loop', '1', '-t', `${secondsPerStill}`, '-framerate', `${fps}`]);
+      command.input(input).inputOptions(['-loop', '1', '-t', String(secondsPerStill), '-framerate', String(fps)]);
     }
 
     command
@@ -56,7 +56,7 @@ export async function createAnimation(inputs: string[], output: string, options:
         '-pix_fmt',
         'yuv420p',
         '-r',
-        `${fps}`,
+        String(fps),
         '-movflags',
         '+faststart',
       ])

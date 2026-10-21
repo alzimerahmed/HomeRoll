@@ -1,9 +1,9 @@
 import { vitest } from 'vitest';
+import type { ServiceMocks } from 'test/utils.js';
 import { JobName, JobStatus } from 'src/enum.js';
 import { MemoryCurationService } from 'src/services/memory-curation.service.js';
 import { QualityService } from 'src/services/quality.service.js';
 import { automock, newTestService } from 'test/utils.js';
-import type { ServiceMocks } from 'test/utils.js';
 
 vitest.useFakeTimers();
 

@@ -42,7 +42,7 @@ const MONTH_LOOKUP = new Map(
   ]),
 );
 
-const strip = (value: string) => value.replace(/[?!.]+$/g, '').trim();
+const strip = (value: string) => value.replaceAll(/[?!.]+$/g, '').trim();
 
 /** Removes the matched span from the working text so the remainder becomes the CLIP query. */
 class QueryText {
@@ -96,7 +96,7 @@ const parseDateRange = (text: QueryText): { takenAfter: string | null; takenBefo
       autumn: [9, 11],
     };
     const [startMonth, endMonth] = bounds[name];
-    const anchorYear = isLast && now.getUTCMonth() + 1 < startMonth ? year - 1 : isLast ? year - 1 : year;
+    const anchorYear = (isLast && now.getUTCMonth() + 1 < startMonth) || isLast ? year - 1 : year;
     const after = `${anchorYear}-${String(startMonth).padStart(2, '0')}-01T00:00:00.000Z`;
     // seasons that wrap the year boundary (winter: Dec→Feb) end in the following year
     const before =
@@ -217,9 +217,10 @@ export const parseAskQuery = (input: string): ParsedAskQuery => {
   }
 
   // places: "in Paris" / "at the beach in France" — capitalized proper noun after a place preposition
-  const place = text.consume(/\b(?:in|at|around|near|from)\s+((?:[A-Z][\p{L}'’-]+[ \t]?)+"?\s?)+/u);
+  const place = text.consume(/\b(?:in|at|around|near|from)\s+((?:[A-Z][\p{L}'’-]+[ \t]?)+["“]?\s?)+/u);
+
   if (place) {
-    const candidate = strip(place[1].replaceAll(/["\u201c\u201d]/g, ''));
+    const candidate = strip(place[1].replaceAll(/["\u{201C}\u{201D}]/gu, ''));
     // multi-word captures like "the beach" are not places; require a capitalized token
     const proper = candidate
       .split(/\s+/)

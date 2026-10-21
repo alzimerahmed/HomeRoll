@@ -6,14 +6,14 @@ import {
   Injectable,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { mapAsset, type MapAsset } from 'src/dtos/asset-response.dto.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AskDto, AskResponseDto } from 'src/dtos/ask.dto.js';
+import { type MapAsset, mapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AssetType } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
 import { LlmService } from 'src/services/llm.service.js';
-import { getMyPartnerIds } from 'src/utils/asset.util.js';
 import { parseAskQuery } from 'src/utils/ask-query-parser.js';
+import { getMyPartnerIds } from 'src/utils/asset.util.js';
 import { isSmartSearchEnabled } from 'src/utils/misc.js';
 
 /** Hard cap on assets returned. */
@@ -90,7 +90,7 @@ export class AskService extends BaseService {
         country: parsed.country ?? undefined,
         takenAfter: parsed.takenAfter ? new Date(parsed.takenAfter) : undefined,
         takenBefore: parsed.takenBefore ? new Date(parsed.takenBefore) : undefined,
-        type: parsed.mediaType ? (parsed.mediaType as AssetType) : undefined,
+        type: parsed.mediaType as AssetType | undefined,
         isFavorite: parsed.favorited ?? undefined,
         ocr: parsed.ocr ?? undefined,
         withExif: true,
@@ -247,7 +247,7 @@ export class AskService extends BaseService {
     const qualifier = scope.length > 0 ? ` ${scope.join(' ')}` : '';
     const sample = candidates[0]?.summary;
     const suffix = sample ? ` Best match: ${sample}.` : '';
-    const count = hasMore ? `${total}+` : `${total}`;
+    const count = hasMore ? `${total}+` : String(total);
     return `Found ${count} matching asset${total === 1 ? '' : 's'}${qualifier}.${suffix}`;
   }
 

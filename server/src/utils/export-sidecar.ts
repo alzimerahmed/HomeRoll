@@ -16,14 +16,14 @@
  */
 
 const XML_ESCAPE: Record<string, string> = {
-  '&': '&' + 'amp;',
-  '<': '&' + 'lt;',
-  '>': '&' + 'gt;',
-  '"': '&' + 'quot;',
-  "'": '&' + 'apos;',
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&apos;',
 };
 
-export const escapeXml = (value: string): string => value.replace(/[&<>"']/g, (c) => XML_ESCAPE[c]!);
+export const escapeXml = (value: string): string => value.replaceAll(/[&<>"']/g, (c) => XML_ESCAPE[c]!);
 
 export type ExportAssetMetadata = {
   id: string;
@@ -80,11 +80,13 @@ export const buildTakeoutJson = (metadata: ExportAssetMetadata): string | null =
     };
   }
 
-  if (metadata.latitude !== null && metadata.longitude !== null) {
-    // Google writes 0/0 for "no GPS" — our importer rejects that pair, so skip it here too
-    if (!(metadata.latitude === 0 && metadata.longitude === 0)) {
-      json.geoData = { latitude: metadata.latitude, longitude: metadata.longitude, altitude: 0.0 };
-    }
+  // Google writes 0/0 for "no GPS" — our importer rejects that pair, so skip it here too
+  if (
+    metadata.latitude !== null &&
+    metadata.longitude !== null &&
+    !(metadata.latitude === 0 && metadata.longitude === 0)
+  ) {
+    json.geoData = { latitude: metadata.latitude, longitude: metadata.longitude, altitude: 0 };
   }
 
   if (metadata.description) {

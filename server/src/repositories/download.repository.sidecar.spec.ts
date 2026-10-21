@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { buildTakeoutJson, buildXmp, type ExportAssetMetadata } from 'src/utils/export-sidecar.js';
+import { type ExportAssetMetadata, buildTakeoutJson, buildXmp } from 'src/utils/export-sidecar.js';
 
 /**
  * FG-19 contract tests for the repository → sidecar pipeline (review M3).
@@ -16,7 +16,7 @@ import { buildTakeoutJson, buildXmp, type ExportAssetMetadata } from 'src/utils/
  *    spread the repository performs and feeds both builders.
  */
 
-const repositorySource = readFileSync(new URL('./download.repository.ts', import.meta.url), 'utf8');
+const repositorySource = readFileSync(new URL('download.repository.ts', import.meta.url), 'utf8');
 
 describe('download.repository.getExportMetadata (sidecar contract)', () => {
   it('aliases asset_exif.dateTimeOriginal as takenAt in the select list', () => {

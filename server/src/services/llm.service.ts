@@ -91,7 +91,7 @@ export class LlmService {
             signal: controller.signal,
             headers: {
               'content-type': 'application/json',
-              ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
+              ...(apiKey && { authorization: `Bearer ${apiKey}` }),
             },
             body: JSON.stringify({
               model,

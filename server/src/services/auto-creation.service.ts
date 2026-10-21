@@ -1,14 +1,13 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { join } from 'node:path';
-import { createHash } from 'node:crypto';
 import { Insertable } from 'kysely';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 import sanitize from 'sanitize-filename';
 import type { JobOf, UploadFile } from 'src/types.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnJob } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AutoCreationRunDto, AutoCreationStatusDto, AutoCreationType } from 'src/dtos/auto-creation.dto.js';
-import { AssetTable } from 'src/schema/tables/asset.table.js';
 import {
   AlbumType,
   AlbumUserRole,
@@ -21,6 +20,7 @@ import {
   StorageFolder,
 } from 'src/enum.js';
 import { AutoCreationRepository } from 'src/repositories/auto-creation.repository.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { createAnimation } from 'src/utils/animation.js';
 import { createCollage } from 'src/utils/collage.js';

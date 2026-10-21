@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators.js';
 import { JobName, JobStatus, QueueName } from 'src/enum.js';
-import { MemoryRepository } from 'src/repositories/memory.repository.js';
-import { UserRepository } from 'src/repositories/user.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { QualityService } from 'src/services/quality.service.js';
 
@@ -90,10 +88,12 @@ export class MemoryCurationService extends BaseService {
       const droppable = ranked.filter(({ overall }) => overall < CURATION_DROP_THRESHOLD);
       const keepCount = Math.max(assetIds.length - droppable.length, MIN_MEMORY_ASSETS);
       const drop = ranked.slice(keepCount).map(({ id }) => id);
-      if (drop.length > 0) {
-        await this.memoryRepository.removeAssetIds(memory.id, drop);
-        this.logger.debug(`Curated memory ${memory.id}: dropped ${drop.length} low-quality asset(s)`);
+      if (drop.length === 0) {
+        continue;
       }
+
+      await this.memoryRepository.removeAssetIds(memory.id, drop);
+      this.logger.debug(`Curated memory ${memory.id}: dropped ${drop.length} low-quality asset(s)`);
     }
   }
 

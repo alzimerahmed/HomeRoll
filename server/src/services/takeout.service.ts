@@ -482,9 +482,11 @@ export class TakeoutService extends BaseService {
     const entries = await this.storageRepository.readdirWithTypes(folder).catch(() => [] as import('node:fs').Dirent[]);
     let total = 0;
     for (const entry of entries) {
-      if (entry.isFile()) {
-        total += (await this.storageRepository.stat(join(folder, entry.name)).catch(() => null))?.size ?? 0;
+      if (!entry.isFile()) {
+        continue;
       }
+      const stat = await this.storageRepository.stat(join(folder, entry.name)).catch(() => null);
+      total += stat?.size ?? 0;
     }
     return total;
   }

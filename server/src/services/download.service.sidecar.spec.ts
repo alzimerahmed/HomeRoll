@@ -5,19 +5,19 @@ import { AssetFactory } from 'test/factories/asset.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
+const archiveMock = () => ({
+  addFile: vitest.fn(),
+  addBuffer: vitest.fn(),
+  finalize: vitest.fn(),
+  stream: new Readable(),
+});
+
 describe(DownloadService.name + ' (sidecars)', () => {
   let sut: DownloadService;
   let mocks: ServiceMocks;
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(DownloadService));
-  });
-
-  const archiveMock = () => ({
-    addFile: vitest.fn(),
-    addBuffer: vitest.fn(),
-    finalize: vitest.fn(),
-    stream: new Readable(),
   });
 
   const fullMetadata = {

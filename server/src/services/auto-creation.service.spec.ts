@@ -1,11 +1,11 @@
 import { vitest } from 'vitest';
+import type { ServiceMocks } from 'test/utils.js';
 import { AutoCreationType } from 'src/dtos/auto-creation.dto.js';
 import { JobName, JobStatus } from 'src/enum.js';
 import { AutoCreationRepository } from 'src/repositories/auto-creation.repository.js';
 import { AutoCreationService } from 'src/services/auto-creation.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';
 import { automock, newTestService } from 'test/utils.js';
-import type { ServiceMocks } from 'test/utils.js';
 
 // generated-media renderers write real files — stub them so the dedupe tests
 // exercise the service logic, not sharp/ffmpeg

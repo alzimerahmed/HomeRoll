@@ -1,9 +1,9 @@
 import { vitest } from 'vitest';
+import type { ServiceMocks } from 'test/utils.js';
 import { JobName, JobStatus } from 'src/enum.js';
 import { QualityRepository } from 'src/repositories/quality.repository.js';
 import { QualityService } from 'src/services/quality.service.js';
 import { automock, newTestService } from 'test/utils.js';
-import type { ServiceMocks } from 'test/utils.js';
 
 vitest.useFakeTimers();
 
@@ -72,7 +72,7 @@ describe(QualityService.name, () => {
   describe('handleQueueQuality', () => {
     it('should queue batched scoring jobs (50 assets per job)', async () => {
       qualityRepository.streamForQualityJob.mockReturnValue(
-        (async function* () {
+        (function* () {
           yield [{ id: 'a' }, { id: 'b' }];
         })() as never,
       );

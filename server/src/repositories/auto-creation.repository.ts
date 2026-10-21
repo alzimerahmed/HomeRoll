@@ -47,7 +47,7 @@ export class AutoCreationRepository {
     return this.db
       .selectFrom('asset')
       .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
-      .select((eb) => [
+      .select((_eb) => [
         'asset_exif.city',
         'asset_exif.country',
         sql<string>`date_trunc('day', ${sql.ref('asset.localDateTime')} at time zone 'UTC')`.as('day'),

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import type { ExportAssetMetadata } from 'src/utils/export-sidecar.js';
 import { AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 import { anyUuid } from 'src/utils/database.js';
-import type { ExportAssetMetadata } from 'src/utils/export-sidecar.js';
 
 const builder = (db: Kysely<DB>) =>
   db
@@ -70,7 +70,7 @@ export class DownloadRepository {
             .onRef('person.ownerId', '=', 'asset.ownerId')
             .on('person.name', '!=', ''),
         )
-        .select((eb) => [
+        .select((_eb) => [
           'asset.id',
           'asset.originalFileName',
           'asset.type',

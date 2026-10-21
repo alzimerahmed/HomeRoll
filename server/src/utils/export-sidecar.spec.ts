@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { parseTakeoutJson } from 'src/utils/takeout-json.js';
 import {
+  type ExportAssetMetadata,
   buildTakeoutJson,
   buildXmp,
   escapeXml,
   getSidecarFileNames,
-  type ExportAssetMetadata,
 } from 'src/utils/export-sidecar.js';
+import { parseTakeoutJson } from 'src/utils/takeout-json.js';
 
 const baseMetadata: ExportAssetMetadata = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -210,8 +210,6 @@ describe('getSidecarFileNames', () => {
 
 describe('escapeXml', () => {
   it('should escape all five XML special characters', () => {
-    expect(escapeXml('&<>"' + String.fromCharCode(39))).toBe(
-      '&' + 'amp;' + '&' + 'lt;' + '&' + 'gt;' + '&' + 'quot;' + String.fromCharCode(39),
-    );
+    expect(escapeXml('&<>"' + String.fromCodePoint(39))).toBe('&amp;&lt;&gt;&quot;' + String.fromCodePoint(39));
   });
 });

@@ -1,16 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { join } from 'node:path';
+import { Insertable } from 'kysely';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
+import { join } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import sanitize from 'sanitize-filename';
-import { Insertable } from 'kysely';
 import type { JobOf, UploadFile } from 'src/types.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnJob } from 'src/decorators.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { VideoTrimDto, VideoTrimResponseDto } from 'src/dtos/video-trim.dto.js';
-import { AssetTable } from 'src/schema/tables/asset.table.js';
 import {
   AssetType,
   AssetVisibility,
@@ -20,6 +19,7 @@ import {
   QueueName,
   StorageFolder,
 } from 'src/enum.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
 import { trimVideoFile } from 'src/utils/video-trim.js';
 

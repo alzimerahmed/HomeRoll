@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core.js';
-import { isMetadataHidden, type AuthDto } from 'src/dtos/auth.dto.js';
+import { type AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import {
   DownloadArchiveDto,
   DownloadArchiveInfo,
@@ -14,11 +14,11 @@ import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
 import {
+  type ExportAssetMetadata,
+  type SidecarFormat,
   buildTakeoutJson,
   buildXmp,
   getSidecarFileNames,
-  type ExportAssetMetadata,
-  type SidecarFormat,
 } from 'src/utils/export-sidecar.js';
 import { getPreferences } from 'src/utils/preferences.js';
 

@@ -27,9 +27,9 @@ export async function trimVideoFile(input: string, output: string, options: Vide
       .outputOptions([
         // input seeking before decoding, then a precise window via -t
         '-ss',
-        `${startSeconds}`,
+        String(startSeconds),
         '-t',
-        `${Math.max(endSeconds - startSeconds, 0)}`,
+        String(Math.max(endSeconds - startSeconds, 0)),
         '-c',
         'copy',
         '-movflags',
