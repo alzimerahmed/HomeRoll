@@ -31,8 +31,10 @@ import { TakeoutMetadata, findSidecarJson, parseTakeoutJson } from 'src/utils/ta
 
 /** Maximum size of a JSON sidecar that will be buffered for metadata pairing (4 MiB). */
 const MAX_SIDECAR_BYTES = 4 * 1024 * 1024;
-/** Global cap on buffered sidecars — per-file limits alone allow 50k × 4 MiB in RAM. */
-const MAX_SIDECAR_TOTAL_BYTES = 512 * 1024 * 1024;
+/** Global cap on buffered sidecars — per-file limits alone allow 50k × 4 MiB in RAM.
+ * 128 MiB ≈ 2.5k+ directories of typical (<50 KiB) Google sidecars; keeping the buffer
+ * modest leaves room for ffmpeg/sharp jobs sharing the worker process. */
+const MAX_SIDECAR_TOTAL_BYTES = 128 * 1024 * 1024;
 /** How many queued/running imports one user may pile up (each stages a ≤64 GiB archive). */
 const MAX_PENDING_IMPORTS = 5;
 /** Staged archives older than this are swept at job start (leftovers from crashed jobs). */
@@ -107,6 +109,19 @@ export class TakeoutService extends BaseService {
       );
       if (ownedPending.length >= MAX_PENDING_IMPORTS) {
         throw new BadRequestException(`Too many pending takeout imports — wait for a running import to finish first`);
+      }
+
+      // staging must respect quota too: MAX_PENDING_IMPORTS alone allows
+      // MAX_PENDING_IMPORTS × 64 GiB on disk for a user with a small (or zero) quota
+      const owner = await this.userRepository.get(auth.user.id, {});
+      if (owner?.quotaSizeInBytes !== null && owner?.quotaSizeInBytes !== undefined) {
+        const stagedBytes = await this.getStagedBytes(dirname(file.path));
+        const remaining = owner.quotaSizeInBytes - (owner.quotaUsageInBytes ?? 0) - stagedBytes;
+        if (file.size > remaining) {
+          throw new BadRequestException(
+            `Archive exceeds the remaining storage quota — free up space or raise the quota before importing`,
+          );
+        }
       }
 
       const format = await this.detectFormat(file.path);
@@ -443,9 +458,11 @@ export class TakeoutService extends BaseService {
     }
 
     if (metadata.title) {
-      update.originalFileName = getFilenameExtension(metadata.title)
-        ? metadata.title
-        : `${metadata.title}${getFilenameExtension(item.fileName)}`;
+      // sidecar JSON is attacker-influencable — sanitize and bound the stored display name
+      const title = [...sanitize(metadata.title)].slice(0, 255).join('');
+      if (title) {
+        update.originalFileName = getFilenameExtension(title) ? title : `${title}${getFilenameExtension(item.fileName)}`;
+      }
     }
 
     if (lockedProperties.length > 0) {
@@ -456,6 +473,18 @@ export class TakeoutService extends BaseService {
     if (Object.keys(update).length > 1) {
       await this.assetRepository.update(update);
     }
+  }
+
+  /** Total size of archives currently staged in the user's takeout staging folder. */
+  private async getStagedBytes(folder: string): Promise<number> {
+    const entries = await this.storageRepository.readdirWithTypes(folder).catch(() => [] as import('node:fs').Dirent[]);
+    let total = 0;
+    for (const entry of entries) {
+      if (entry.isFile()) {
+        total += (await this.storageRepository.stat(join(folder, entry.name)).catch(() => null))?.size ?? 0;
+      }
+    }
+    return total;
   }
 
   private async isCancelled(importId: string): Promise<boolean> {
