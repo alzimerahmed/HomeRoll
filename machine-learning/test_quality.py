@@ -10,7 +10,14 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from immich_ml.quality import assess_quality, blur_score, create_quality_router, exposure_score, subject_score
+from immich_ml.quality import (
+    QualityFace,
+    assess_quality,
+    blur_score,
+    create_quality_router,
+    exposure_score,
+    subject_score,
+)
 
 
 def _image(size: int = 256) -> np.ndarray[Any, np.dtype[np.uint8]]:
@@ -54,11 +61,19 @@ class TestScorers:
         assert subject_score([]) == 0.5
 
     def test_subject_prefers_large_confident_faces(self) -> None:
-        small = subject_score([{"score": 0.9, "boundingBox": [0, 0, 10, 10]}])
-        large = subject_score([{"score": 0.9, "boundingBox": [0, 0, 100, 100]}])
+        size = 256
+        small = subject_score([QualityFace(score=0.9, boundingBox=[0, 0, 10, 10])], size, size)
+        large = subject_score([QualityFace(score=0.9, boundingBox=[0, 0, 100, 100])], size, size)
 
         assert large > small
         assert 0.0 <= small <= 1.0
+
+    def test_subject_normalizes_pixel_boxes(self) -> None:
+        # the same fractional face area must score the same regardless of image size
+        small_frame = subject_score([QualityFace(score=0.9, boundingBox=[0, 0, 50, 50])], 256, 256)
+        large_frame = subject_score([QualityFace(score=0.9, boundingBox=[0, 0, 100, 100])], 512, 512)
+
+        assert small_frame == pytest.approx(large_frame)
 
     def test_assess_quality_shape(self) -> None:
         result = assess_quality(_image())

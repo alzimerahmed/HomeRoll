@@ -22,7 +22,7 @@ Scores are floats in [0, 1] (higher is better):
 """
 
 from collections.abc import Callable
-from typing import Any
+from typing import Annotated, Any
 
 import cv2
 import numpy as np
@@ -86,16 +86,22 @@ def exposure_score(image: NDArray[np.uint8]) -> float:
     return float(max(0.0, 1.0 - clipped * 4))
 
 
-def subject_score(faces: list[QualityFace]) -> float:
-    """Best-face score weighted by how much of the frame it occupies."""
+def subject_score(faces: list[QualityFace], width: int, height: int) -> float:
+    """Best-face score weighted by how much of the frame it occupies.
+
+    The server sends bounding boxes in absolute pixel coordinates, so they are
+    normalized by the frame dimensions before the fractional area comparison.
+    """
     if not faces:
         return 0.5  # neutral: no detected subject is not a quality fault
+    if width <= 0 or height <= 0:
+        return 0.5
 
     best = 0.0
     for face in faces:
         box = face.bounding_box
         if len(box) == 4:
-            area = abs((box[2] - box[0]) * (box[3] - box[1]))
+            area = abs((box[2] - box[0]) * (box[3] - box[1])) / (width * height)
         else:
             area = 0.0
         weight = min(1.0, area / _FACE_AREA_CEILING)
@@ -104,10 +110,11 @@ def subject_score(faces: list[QualityFace]) -> float:
 
 
 def assess_quality(image: NDArray[np.uint8], faces: list[QualityFace] | None = None) -> dict[str, Any]:
+    height, width = image.shape[:2]
     return {
         "blurScore": round(blur_score(image), 4),
         "exposureScore": round(exposure_score(image), 4),
-        "subjectScore": round(subject_score(faces or []), 4),
+        "subjectScore": round(subject_score(faces or [], width, height), 4),
         "eyesOpenScore": None,
     }
 
