@@ -431,10 +431,10 @@ describe('startWatch', () => {
   });
 });
 
-describe('createWatchIgnored', () => {
-  const isIgnored = (filepath: string, options: UploadOptionsDto) =>
-    createWatchIgnored(options).some((matcher) => typeof matcher === 'function' && matcher(filepath));
+const isIgnored = (filepath: string, options: UploadOptionsDto) =>
+  createWatchIgnored(options).some((matcher) => typeof matcher === 'function' && matcher(filepath));
 
+describe('createWatchIgnored', () => {
   it('should ignore hidden files and folders by default', () => {
     expect(isIgnored('/photos/.hidden.jpg', {} as UploadOptionsDto)).toBe(true);
     expect(isIgnored('/photos/.config/photo.jpg', {} as UploadOptionsDto)).toBe(true);

@@ -4,12 +4,7 @@
   import { Route } from '$lib/route';
   import { handleError } from '$lib/utils/handle-error';
   import { Button, Icon, toastManager } from '@immich/ui';
-  import {
-    mdiAnimationOutline,
-    mdiCheckCircleOutline,
-    mdiCollage,
-    mdiMapMarkerRadiusOutline,
-  } from '@mdi/js';
+  import { mdiAnimationOutline, mdiCheckCircleOutline, mdiCollage, mdiMapMarkerRadiusOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 

@@ -22,6 +22,7 @@ Scores are floats in [0, 1] (higher is better):
 """
 
 from collections.abc import Callable
+from functools import partial
 from typing import Annotated, Any
 
 import cv2
@@ -67,7 +68,7 @@ class QualityResponse(BaseModel):
 def to_grayscale(image: NDArray[np.uint8]) -> NDArray[np.uint8]:
     if image.ndim == 2:
         return image
-    return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY).astype(np.uint8)
 
 
 def blur_score(gray: NDArray[np.uint8]) -> float:
@@ -75,7 +76,9 @@ def blur_score(gray: NDArray[np.uint8]) -> float:
     height, width = gray.shape[:2]
     scale = 512 / max(height, width)
     if scale < 1:
-        gray = cv2.resize(gray, (int(width * scale), int(height * scale)), interpolation=cv2.INTER_AREA)
+        gray = cv2.resize(gray, (int(width * scale), int(height * scale)), interpolation=cv2.INTER_AREA).astype(
+            np.uint8
+        )
 
     variance = float(cv2.Laplacian(gray, cv2.CV_64F).var())
     return float(min(1.0, variance / _BLUR_VARIANCE_CEILING))
@@ -156,7 +159,7 @@ def create_quality_router(run: Callable[[Callable[[], Any]], Any]) -> APIRouter:
         decoded: list[NDArray[np.uint8]] = []
         for index, image in enumerate(images):
             try:
-                decoded_image = await run(lambda image=image: decode_pil(image))
+                decoded_image = await run(partial(decode_pil, image))
             except Exception as e:
                 raise HTTPException(400, f"Failed to decode image {index}: {e}") from e
 

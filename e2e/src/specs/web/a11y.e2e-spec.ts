@@ -216,7 +216,7 @@ test.describe('a11y — Phase 7 routes', () => {
 
       // every focusable element in the grid must be reachable by keyboard (WCAG 2.1.1)
       await page.keyboard.press('Tab');
-      const focused = await page.evaluate(() => document.activeElement?.tagName);
+      const focused = await page.evaluate(() => (document.activeElement ? document.activeElement.tagName : null));
       expect(focused).toBeTruthy();
     });
   });

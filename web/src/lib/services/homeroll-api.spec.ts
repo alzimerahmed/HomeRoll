@@ -24,7 +24,9 @@ beforeEach(() => {
 describe('homeroll-api', () => {
   describe('askHomeRoll', () => {
     it('posts the query with the default size cap', async () => {
-      fetchMock.mockResolvedValue(okResponse({ answer: 'a', provider: 'structured', interpretation: {}, assets: [], total: 0 }));
+      fetchMock.mockResolvedValue(
+        okResponse({ answer: 'a', provider: 'structured', interpretation: {}, assets: [], total: 0 }),
+      );
 
       await askHomeRoll('dogs in paris');
 

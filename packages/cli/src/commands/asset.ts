@@ -254,7 +254,7 @@ export const startWatch = async (
       await fsWatcher.close();
       while (pathsBatcher.size > 0 || pendingUploads.size > 0) {
         pathsBatcher.flush();
-        await Promise.allSettled([...pendingUploads]);
+        await Promise.allSettled(pendingUploads);
       }
     },
   };
@@ -286,13 +286,13 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
     // watcher does not handle the initial scan
     // as the scan() is a more efficient quick start with batched results
 
-    let shuttingDown = false;
-    let initialUpload: Promise<unknown> | undefined;
+    let isShuttingDown = false;
+    const initialUpload: Promise<unknown> = uploadBatch(scanFiles, options);
     const shutdown = async () => {
-      if (shuttingDown) {
+      if (isShuttingDown) {
         return;
       }
-      shuttingDown = true;
+      isShuttingDown = true;
       console.log('Shutting down, waiting for in-flight uploads to finish...');
       await Promise.allSettled([watcher.close(), initialUpload]);
       process.exit(0);
@@ -301,7 +301,6 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
     process.on('SIGINT', () => void shutdown());
     process.on('SIGTERM', () => void shutdown());
 
-    initialUpload = uploadBatch(scanFiles, options);
     await initialUpload;
     return;
   }

@@ -85,8 +85,7 @@ const request = async <T>(path: string, body: unknown): Promise<T> => {
 };
 
 /** POST /api/ask — natural-language question over the library (FG-13). */
-export const askHomeRoll = (query: string, size = 100) =>
-  request<AskResponseDto>('/ask', { query, size });
+export const askHomeRoll = (query: string, size = 100) => request<AskResponseDto>('/ask', { query, size });
 
 /** POST /api/auto-creations/run — queue an auto-creation job (FG-14). */
 export const runAutoCreation = (type: AutoCreationType) =>
