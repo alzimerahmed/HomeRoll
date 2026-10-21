@@ -54,6 +54,7 @@
     [QueueName.Workflow]: $t('workflows'),
     [QueueName.Editor]: $t('editor'),
     [QueueName.IntegrityCheck]: $t('integrity_checks'),
+    [QueueName.Takeout]: $t('takeout'),
   });
 </script>
 

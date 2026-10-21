@@ -38,7 +38,7 @@
                   src={getAssetMediaUrl({ id: label.previewAssetId, size: AssetMediaSize.Thumbnail })}
                   alt=""
                   loading="lazy"
-                  class="size-full object-cover transition-[filter] duration-200 ease-out brightness-90 group-hover:brightness-100 group-focus-visible:brightness-100"
+                  class="size-full object-cover brightness-90 transition-[filter] duration-200 ease-out group-hover:brightness-100 group-focus-visible:brightness-100"
                 />
               {:else}
                 <div class="flex size-full items-center justify-center text-subtle">
@@ -46,9 +46,9 @@
                 </div>
               {/if}
             </div>
-            <div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent px-3 pb-2 pt-8">
+            <div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent px-3 pt-8 pb-2">
               <p class="truncate text-sm font-medium text-white">{label.label}</p>
-              <p class="font-mono text-xs tabular-nums text-white/80">
+              <p class="font-mono text-xs text-white/80 tabular-nums">
                 {$t('assets_count', { values: { count: label.count } })}
               </p>
             </div>

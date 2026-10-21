@@ -1,6 +1,7 @@
 import {
   addAssetsToAlbum,
   AlbumResponseDto,
+  AlbumType,
   AlbumUserRole,
   AssetMediaResponseDto,
   AssetOrder,
@@ -496,6 +497,9 @@ describe('/albums', () => {
         albumName: 'New album',
         description: '',
         albumThumbnailAssetId: null,
+        albumType: AlbumType.Manual,
+        parentId: null,
+        rules: null,
         shared: false,
         albumUsers: [{ role: AlbumUserRole.Owner, user: expect.objectContaining({ id: user1.userId }) }],
         hasSharedLink: false,

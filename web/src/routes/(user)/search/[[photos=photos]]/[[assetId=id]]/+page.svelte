@@ -44,7 +44,7 @@
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { onMount, tick, untrack } from 'svelte';
-  import { t } from 'svelte-i18n';
+  import { t, type Translations } from 'svelte-i18n';
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
   let searchResultsElement: HTMLElement | undefined = $state();
@@ -283,7 +283,7 @@
                   {tagNames}
                 {/await}
               {:else if searchKey === 'orientation' && typeof value === 'string'}
-                {$t(`orientation_${value}`)}
+                {$t(`orientation_${value}` as Translations)}
               {:else if searchKey === 'rating'}
                 {$t('rating_count', { values: { count: value ?? 0 } })}
               {:else if value === null || value === ''}

@@ -41,6 +41,14 @@
   let people: PersonResponseDto[] = $state([]);
   let peopleById = $derived(new Map(people.map((person) => [person.id, person])));
 
+  /**
+   * Indexed writes on the flat rules object — `values[field]` would need the
+   * value to satisfy every field type at once, so index through a record.
+   */
+  const setValue = (field: SmartRuleField, value: unknown) => {
+    (values as Record<string, unknown>)[field] = value;
+  };
+
   $effect(() => {
     rules = serializeSmartRules(fields, values);
     valid = fields.length > 0 && fields.every((field) => hasSmartRuleValue(values[field]));
@@ -70,7 +78,7 @@
     fields.push(field);
     const defaultValue = defaultSmartRuleValue(field);
     if (defaultValue !== undefined) {
-      values[field] = defaultValue;
+      setValue(field, defaultValue);
     }
   };
 
@@ -84,7 +92,7 @@
     fields[index] = field;
     const defaultValue = defaultSmartRuleValue(field);
     if (defaultValue !== undefined) {
-      values[field] = defaultValue;
+      setValue(field, defaultValue);
     }
   };
 
@@ -102,13 +110,13 @@
     values.personIds = (values.personIds ?? []).filter((id) => id !== personId);
   };
 
-  const ratingOptions = $derived<SelectOption<number>[]>([
-    { label: $t('rating_at_least', { values: { count: 5 } }), value: 5 },
-    { label: $t('rating_at_least', { values: { count: 4 } }), value: 4 },
-    { label: $t('rating_at_least', { values: { count: 3 } }), value: 3 },
-    { label: $t('rating_at_least', { values: { count: 2 } }), value: 2 },
-    { label: $t('rating_at_least', { values: { count: 1 } }), value: 1 },
-    { label: $t('rating_any'), value: -1 },
+  const ratingOptions = $derived<SelectOption<string>[]>([
+    { label: $t('rating_at_least', { values: { count: 5 } }), value: '5' },
+    { label: $t('rating_at_least', { values: { count: 4 } }), value: '4' },
+    { label: $t('rating_at_least', { values: { count: 3 } }), value: '3' },
+    { label: $t('rating_at_least', { values: { count: 2 } }), value: '2' },
+    { label: $t('rating_at_least', { values: { count: 1 } }), value: '1' },
+    { label: $t('rating_any'), value: '-1' },
   ]);
 
   const typeOptions = $derived<SelectOption<AssetTypeEnum>[]>([
@@ -147,29 +155,33 @@
                 const parsed = raw ? DateTime.fromISO(raw) : undefined;
                 return parsed?.isValid ? parsed : undefined;
               },
-              (date) => (values[field] = date?.isValid ? (date.toUTC().toISO() ?? undefined) : undefined)
+              (date) => setValue(field, date?.isValid ? (date.toUTC().toISO() ?? undefined) : undefined)
             }
           />
         {:else if meta.kind === 'text'}
           <Input
             bind:value={
               () => (values[field] as string | undefined) ?? '',
-              (value) => (values[field] = value === '' ? undefined : (value as never))
+              (value) => setValue(field, value === '' ? undefined : value)
             }
           />
         {:else if meta.kind === 'rating'}
-          <Select value={values.rating ?? 1} options={ratingOptions} onChange={(value) => (values.rating = value)} />
+          <Select
+            value={String(values.rating ?? 1)}
+            options={ratingOptions}
+            onChange={(value) => (values.rating = Number(value))}
+          />
         {:else if meta.kind === 'type'}
           <Select
             value={values.type ?? AssetTypeEnum.Image}
             options={typeOptions}
-            onChange={(value) => (values.type = value)}
+            onChange={(value) => (values.type = value as AssetTypeEnum)}
           />
         {:else if meta.kind === 'boolean'}
           <Select
             value={String(values[field] ?? true)}
-            options={booleanOptions(field)}
-            onChange={(value) => (values[field] = value === 'true')}
+            options={booleanOptions(field as 'isFavorite' | 'isNotInAlbum')}
+            onChange={(value) => setValue(field, value === 'true')}
           />
         {:else if meta.kind === 'people'}
           <div class="flex flex-wrap items-center gap-1.5 pt-1">

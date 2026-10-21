@@ -1,4 +1,5 @@
 import { AlbumType, AssetTypeEnum, type AlbumResponseDto, type SmartAlbumRulesDto } from '@immich/sdk';
+import type { Translations } from 'svelte-i18n';
 
 /**
  * FG-06 — smart album helpers. `SmartAlbumRulesDto` is a flat object of
@@ -13,9 +14,9 @@ export type SmartRuleKind = 'date' | 'text' | 'rating' | 'people' | 'tags' | 'ty
 
 export interface SmartRuleFieldMeta {
   /** i18n key for the field name shown in the field selector. */
-  labelKey: string;
+  labelKey: Translations;
   /** i18n key for the fixed operator verb shown between field and value. */
-  operatorKey: string;
+  operatorKey: Translations;
   kind: SmartRuleKind;
 }
 
