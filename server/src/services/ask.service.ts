@@ -258,7 +258,7 @@ export class AskService extends BaseService {
       country: parsed.country,
       takenAfter: parsed.takenAfter,
       takenBefore: parsed.takenBefore,
-      mediaType: parsed.mediaType,
+      mediaType: parsed.mediaType ?? undefined,
       favorited: parsed.favorited,
       ocr: parsed.ocr,
     };
