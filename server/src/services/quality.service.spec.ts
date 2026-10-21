@@ -49,19 +49,19 @@ describe(QualityService.name, () => {
       });
     });
 
-    it('should fail when the asset has no preview', async () => {
+    it('should skip when the asset has no preview', async () => {
       qualityRepository.getForQualityJob.mockResolvedValue({ id: 'asset-1', previewFile: null });
 
-      await expect(sut.handleQualityScore({ id: 'asset-1' })).resolves.toBe(JobStatus.Failed);
+      await expect(sut.handleQualityScore({ id: 'asset-1' })).resolves.toBe(JobStatus.Skipped);
       expect(mocks.machineLearning.assessQuality).not.toHaveBeenCalled();
     });
 
-    it('should fail when the ML service is down', async () => {
+    it('should reject when the ML service is down (transient — BullMQ retries)', async () => {
       qualityRepository.getForQualityJob.mockResolvedValue({ id: 'asset-1', previewFile: '/preview.jpg' });
       qualityRepository.getFaces.mockResolvedValue([]);
       mocks.machineLearning.assessQuality.mockRejectedValue(new Error('ML down'));
 
-      await expect(sut.handleQualityScore({ id: 'asset-1' })).resolves.toBe(JobStatus.Failed);
+      await expect(sut.handleQualityScore({ id: 'asset-1' })).rejects.toThrow('ML down');
     });
   });
 

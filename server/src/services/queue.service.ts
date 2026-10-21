@@ -296,6 +296,10 @@ export class QueueService extends BaseService {
       jobs.push({ name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } });
     }
 
+    // HomeRoll FG-12: bulk-score unscored assets nightly (self-gating — the
+    // handler skips when ML is disabled and only streams unscored assets)
+    jobs.push({ name: JobName.QualityScoreQueueAll, data: { force: false } });
+
     await this.jobRepository.queueAll(jobs);
   }
 }

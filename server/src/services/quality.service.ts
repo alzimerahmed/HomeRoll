@@ -63,7 +63,9 @@ export class QualityService extends BaseService {
 
   @OnJob({ name: JobName.QualityScore, queue: QueueName.BackgroundTask })
   async handleQualityScore({ id }: JobOf<JobName.QualityScore>): Promise<JobStatus> {
-    return (await this.scoreAsset(id)) ? JobStatus.Success : JobStatus.Failed;
+    // Skipped for permanently unscorable assets (no preview); ML failures
+    // propagate so BullMQ retries the transient case
+    return (await this.scoreAsset(id)) ? JobStatus.Success : JobStatus.Skipped;
   }
 
   /** Stored overall scores for a set of assets (unscored assets are absent). */
