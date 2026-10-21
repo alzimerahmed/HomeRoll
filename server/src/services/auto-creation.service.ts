@@ -120,7 +120,7 @@ export class AutoCreationService extends BaseService {
         continue;
       }
 
-      const assets = await this.autoCreationRepository.getAssetsForTrip(ownerId, candidate.city, candidate.country, TRIP_ALBUM_ASSET_LIMIT);
+      const assets = await this.autoCreationRepository.getAssetsForTrip(ownerId, candidate.city, candidate.country, candidate.day as Date, TRIP_ALBUM_ASSET_LIMIT);
       if (assets.length === 0) {
         continue;
       }
@@ -162,39 +162,55 @@ export class AutoCreationService extends BaseService {
     const path = join(folder, sanitize(`${uuid}${extension}`));
 
     this.storageRepository.mkdirSync(folder);
-    await generate(path);
+    try {
+      await generate(path);
 
-    const stats = await this.storageRepository.stat(path);
-    const checksum = createHash('sha1').update(await this.storageRepository.readFile(path)).digest();
+      const stats = await this.storageRepository.stat(path);
+      const checksum = createHash('sha1').update(await this.storageRepository.readFile(path)).digest();
 
-    const asset = await this.assetRepository.create({
-      ownerId,
-      libraryId: null,
-      checksum,
-      checksumAlgorithm: ChecksumAlgorithm.sha1File,
-      originalPath: path,
-      originalFileName: `Auto ${kind}${extension}`,
-      fileCreatedAt,
-      fileModifiedAt: new Date(),
-      localDateTime: fileCreatedAt,
-      type,
-      visibility: AssetVisibility.Archive,
-      livePhotoVideoId: null,
-      duration: null,
-    } satisfies Insertable<AssetTable>);
+      // deterministic inputs produce identical output — an unchanged re-run
+      // would violate the (ownerId, checksum) unique constraint, so link the
+      // existing asset instead of creating a duplicate
+      const existing = await this.autoCreationRepository.getAssetByChecksum(ownerId, checksum);
+      if (existing) {
+        this.logger.log(`Auto-created ${kind} already exists for user ${ownerId} (asset ${existing.id}) — skipping`);
+        await this.storageRepository.unlink(path);
+        return existing.id;
+      }
 
-    await this.assetRepository.upsertExif({
-      exif: { assetId: asset.id, fileSizeInByte: stats.size, description: `Auto-created ${kind}` },
-      lockedPropertiesBehavior: 'override',
-    });
+      const asset = await this.assetRepository.create({
+        ownerId,
+        libraryId: null,
+        checksum,
+        checksumAlgorithm: ChecksumAlgorithm.sha1File,
+        originalPath: path,
+        originalFileName: `Auto ${kind}${extension}`,
+        fileCreatedAt,
+        fileModifiedAt: new Date(),
+        localDateTime: fileCreatedAt,
+        type,
+        visibility: AssetVisibility.Archive,
+        livePhotoVideoId: null,
+        duration: null,
+      } satisfies Insertable<AssetTable>);
 
-    await this.eventRepository.emit('AssetCreate', {
-      asset: { id: asset.id, ownerId },
-      file: { uuid, checksum, originalPath: path, originalName: asset.originalFileName, size: stats.size } as UploadFile,
-    });
+      await this.assetRepository.upsertExif({
+        exif: { assetId: asset.id, fileSizeInByte: stats.size, description: `Auto-created ${kind}` },
+        lockedPropertiesBehavior: 'override',
+      });
 
-    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' as const } });
+      await this.eventRepository.emit('AssetCreate', {
+        asset: { id: asset.id, ownerId },
+        file: { uuid, checksum, originalPath: path, originalName: asset.originalFileName, size: stats.size } as UploadFile,
+      });
 
-    return asset.id;
+      await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' as const } });
+
+      return asset.id;
+    } catch (error) {
+      // don't orphan a partial render in the user's upload tree
+      await this.storageRepository.unlink(path).catch(() => {});
+      throw error;
+    }
   }
 }

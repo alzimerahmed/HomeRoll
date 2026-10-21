@@ -40,7 +40,7 @@ export class AutoCreationRepository {
   }
 
   /**
-   * Trip candidates: consecutive-day clusters of geo-tagged photos away from
+   * Trip candidates: day-level clusters of geo-tagged photos away from
    * the user's home city. A trip = a cluster with enough distinct days.
    */
   getTripCandidates(ownerId: string, minAssets: number) {
@@ -66,8 +66,8 @@ export class AutoCreationRepository {
       .execute();
   }
 
-  /** Assets for a trip cluster (same city/country, ordered chronologically). */
-  getAssetsForTrip(ownerId: string, city: string, country: string | null, limit: number) {
+  /** Assets for a trip cluster (same city/country, bounded to the cluster's day, chronological). */
+  getAssetsForTrip(ownerId: string, city: string, country: string | null, day: Date, limit: number) {
     return this.db
       .selectFrom('asset')
       .select(columns.searchAsset)
@@ -78,6 +78,10 @@ export class AutoCreationRepository {
       .where('asset.type', '=', AssetType.Image)
       .where('asset_exif.city', '=', city)
       .$if(!!country, (qb) => qb.where('asset_exif.country', '=', country!))
+      // bound the album to the qualifying day — without this it would pull
+      // every photo ever taken in that city
+      .where('asset.localDateTime', '>=', day)
+      .where('asset.localDateTime', '<', sql`date_trunc('day', ${sql.lit(day)} at time zone 'UTC') + interval '1 day'`)
       .orderBy('asset.localDateTime', 'asc')
       .limit(limit)
       .execute();
@@ -91,6 +95,17 @@ export class AutoCreationRepository {
       .where('album.ownerId', '=', ownerId)
       .where('album.albumName', '=', albumName)
       .where('album.deletedAt', 'is', null)
+      .executeTakeFirst();
+  }
+
+  /** Existing non-deleted asset with this (ownerId, checksum) — deterministic re-runs collide. */
+  getAssetByChecksum(ownerId: string, checksum: Buffer) {
+    return this.db
+      .selectFrom('asset')
+      .select('asset.id')
+      .where('asset.ownerId', '=', ownerId)
+      .where('asset.checksum', '=', checksum)
+      .where('asset.deletedAt', 'is', null)
       .executeTakeFirst();
   }
 

@@ -1,5 +1,6 @@
 import { vitest } from 'vitest';
-import { AutoCreationType, JobName, JobStatus } from 'src/enum.js';
+import { AutoCreationType } from 'src/dtos/auto-creation.dto.js';
+import { JobName, JobStatus } from 'src/enum.js';
 import { AutoCreationRepository } from 'src/repositories/auto-creation.repository.js';
 import { AutoCreationService } from 'src/services/auto-creation.service.js';
 import { AuthFactory } from 'test/factories/auth.factory.js';

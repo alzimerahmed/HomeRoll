@@ -276,6 +276,11 @@ export class JobRepository {
       case JobName.DatabaseBackup: {
         return { deduplication: { id: JobName.DatabaseBackup } };
       }
+      case JobName.AutoCreationGenerate: {
+        // one pending render per user+type — spamming the run endpoint must not
+        // enqueue unbounded ffmpeg/sharp jobs
+        return { deduplication: { id: `auto-creation-${item.data.ownerId}-${item.data.type}` } };
+      }
       case JobName.TakeoutImport: {
         return {
           jobId: item.data.importId,
