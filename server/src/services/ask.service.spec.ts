@@ -84,6 +84,25 @@ describe(AskService.name, () => {
     expect(result.provider).toBe('structured');
   });
 
+  it('should report an honest lower-bound total when the page is full', async () => {
+    // paginationHelper splices items to `size`; the overflow signal is hasNextPage
+    mocks.search.searchSmart.mockResolvedValue({
+      hasNextPage: true,
+      items: Array.from({ length: 100 }, (_, i) => ({
+        id: `asset-${i}`,
+        type: 'IMAGE',
+        localDateTime: new Date('2019-06-01T00:00:00Z'),
+        exifInfo: {},
+        people: [],
+      })) as never,
+    });
+
+    const result = await sut.ask(AuthFactory.create(), { query: 'dogs' });
+
+    expect(result.total).toBe(101);
+    expect(result.answer).toContain('101+');
+  });
+
   it('should forward OCR filters', async () => {
     await sut.ask(AuthFactory.create(), { query: 'a sign that says OPEN' });
 

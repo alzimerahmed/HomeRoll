@@ -38,26 +38,7 @@ export class QualityRepository {
       .stream();
   }
 
-  /** Preview path for one asset, for the scoring job. */
-  getForQualityJob(id: string) {
-    return this.db
-      .selectFrom('asset')
-      .select((eb) => [
-        'asset.id',
-        'asset.visibility',
-        eb
-          .selectFrom('asset_file')
-          .select('asset_file.path')
-          .whereRef('asset_file.assetId', '=', 'asset.id')
-          .where('asset_file.type', '=', AssetFileType.Preview)
-          .limit(1)
-          .as('previewFile'),
-      ])
-      .where('asset.id', '=', id)
-      .executeTakeFirst();
-  }
-
-  /** Batched variant of `getForQualityJob` — one query per scoring batch. */
+  /** Preview paths for a scoring batch — one query per batch. */
   getForQualityJobBatch(ids: string[]) {
     if (ids.length === 0) {
       return Promise.resolve([]);
@@ -77,16 +58,6 @@ export class QualityRepository {
           .as('previewFile'),
       ])
       .where('asset.id', 'in', ids)
-      .execute();
-  }
-
-  /** Detected faces for an asset — the ML subject signal is computed from these. */
-  getFaces(assetId: string) {
-    return this.db
-      .selectFrom('asset_face')
-      .select(['boundingBoxX1', 'boundingBoxY1', 'boundingBoxX2', 'boundingBoxY2', 'score'])
-      .where('asset_face.assetId', '=', assetId)
-      .where('asset_face.deletedAt', 'is', null)
       .execute();
   }
 

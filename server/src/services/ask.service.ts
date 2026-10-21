@@ -73,7 +73,7 @@ export class AskService extends BaseService {
     // one vector search carries the CLIP ranking; EXIF/OCR filters ride along in
     // the same query via the shared search builder
     const size = Math.min(dto.size ?? 100, MAX_ASSETS);
-    const { items } = await this.searchRepository.searchSmart(
+    const { items, hasNextPage } = await this.searchRepository.searchSmart(
       { page: 1, size },
       {
         embedding,
@@ -90,11 +90,11 @@ export class AskService extends BaseService {
       },
     );
 
-    // the repository fetches size+1 to detect pagination — report an honest
-    // lower bound ("at least N") rather than the page-limited count
-    const hasNextPage = items.length > size;
+    // paginationHelper splices `items` to `size` and reports the overflow via
+    // `hasNextPage` — report an honest lower bound ("at least N") rather than
+    // the page-limited count
     const total = hasNextPage ? size + 1 : items.length;
-    const candidates = this.toCandidates(items.slice(0, size));
+    const candidates = this.toCandidates(items);
     const provider = this.llmService.getProvider();
 
     if (provider) {
