@@ -3537,6 +3537,62 @@
         "x-immich-permission": "apiKey.rotate"
       }
     },
+    "/ask": {
+      "post": {
+        "description": "Ask a natural-language question about the library. Combines CLIP search, EXIF metadata filters and OCR text into an answer. Uses the configured LLM provider when available, otherwise returns a deterministic structured answer.",
+        "operationId": "ask",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AskResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Ask HomeRoll",
+        "tags": [
+          "Ask"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/asset-files": {
       "get": {
         "description": "Returns all matching asset files.",
@@ -6234,6 +6290,62 @@
           }
         ],
         "x-immich-state": "Stable"
+      }
+    },
+    "/auto-creations/run": {
+      "post": {
+        "description": "Queue generation of an auto-creation (collage, animation, or trip highlights) for the current user. Results are stored as archived assets and albums.",
+        "operationId": "run",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoCreationRunDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutoCreationStatusDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Run an auto-creation",
+        "tags": [
+          "AutoCreations"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.upload",
+        "x-immich-state": "Alpha"
       }
     },
     "/browse/labels": {
@@ -18016,6 +18128,73 @@
         "x-immich-state": "Stable"
       }
     },
+    "/videos/{id}/trim": {
+      "post": {
+        "description": "Queue a server-side trim of the video into a new archived asset. Returns the target asset id immediately; the asset appears in the archive once the trim job finishes.",
+        "operationId": "trim",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoTrimDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoTrimResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Trim a video",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.upload",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/view/folder": {
       "get": {
         "description": "Retrieve assets that are children of a specific folder.",
@@ -18629,13 +18808,21 @@
   "info": {
     "title": "HomeRoll",
     "description": "HomeRoll API",
-    "version": "3.3.0-rc.0",
+    "version": "1.0.0",
     "contact": {}
   },
   "tags": [
     {
       "name": "Activities",
       "description": "An activity is a like or a comment made by a user on an asset or album."
+    },
+    {
+      "name": "Ask",
+      "description": "Endpoints for the \"Ask HomeRoll\" conversational search over the library."
+    },
+    {
+      "name": "AutoCreations",
+      "description": "Endpoints for auto-created content such as collages, animations, and trip highlight albums."
     },
     {
       "name": "Albums",
@@ -20612,6 +20799,124 @@
         },
         "type": "object"
       },
+      "AskDto": {
+        "properties": {
+          "query": {
+            "description": "Natural-language question about the library",
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          },
+          "size": {
+            "default": 100,
+            "description": "Maximum number of assets to match",
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "AskInterpretationDto": {
+        "properties": {
+          "city": {
+            "description": "City filter extracted from the question",
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "description": "Country filter extracted from the question",
+            "nullable": true,
+            "type": "string"
+          },
+          "favorited": {
+            "description": "Favorites-only filter extracted from the question",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "mediaType": {
+            "description": "Media type filter extracted from the question",
+            "enum": [
+              "IMAGE",
+              "VIDEO"
+            ],
+            "type": "string"
+          },
+          "ocr": {
+            "description": "OCR text filter extracted from the question",
+            "nullable": true,
+            "type": "string"
+          },
+          "query": {
+            "description": "CLIP text query extracted from the question",
+            "nullable": true,
+            "type": "string"
+          },
+          "takenAfter": {
+            "description": "ISO date lower bound extracted from the question",
+            "nullable": true,
+            "type": "string"
+          },
+          "takenBefore": {
+            "description": "ISO date upper bound extracted from the question",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "country",
+          "favorited",
+          "ocr",
+          "query",
+          "takenAfter",
+          "takenBefore"
+        ],
+        "type": "object"
+      },
+      "AskResponseDto": {
+        "properties": {
+          "answer": {
+            "description": "Natural-language answer over the user library",
+            "type": "string"
+          },
+          "assets": {
+            "description": "Matching assets, best-first (capped at 100 per response)",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "interpretation": {
+            "$ref": "#/components/schemas/AskInterpretationDto"
+          },
+          "provider": {
+            "description": "Answer provider: llm when configured, structured fallback otherwise",
+            "enum": [
+              "llm",
+              "structured"
+            ],
+            "type": "string"
+          },
+          "total": {
+            "description": "Lower bound on matching assets found (may exceed the returned assets)",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "answer",
+          "assets",
+          "interpretation",
+          "provider",
+          "total"
+        ],
+        "type": "object"
+      },
       "AssetBulkDeleteDto": {
         "properties": {
           "force": {
@@ -22008,6 +22313,38 @@
         ],
         "type": "object"
       },
+      "AutoCreationRunDto": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/AutoCreationType",
+            "description": "Which auto-creation to generate now"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "AutoCreationStatusDto": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/AutoCreationType"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "AutoCreationType": {
+        "description": "Auto-creation type",
+        "enum": [
+          "collage",
+          "animation",
+          "trip-highlights"
+        ],
+        "type": "string"
+      },
       "AvatarUpdate": {
         "properties": {
           "color": {
@@ -22665,6 +23002,26 @@
           "edited": {
             "description": "Download edited asset if available",
             "type": "boolean"
+          },
+          "include": {
+            "description": "Extras to include in the archive. 'sidecars' adds metadata sidecar files next to each asset",
+            "items": {
+              "enum": [
+                "sidecars"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sidecarFormat": {
+            "default": "both",
+            "description": "Sidecar format: Google-Takeout-compatible JSON, XMP, or both (default)",
+            "enum": [
+              "takeout-json",
+              "xmp",
+              "both"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -23411,7 +23768,12 @@
           "IntegrityChecksumFilesRefresh",
           "IntegrityDeleteReportType",
           "IntegrityDeleteReports",
-          "TakeoutImport"
+          "TakeoutImport",
+          "QualityScoreQueueAll",
+          "QualityScore",
+          "MemoryCurate",
+          "AutoCreationGenerate",
+          "VideoTrim"
         ],
         "type": "string"
       },
@@ -34853,6 +35215,41 @@
           "webm"
         ],
         "type": "string"
+      },
+      "VideoTrimDto": {
+        "properties": {
+          "endSeconds": {
+            "description": "Trim window end in seconds (exclusive)",
+            "format": "double",
+            "minimum": 0,
+            "type": "number"
+          },
+          "startSeconds": {
+            "description": "Trim window start in seconds",
+            "format": "double",
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "endSeconds",
+          "startSeconds"
+        ],
+        "type": "object"
+      },
+      "VideoTrimResponseDto": {
+        "properties": {
+          "assetId": {
+            "description": "Queued trimmed-copy asset id (the asset appears once the trim job finishes)",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId"
+        ],
+        "type": "object"
       },
       "WorkflowCreateDto": {
         "properties": {

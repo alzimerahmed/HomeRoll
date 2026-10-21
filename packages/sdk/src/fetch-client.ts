@@ -1,6 +1,6 @@
 /**
  * HomeRoll
- * 3.3.0-rc.0
+ * 1.0.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -1066,125 +1066,11 @@ export type ApiKeyUpdateDto = {
     /** List of permissions */
     permissions?: Permission[];
 };
-export type AssetFileResponseDto = {
-    /** Creation date */
-    createdAt: string;
-    /** Asset file ID */
-    id: string;
-    /** The file was generated from an edit */
-    isEdited: boolean;
-    /** The file is a progressively encoded JPEG */
-    isProgressive: boolean;
-    /** The file is transparent */
-    isTransparent: boolean;
-    /** File path */
-    path: string;
-    "type": AssetFileType;
-    /** Update date */
-    updatedAt: string;
-};
-export type AssetBulkDeleteDto = {
-    /** Force delete even if in use */
-    force?: boolean;
-    /** IDs to process */
-    ids: string[];
-};
-export type AssetMetadataUpsertItemDto = {
-    /** Metadata key */
-    key: string;
-    /** Metadata value (object) */
-    value: {
-        [key: string]: any;
-    };
-};
-export type AssetMediaCreateDto = {
-    /** Asset file data */
-    assetData: Blob;
-    /** Duration in milliseconds (for videos) */
-    duration?: number;
-    /** File creation date */
-    fileCreatedAt: string;
-    /** File modification date */
-    fileModifiedAt: string;
-    /** Filename */
-    filename?: string;
-    /** Mark as favorite */
-    isFavorite?: boolean;
-    /** Live photo video ID */
-    livePhotoVideoId?: string;
-    /** Asset metadata items */
-    metadata?: AssetMetadataUpsertItemDto[];
-    /** Sidecar file data */
-    sidecarData?: Blob;
-    visibility?: AssetVisibility;
-};
-export type AssetMediaResponseDto = {
-    /** Asset media ID */
-    id: string;
-    status: AssetMediaStatus;
-};
-export type AssetBulkUpdateDto = {
-    /** Original date and time */
-    dateTimeOriginal?: string;
-    /** Relative time offset in minutes */
-    dateTimeRelative?: number;
-    /** Asset description */
-    description?: string;
-    /** Duplicate ID */
-    duplicateId?: string | null;
-    /** Asset IDs to update */
-    ids: string[];
-    /** Mark as favorite */
-    isFavorite?: boolean;
-    /** Latitude coordinate */
-    latitude?: number;
-    /** Longitude coordinate */
-    longitude?: number;
-    /** Rating in range [1-5] (starred), -1 (rejected), or null (unrated) */
-    rating?: number | null;
-    /** Time zone (IANA timezone) */
-    timeZone?: string;
-    visibility?: AssetVisibility;
-};
-export type AssetBulkUploadCheckItem = {
-    /** Base64 or hex encoded SHA1 hash */
-    checksum: string;
-    /** Client-side identifier echoed in the response to match results to inputs (e.g. filename) */
-    id: string;
-};
-export type AssetBulkUploadCheckDto = {
-    /** Assets to check */
-    assets: AssetBulkUploadCheckItem[];
-};
-export type AssetBulkUploadCheckResult = {
-    action: AssetUploadAction;
-    /** Existing asset ID if duplicate */
-    assetId?: string;
-    /** Client-side identifier echoed from the request to match results to inputs */
-    id: string;
-    /** Whether existing asset is trashed */
-    isTrashed?: boolean;
-    reason?: AssetRejectReason;
-};
-export type AssetBulkUploadCheckResponseDto = {
-    /** Upload check results */
-    results: AssetBulkUploadCheckResult[];
-};
-export type AssetCopyDto = {
-    /** Copy album associations */
-    albums?: boolean;
-    /** Copy favorite status */
-    favorite?: boolean;
-    /** Copy shared links */
-    sharedLinks?: boolean;
-    /** Copy sidecar file */
-    sidecar?: boolean;
-    /** Source asset ID */
-    sourceId: string;
-    /** Copy stack association */
-    stack?: boolean;
-    /** Target asset ID */
-    targetId: string;
+export type AskDto = {
+    /** Natural-language question about the library */
+    query: string;
+    /** Maximum number of assets to match */
+    size?: number;
 };
 export type ExifResponseDto = {
     /** City name */
@@ -1358,6 +1244,155 @@ export type AssetResponseDto = {
     visibility: AssetVisibility;
     /** Asset width */
     width: number | null;
+};
+export type AskInterpretationDto = {
+    /** City filter extracted from the question */
+    city: string | null;
+    /** Country filter extracted from the question */
+    country: string | null;
+    /** Favorites-only filter extracted from the question */
+    favorited: boolean | null;
+    /** Media type filter extracted from the question */
+    mediaType?: MediaType;
+    /** OCR text filter extracted from the question */
+    ocr: string | null;
+    /** CLIP text query extracted from the question */
+    query: string | null;
+    /** ISO date lower bound extracted from the question */
+    takenAfter: string | null;
+    /** ISO date upper bound extracted from the question */
+    takenBefore: string | null;
+};
+export type AskResponseDto = {
+    /** Natural-language answer over the user library */
+    answer: string;
+    /** Matching assets, best-first (capped at 100 per response) */
+    assets: AssetResponseDto[];
+    interpretation: AskInterpretationDto;
+    /** Answer provider: llm when configured, structured fallback otherwise */
+    provider: Provider;
+    /** Lower bound on matching assets found (may exceed the returned assets) */
+    total: number;
+};
+export type AssetFileResponseDto = {
+    /** Creation date */
+    createdAt: string;
+    /** Asset file ID */
+    id: string;
+    /** The file was generated from an edit */
+    isEdited: boolean;
+    /** The file is a progressively encoded JPEG */
+    isProgressive: boolean;
+    /** The file is transparent */
+    isTransparent: boolean;
+    /** File path */
+    path: string;
+    "type": AssetFileType;
+    /** Update date */
+    updatedAt: string;
+};
+export type AssetBulkDeleteDto = {
+    /** Force delete even if in use */
+    force?: boolean;
+    /** IDs to process */
+    ids: string[];
+};
+export type AssetMetadataUpsertItemDto = {
+    /** Metadata key */
+    key: string;
+    /** Metadata value (object) */
+    value: {
+        [key: string]: any;
+    };
+};
+export type AssetMediaCreateDto = {
+    /** Asset file data */
+    assetData: Blob;
+    /** Duration in milliseconds (for videos) */
+    duration?: number;
+    /** File creation date */
+    fileCreatedAt: string;
+    /** File modification date */
+    fileModifiedAt: string;
+    /** Filename */
+    filename?: string;
+    /** Mark as favorite */
+    isFavorite?: boolean;
+    /** Live photo video ID */
+    livePhotoVideoId?: string;
+    /** Asset metadata items */
+    metadata?: AssetMetadataUpsertItemDto[];
+    /** Sidecar file data */
+    sidecarData?: Blob;
+    visibility?: AssetVisibility;
+};
+export type AssetMediaResponseDto = {
+    /** Asset media ID */
+    id: string;
+    status: AssetMediaStatus;
+};
+export type AssetBulkUpdateDto = {
+    /** Original date and time */
+    dateTimeOriginal?: string;
+    /** Relative time offset in minutes */
+    dateTimeRelative?: number;
+    /** Asset description */
+    description?: string;
+    /** Duplicate ID */
+    duplicateId?: string | null;
+    /** Asset IDs to update */
+    ids: string[];
+    /** Mark as favorite */
+    isFavorite?: boolean;
+    /** Latitude coordinate */
+    latitude?: number;
+    /** Longitude coordinate */
+    longitude?: number;
+    /** Rating in range [1-5] (starred), -1 (rejected), or null (unrated) */
+    rating?: number | null;
+    /** Time zone (IANA timezone) */
+    timeZone?: string;
+    visibility?: AssetVisibility;
+};
+export type AssetBulkUploadCheckItem = {
+    /** Base64 or hex encoded SHA1 hash */
+    checksum: string;
+    /** Client-side identifier echoed in the response to match results to inputs (e.g. filename) */
+    id: string;
+};
+export type AssetBulkUploadCheckDto = {
+    /** Assets to check */
+    assets: AssetBulkUploadCheckItem[];
+};
+export type AssetBulkUploadCheckResult = {
+    action: AssetUploadAction;
+    /** Existing asset ID if duplicate */
+    assetId?: string;
+    /** Client-side identifier echoed from the request to match results to inputs */
+    id: string;
+    /** Whether existing asset is trashed */
+    isTrashed?: boolean;
+    reason?: AssetRejectReason;
+};
+export type AssetBulkUploadCheckResponseDto = {
+    /** Upload check results */
+    results: AssetBulkUploadCheckResult[];
+};
+export type AssetCopyDto = {
+    /** Copy album associations */
+    albums?: boolean;
+    /** Copy favorite status */
+    favorite?: boolean;
+    /** Copy shared links */
+    sharedLinks?: boolean;
+    /** Copy sidecar file */
+    sidecar?: boolean;
+    /** Source asset ID */
+    sourceId: string;
+    /** Copy stack association */
+    stack?: boolean;
+    /** Target asset ID */
+    targetId: string;
 };
 export type AssetJobsDto = {
     /** Asset IDs */
@@ -1582,6 +1617,13 @@ export type ValidateAccessTokenResponseDto = {
     /** Authentication status */
     authStatus: boolean;
 };
+export type AutoCreationRunDto = {
+    /** Which auto-creation to generate now */
+    "type": AutoCreationType;
+};
+export type AutoCreationStatusDto = {
+    "type": AutoCreationType;
+};
 export type BrowseLabelResponseDto = {
     /** Number of assets matching the label */
     count: number;
@@ -1732,6 +1774,10 @@ export type DownloadArchiveDto = {
     assetIds: string[];
     /** Download edited asset if available */
     edited?: boolean;
+    /** Extras to include in the archive. 'sidecars' adds metadata sidecar files next to each asset */
+    include?: Include[];
+    /** Sidecar format: Google-Takeout-compatible JSON, XMP, or both (default) */
+    sidecarFormat?: SidecarFormat;
 };
 export type DownloadInfoDto = {
     /** Album ID to download */
@@ -3389,6 +3435,16 @@ export type CreateProfileImageResponseDto = {
     /** User ID */
     userId: string;
 };
+export type VideoTrimDto = {
+    /** Trim window end in seconds (exclusive) */
+    endSeconds: number;
+    /** Trim window start in seconds */
+    startSeconds: number;
+};
+export type VideoTrimResponseDto = {
+    /** Queued trimmed-copy asset id (the asset appears once the trim job finishes) */
+    assetId: string;
+};
 export type WorkflowStepDto = {
     /** Step configuration */
     config: {
@@ -4850,6 +4906,21 @@ export function rotateApiKey({ id }: {
     }));
 }
 /**
+ * Ask HomeRoll
+ */
+export function ask({ askDto }: {
+    askDto: AskDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AskResponseDto;
+    }>("/ask", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: askDto
+    })));
+}
+/**
  * Search asset files
  */
 export function searchAssetFiles({ assetId, isEdited, isProgressive, isTransparent, $type }: {
@@ -5478,6 +5549,21 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
         ...opts,
         method: "POST"
     }));
+}
+/**
+ * Run an auto-creation
+ */
+export function run({ autoCreationRunDto }: {
+    autoCreationRunDto: AutoCreationRunDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AutoCreationStatusDto;
+    }>("/auto-creations/run", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: autoCreationRunDto
+    })));
 }
 /**
  * Get browse labels
@@ -8081,6 +8167,22 @@ export function getProfileImage({ id }: {
     }));
 }
 /**
+ * Trim a video
+ */
+export function trim({ id, videoTrimDto }: {
+    id: string;
+    videoTrimDto: VideoTrimDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: VideoTrimResponseDto;
+    }>(`/videos/${encodeURIComponent(id)}/trim`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: videoTrimDto
+    })));
+}
+/**
  * Retrieve assets by original path
  */
 export function getAssetsByOriginalPath({ path }: {
@@ -8570,6 +8672,19 @@ export enum Permission {
     AdminSessionRead = "adminSession.read",
     AdminAuthUnlinkAll = "adminAuth.unlinkAll"
 }
+export enum PersonUserRole {
+    Read = "read",
+    Write = "write",
+    Admin = "admin"
+}
+export enum MediaType {
+    Image = "IMAGE",
+    Video = "VIDEO"
+}
+export enum Provider {
+    Llm = "llm",
+    Structured = "structured"
+}
 export enum AssetFileType {
     Fullsize = "fullsize",
     Preview = "preview",
@@ -8588,11 +8703,6 @@ export enum AssetUploadAction {
 export enum AssetRejectReason {
     Duplicate = "duplicate",
     UnsupportedFormat = "unsupported-format"
-}
-export enum PersonUserRole {
-    Read = "read",
-    Write = "write",
-    Admin = "admin"
 }
 export enum AssetJobName {
     RefreshFaces = "refresh-faces",
@@ -8614,6 +8724,19 @@ export enum AssetMediaSize {
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
+}
+export enum AutoCreationType {
+    Collage = "collage",
+    Animation = "animation",
+    TripHighlights = "trip-highlights"
+}
+export enum Include {
+    Sidecars = "sidecars"
+}
+export enum SidecarFormat {
+    TakeoutJson = "takeout-json",
+    Xmp = "xmp",
+    Both = "both"
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
@@ -8768,7 +8891,12 @@ export enum JobName {
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
     IntegrityDeleteReports = "IntegrityDeleteReports",
-    TakeoutImport = "TakeoutImport"
+    TakeoutImport = "TakeoutImport",
+    QualityScoreQueueAll = "QualityScoreQueueAll",
+    QualityScore = "QualityScore",
+    MemoryCurate = "MemoryCurate",
+    AutoCreationGenerate = "AutoCreationGenerate",
+    VideoTrim = "VideoTrim"
 }
 export enum AssetOrientation {
     Landscape = "landscape",
