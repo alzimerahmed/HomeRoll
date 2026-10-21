@@ -58,6 +58,15 @@ export type OcrRequest = {
 };
 export type OcrResponse = { [ModelTask.OCR]: OCR } & VisualResponse;
 
+/** HomeRoll FG-12: quality signal payload for the standalone /quality endpoint. */
+export type QualityFacePayload = { boundingBox: [number, number, number, number]; score: number };
+export type QualityResponse = {
+  blurScore: number;
+  exposureScore: number;
+  subjectScore: number;
+  eyesOpenScore: number | null;
+};
+
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
     [ModelType.DETECTION]: ModelOptions & { options: { minScore: number } };
@@ -223,6 +232,43 @@ export class MachineLearningRepository {
     };
     const response = await this.predict<OcrResponse>({ imagePath }, request);
     return response[ModelTask.OCR];
+  }
+
+  /**
+   * HomeRoll FG-12: image quality signals for memory curation. Served by the
+   * standalone `/quality` endpoint (no pipeline entry — the scorer has no model
+   * session). Falls through the same healthy-URL rotation as /predict.
+   */
+  async assessQuality(imagePath: string, faces: QualityFacePayload[] = []): Promise<QualityResponse> {
+    const fileBuffer = await readFile(imagePath);
+    const formData = new FormData();
+    formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
+    if (faces.length > 0) {
+      formData.append('faces', JSON.stringify(faces));
+    }
+
+    for (const url of [
+      ...this.config.urls.filter((url) => this.isHealthy(url)),
+      ...this.config.urls.filter((url) => !this.isHealthy(url)),
+    ]) {
+      try {
+        const response = await fetch(new URL('quality', url), {
+          method: 'POST',
+          body: formData,
+          signal: AbortSignal.timeout(this.config.availabilityChecks.timeout * 4),
+        });
+        if (response.ok) {
+          this.setHealthy(url, true);
+          return response.json();
+        }
+        this.logger.warn(`Machine learning quality request to "${url}" failed with status ${response.status}`);
+      } catch (error: Error | unknown) {
+        this.logger.warn(`Machine learning quality request to "${url}" failed`, error);
+      }
+      this.setHealthy(url, false);
+    }
+
+    throw new Error('Machine learning quality request failed for all URLs');
   }
 
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {

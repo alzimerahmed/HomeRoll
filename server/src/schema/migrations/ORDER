@@ -101,3 +101,4 @@
 1792300000401-CreatePushSubscriptionTable
 1792300000501-AddAlbumParentId
 1792300000502-AddAlbumTypeAndRules
+1792300000601-CreateAssetQualityTable
