@@ -13,6 +13,7 @@ import { Permission } from 'src/enum.js';
 import { ImmichReadStream } from 'src/repositories/storage.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
+import { buildTakeoutJson, buildXmp, getSidecarFileNames, type ExportAssetMetadata, type SidecarFormat } from 'src/utils/export-sidecar.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
 @Injectable()
@@ -95,6 +96,17 @@ export class DownloadService extends BaseService {
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
+    // FG-19: sidecars are owner-only — shared-link downloads must not leak GPS/description/people
+    let metadataMap = new Map<string, ExportAssetMetadata>();
+    const wantsSidecars = !!dto.include?.includes('sidecars') && !auth.sharedLink;
+    if (dto.include?.includes('sidecars') && auth.sharedLink) {
+      this.logger.warn('Sidecar export is not available for shared-link downloads — ignoring include=sidecars');
+    }
+    if (wantsSidecars) {
+      metadataMap = await this.downloadRepository.getExportMetadata(dto.assetIds);
+    }
+    const sidecarFormat: SidecarFormat = dto.sidecarFormat ?? 'both';
+
     for (const assetId of dto.assetIds) {
       const asset = assetMap.get(assetId);
       if (!asset) {
@@ -120,6 +132,16 @@ export class DownloadService extends BaseService {
       }
 
       zip.addFile(realpath, filename);
+
+      const metadata = metadataMap.get(assetId);
+      if (wantsSidecars && metadata) {
+        for (const { name, format } of getSidecarFileNames(filename, sidecarFormat)) {
+          const content = format === 'takeout-json' ? buildTakeoutJson(metadata) : buildXmp(metadata);
+          if (content) {
+            zip.addBuffer(Buffer.from(content, 'utf8'), name);
+          }
+        }
+      }
     }
 
     void zip.finalize();

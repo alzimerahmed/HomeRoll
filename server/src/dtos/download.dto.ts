@@ -46,6 +46,15 @@ const DownloadArchiveSchema = z
       .optional()
       .describe('Download edited asset if available'),
     archiveName: z.string().optional().describe('The name of the archive to download, without extension'),
+    include: z
+      .array(z.enum(['sidecars']))
+      .optional()
+      .describe("Extras to include in the archive. 'sidecars' adds metadata sidecar files next to each asset"),
+    sidecarFormat: z
+      .enum(['takeout-json', 'xmp', 'both'])
+      .default('both')
+      .optional()
+      .describe('Sidecar format: Google-Takeout-compatible JSON, XMP, or both (default)'),
   })
   .meta({ id: 'DownloadArchiveDto' });
 

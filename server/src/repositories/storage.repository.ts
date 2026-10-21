@@ -40,6 +40,7 @@ export interface ImmichReadStream {
 
 export interface ImmichZipStream extends ImmichReadStream {
   addFile: (inputPath: string, filename: string) => void;
+  addBuffer: (buffer: Buffer, filename: string) => void;
   finalize: () => Promise<void>;
 }
 
@@ -106,9 +107,13 @@ export class StorageRepository {
       archive.file(input, { name: filename, mode: 0o644 });
     };
 
+    const addBuffer = (buffer: Buffer, filename: string) => {
+      archive.append(buffer, { name: filename, mode: 0o644 });
+    };
+
     const finalize = () => archive.finalize();
 
-    return { stream: archive, addFile, finalize };
+    return { stream: archive, addFile, addBuffer, finalize };
   }
 
   createGzip(): PassThrough {
