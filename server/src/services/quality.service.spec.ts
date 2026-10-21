@@ -1,6 +1,6 @@
 import { vitest } from 'vitest';
 import type { ServiceMocks } from 'test/utils.js';
-import { JobName, JobStatus } from 'src/enum.js';
+import { AssetVisibility, JobName, JobStatus } from 'src/enum.js';
 import { QualityRepository } from 'src/repositories/quality.repository.js';
 import { QualityService } from 'src/services/quality.service.js';
 import { automock, newTestService } from 'test/utils.js';
@@ -32,7 +32,9 @@ describe(QualityService.name, () => {
 
   describe('handleQualityScore', () => {
     it('should score a batch and persist the weighted overall', async () => {
-      qualityRepository.getForQualityJobBatch.mockResolvedValue([{ id: 'asset-1', previewFile: '/preview.jpg' }]);
+      qualityRepository.getForQualityJobBatch.mockResolvedValue([
+        { id: 'asset-1', previewFile: '/preview.jpg', visibility: AssetVisibility.Timeline },
+      ]);
       qualityRepository.getFacesForAssets.mockResolvedValue(
         new Map([
           ['asset-1', [{ boundingBoxX1: 0, boundingBoxY1: 0, boundingBoxX2: 100, boundingBoxY2: 100, score: 0.9 }]],
@@ -54,14 +56,18 @@ describe(QualityService.name, () => {
     });
 
     it('should skip when no asset in the batch has a preview', async () => {
-      qualityRepository.getForQualityJobBatch.mockResolvedValue([{ id: 'asset-1', previewFile: null }]);
+      qualityRepository.getForQualityJobBatch.mockResolvedValue([
+        { id: 'asset-1', previewFile: null, visibility: AssetVisibility.Timeline },
+      ]);
 
       await expect(sut.handleQualityScore({ assetIds: ['asset-1'] })).resolves.toBe(JobStatus.Skipped);
       expect(mocks.machineLearning.assessQualityBatch).not.toHaveBeenCalled();
     });
 
     it('should reject when the ML service is down (transient — BullMQ retries)', async () => {
-      qualityRepository.getForQualityJobBatch.mockResolvedValue([{ id: 'asset-1', previewFile: '/preview.jpg' }]);
+      qualityRepository.getForQualityJobBatch.mockResolvedValue([
+        { id: 'asset-1', previewFile: '/preview.jpg', visibility: AssetVisibility.Timeline },
+      ]);
       qualityRepository.getFacesForAssets.mockResolvedValue(new Map());
       mocks.machineLearning.assessQualityBatch.mockRejectedValue(new Error('ML down'));
 

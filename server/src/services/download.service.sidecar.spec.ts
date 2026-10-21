@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream';
 import { vitest } from 'vitest';
 import { DownloadService } from 'src/services/download.service.js';
+import type { ExportAssetMetadata } from 'src/utils/export-sidecar.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
 import { authStub } from 'test/fixtures/auth.stub.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
@@ -20,8 +21,7 @@ describe(DownloadService.name + ' (sidecars)', () => {
     ({ sut, mocks } = newTestService(DownloadService));
   });
 
-  const fullMetadata = {
-    id: '',
+  const fullMetadata: Omit<ExportAssetMetadata, 'id'> = {
     originalFileName: 'IMG_1234.jpg',
     type: 'IMAGE',
     fileCreatedAt: new Date('2024-06-01T10:00:00.000Z'),
@@ -45,7 +45,7 @@ describe(DownloadService.name + ' (sidecars)', () => {
     tags: ['vacation'],
     albums: ['Summer 2024'],
     people: ['Alice'],
-  } as const;
+  };
 
   it('should add takeout-json and xmp sidecars next to each asset', async () => {
     const zip = archiveMock();

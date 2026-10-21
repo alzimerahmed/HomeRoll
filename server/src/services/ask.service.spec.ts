@@ -28,14 +28,16 @@ describe(AskService.name, () => {
   it('should reject when smart search is disabled', async () => {
     mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { enabled: false } });
 
-    await expect(sut.ask(AuthFactory.create(), { query: 'dogs' })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(sut.ask(AuthFactory.create(), { query: 'dogs', size: 100 })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     expect(mocks.machineLearning.encodeText).not.toHaveBeenCalled();
   });
 
   it('should return a structured answer when no LLM is configured', async () => {
     const auth = AuthFactory.create();
 
-    const result = await sut.ask(auth, { query: 'dog photos from 2019' });
+    const result = await sut.ask(auth, { query: 'dog photos from 2019', size: 100 });
 
     expect(result.provider).toBe('structured');
     expect(result.answer).toContain('No matching assets');
@@ -69,7 +71,7 @@ describe(AskService.name, () => {
       ],
     });
 
-    const result = await sut.ask(AuthFactory.create(), { query: 'dog photos from 2019' });
+    const result = await sut.ask(AuthFactory.create(), { query: 'dog photos from 2019', size: 100 });
 
     expect(result.provider).toBe('llm');
     expect(result.answer).toContain('dog');
@@ -79,7 +81,7 @@ describe(AskService.name, () => {
   it('should fall back to the structured answer when the LLM call fails', async () => {
     llmService.getProvider.mockReturnValue({ chat: vitest.fn().mockRejectedValue(new Error('LLM down')) });
 
-    const result = await sut.ask(AuthFactory.create(), { query: 'dogs' });
+    const result = await sut.ask(AuthFactory.create(), { query: 'dogs', size: 100 });
 
     expect(result.provider).toBe('structured');
   });
@@ -97,14 +99,14 @@ describe(AskService.name, () => {
       })) as never,
     });
 
-    const result = await sut.ask(AuthFactory.create(), { query: 'dogs' });
+    const result = await sut.ask(AuthFactory.create(), { query: 'dogs', size: 100 });
 
     expect(result.total).toBe(101);
     expect(result.answer).toContain('101+');
   });
 
   it('should forward OCR filters', async () => {
-    await sut.ask(AuthFactory.create(), { query: 'a sign that says OPEN' });
+    await sut.ask(AuthFactory.create(), { query: 'a sign that says OPEN', size: 100 });
 
     expect(mocks.search.searchSmart).toHaveBeenCalledWith(
       { page: 1, size: 100 },

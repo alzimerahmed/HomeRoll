@@ -62,7 +62,9 @@ describe(AutoCreationService.name, () => {
     });
 
     it('should create a trip album for a qualifying candidate', async () => {
-      autoCreationRepository.getTripCandidates.mockResolvedValue([{ city: 'Rome', country: 'Italy', assetCount: 12 }]);
+      autoCreationRepository.getTripCandidates.mockResolvedValue([
+        { city: 'Rome', country: 'Italy', day: '2024-06-01', assetCount: 12 },
+      ]);
       autoCreationRepository.getAlbumByName.mockResolvedValue(undefined);
       autoCreationRepository.getAssetsForTrip.mockResolvedValue([{ id: 'asset-1' }, { id: 'asset-2' }] as never);
       mocks.album.create.mockResolvedValue({ id: 'album-1' } as never);
@@ -80,7 +82,9 @@ describe(AutoCreationService.name, () => {
     });
 
     it('should not duplicate an existing trip album', async () => {
-      autoCreationRepository.getTripCandidates.mockResolvedValue([{ city: 'Rome', country: 'Italy', assetCount: 12 }]);
+      autoCreationRepository.getTripCandidates.mockResolvedValue([
+        { city: 'Rome', country: 'Italy', day: '2024-06-01', assetCount: 12 },
+      ]);
       autoCreationRepository.getAlbumByName.mockResolvedValue({ id: 'album-1' } as never);
 
       await expect(
@@ -91,7 +95,7 @@ describe(AutoCreationService.name, () => {
 
     it('should cap trip album creation at three per run', async () => {
       autoCreationRepository.getTripCandidates.mockResolvedValue(
-        ['Rome', 'Paris', 'Tokyo', 'Oslo'].map((city) => ({ city, country: 'X', assetCount: 9 })),
+        ['Rome', 'Paris', 'Tokyo', 'Oslo'].map((city) => ({ city, country: 'X', day: '2024-06-01', assetCount: 9 })),
       );
       autoCreationRepository.getAlbumByName.mockResolvedValue(undefined);
       autoCreationRepository.getAssetsForTrip.mockResolvedValue([{ id: 'asset-1' }] as never);
