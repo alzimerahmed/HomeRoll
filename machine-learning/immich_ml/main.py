@@ -26,6 +26,7 @@ from .config import PreloadModelData, log, settings
 from .models.base import InferenceEntry
 from .models.cache import ModelCache
 from .pipeline import Clip, FacialRecognition, Ocr, PipelineRequest, Slot
+from .quality import create_quality_router
 from .schemas import (
     FaceDetectionOptions,
     FaceRecognitionOptions,
@@ -213,6 +214,9 @@ async def run[R](func: Callable[[], R]) -> R:
     if thread_pool is None:
         return func()
     return await asyncio.get_running_loop().run_in_executor(thread_pool, func)
+
+
+app.include_router(create_quality_router(run))  # HomeRoll FG-12: image quality signals
 
 
 async def load[O: Options](model: InferenceModel[O]) -> InferenceModel[O]:
