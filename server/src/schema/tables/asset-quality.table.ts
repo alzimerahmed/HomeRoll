@@ -2,12 +2,14 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  Index,
   type Generated,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
+import { UpdateIdColumn, UpdatedAtTrigger } from 'src/decorators.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 
 /**
@@ -15,12 +17,15 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
  * the row's existence doubles as the "scored" marker for the queue-all stream.
  * Not synced to clients — internal curation data.
  */
+@UpdatedAtTrigger('asset_quality_updatedAt')
+@Index({ columns: ['assetId'], unique: true })
 @Table('asset_quality')
 export class AssetQualityTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
-  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', index: true })
+  // one quality row per asset — the unique index backs the upsert's onConflict
+  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', index: false })
   assetId!: string;
 
   /** Sharpness (normalized Laplacian variance), 0..1. */
@@ -48,4 +53,7 @@ export class AssetQualityTable {
 
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
+
+  @UpdateIdColumn()
+  updateId!: Generated<string>;
 }
