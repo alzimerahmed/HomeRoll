@@ -41,7 +41,11 @@ export class AssetQualityTable {
   subject!: number;
 
   /** Eyes-open signal, 0..1 — null until a dedicated model exists (ADR-017). */
-  @Column({ type: 'double precision', nullable: true, comment: 'Eyes-open signal, 0..1 — null until a dedicated model exists' })
+  @Column({
+    type: 'double precision',
+    nullable: true,
+    comment: 'Eyes-open signal, 0..1 — null until a dedicated model exists',
+  })
   eyesOpen!: number | null;
 
   /** Weighted overall score used for ranking, 0..1. */

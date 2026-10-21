@@ -2,7 +2,7 @@
   import { trimVideo } from '$lib/services/homeroll-api';
   import { clampTrimRange, formatTrimTime, isValidTrimRange, type TrimRange } from '$lib/utils/video-trim-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { Button, Icon, toastManager } from '@immich/ui';
+  import { Button, toastManager } from '@immich/ui';
   import { mdiContentSave, mdiPlay, mdiPause } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -188,7 +188,7 @@
       />
     </label>
 
-    <p class="font-mono text-xs tabular-nums text-subtle">
+    <p class="font-mono text-xs text-subtle tabular-nums">
       {$t('trim_duration', { values: { duration: formatTrimTime(range.end - range.start) } })}
     </p>
 

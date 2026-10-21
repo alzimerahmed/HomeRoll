@@ -91,7 +91,7 @@
       <input
         id="ask-input"
         type="text"
-        class="w-full bg-transparent px-2 py-2 text-base outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-primary"
+        class="w-full bg-transparent p-2 text-base outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-primary"
         placeholder={$t('ask_placeholder')}
         autocomplete="off"
         enterkeyhint="send"
