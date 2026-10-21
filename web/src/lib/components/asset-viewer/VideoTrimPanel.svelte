@@ -20,16 +20,45 @@
   let isSaving = $state(false);
   let isPreviewing = $state(false);
   let startSlider: HTMLInputElement | undefined = $state();
+  let panelEl: HTMLElement | undefined = $state();
+  let titleId = $props.id();
 
-  // Esc closes the dialog; focus lands on the start slider when it opens
-  $effect(() => {
-    startSlider?.focus();
-  });
+  // focus lands on the start slider when the dialog opens, and returns to the
+  // trigger (the trim button) when it closes — a11y audit C3
+  {
+    const trigger = document.activeElement;
+    $effect(() => {
+      startSlider?.focus();
+      return () => (trigger instanceof HTMLElement ? trigger.focus() : undefined);
+    });
+  }
 
-  const onWindowKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
+  // Esc is scoped to the dialog (a11y audit C4): only closes when focus is
+  // inside the panel, so global Escape behaviors (exit viewer, other overlays)
+  // keep working elsewhere. Tab is trapped inside the panel while it is open.
+  const onKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && panelEl?.contains(document.activeElement)) {
       event.preventDefault();
+      event.stopPropagation();
       onClose();
+      return;
+    }
+
+    if (event.key === 'Tab' && panelEl) {
+      const focusables = [...panelEl.querySelectorAll<HTMLElement>('button, input, [tabindex]:not([tabindex="-1"])')];
+      if (focusables.length === 0) {
+        return;
+      }
+      const first = focusables[0]!;
+      const last = focusables[focusables.length - 1]!;
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !panelEl.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
   };
 
@@ -59,10 +88,19 @@
     video.currentTime = range.end;
   };
 
+  const onTimeUpdate = () => {
+    if (!isPreviewing || video.currentTime >= range.end) {
+      video.pause();
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      isPreviewing = false;
+    }
+  };
+
   const previewRange = async () => {
     if (isPreviewing) {
       isPreviewing = false;
       video.pause();
+      video.removeEventListener('timeupdate', onTimeUpdate);
       return;
     }
 
@@ -76,13 +114,6 @@
       return;
     }
 
-    const onTimeUpdate = () => {
-      if (!isPreviewing || video.currentTime >= range.end) {
-        video.pause();
-        video.removeEventListener('timeupdate', onTimeUpdate);
-        isPreviewing = false;
-      }
-    };
     video.addEventListener('timeupdate', onTimeUpdate);
   };
 
@@ -98,7 +129,7 @@
       toastManager.primary($t('trim_requested'));
       onClose();
     } catch (error) {
-      handleError(error, $t('trim_unavailable'));
+      handleError(error, $t('trim_failed'));
     } finally {
       isSaving = false;
     }
@@ -107,16 +138,25 @@
   const reset = () => {
     range = clampTrimRange({ start: 0, end: duration }, duration);
   };
+
+  // stop preview playback and detach the timeupdate listener when the panel
+  // closes mid-preview (a11y C2 / perf m2 / anti-vibe M3)
+  $effect(() => () => {
+    video.pause();
+    video.removeEventListener('timeupdate', onTimeUpdate);
+  });
 </script>
 
-<svelte:window onkeydown={onWindowKeydown} />
+<svelte:window onkeydown={onKeydown} />
 
 <div
+  bind:this={panelEl}
   class="absolute inset-x-4 bottom-24 z-10 mx-auto max-w-xl rounded-xl border border-subtle bg-subtle p-4 shadow-lg"
   role="dialog"
-  aria-label={$t('trim_video')}
+  aria-modal="true"
+  aria-labelledby={titleId}
 >
-  <h2 class="mb-3 text-sm font-medium">{$t('trim_video')}</h2>
+  <h2 id={titleId} class="mb-3 text-sm font-medium">{$t('trim_video')}</h2>
 
   <div class="flex flex-col gap-3">
     <label class="flex items-center gap-2 text-xs text-subtle">
@@ -124,12 +164,12 @@
       <input
         bind:this={startSlider}
         type="range"
-        class="w-full"
+        class="w-full focus-visible:ring-2 focus-visible:ring-primary"
         min="0"
         max={duration}
         step="0.1"
         value={range.start}
-        onchange={setStart}
+        oninput={setStart}
         aria-label={$t('trim_start')}
       />
     </label>
@@ -138,12 +178,12 @@
       <span class="w-14 shrink-0 font-mono tabular-nums">{formatTrimTime(range.end)}</span>
       <input
         type="range"
-        class="w-full"
+        class="w-full focus-visible:ring-2 focus-visible:ring-primary"
         min="0"
         max={duration}
         step="0.1"
         value={range.end}
-        onchange={setEnd}
+        oninput={setEnd}
         aria-label={$t('trim_end')}
       />
     </label>
@@ -154,7 +194,14 @@
 
     <div class="flex items-center justify-end gap-2">
       <Button size="small" shape="round" variant="ghost" onclick={reset}>{$t('reset')}</Button>
-      <Button size="small" shape="round" variant="ghost" leadingIcon={isPreviewing ? mdiPause : mdiPlay} onclick={() => void previewRange()}>
+      <Button
+        size="small"
+        shape="round"
+        variant="ghost"
+        leadingIcon={isPreviewing ? mdiPause : mdiPlay}
+        aria-pressed={isPreviewing}
+        onclick={() => void previewRange()}
+      >
         {isPreviewing ? $t('stop_preview') : $t('trim_preview')}
       </Button>
       <Button size="small" shape="round" leadingIcon={mdiContentSave} loading={isSaving} onclick={() => void save()}>

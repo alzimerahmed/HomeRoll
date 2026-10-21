@@ -73,10 +73,10 @@
       <div class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 text-dark">
         <div class="flex items-center gap-2">
           {#if title}
-            <div class="pe-8 outline-none" tabindex="-1" id={headerId}>{title}</div>
+            <h1 class="pe-8 text-xl font-medium outline-none" tabindex="-1" id={headerId}>{title}</h1>
           {/if}
           {#if description}
-            <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
+            <p class="text-sm text-subtle">{description}</p>
           {/if}
         </div>
 

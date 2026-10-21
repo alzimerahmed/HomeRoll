@@ -49,7 +49,9 @@
 
   <NavbarItem title={$t('explore')} href={Route.explore()} icon={mdiMagnify} />
 
-  <NavbarItem title={$t('ask')} href={Route.ask()} icon={mdiChatQuestionOutline} />
+  {#if featureFlagsManager.value.smartSearch}
+    <NavbarItem title={$t('ask')} href={Route.ask()} icon={mdiChatQuestionOutline} />
+  {/if}
 
   {#if featureFlagsManager.value.map}
     <NavbarItem title={$t('map')} href={Route.map()} icon={mdiMapOutline} activeIcon={mdiMap} />

@@ -159,10 +159,10 @@
     background-color: black;
   }
 
-  input:focus-visible {
-    outline-offset: 0px !important;
-    outline: none !important;
-  }
+  /* a11y audit G1: the global `input:focus-visible { outline: none !important }`
+     nuke was removed — every input keeps its native focus indicator; custom
+     focus rings are added per-element via `focus-visible:ring-*` where wanted
+     (design-system.md §Inputs). */
 
   .text-white-shadow {
     text-shadow:

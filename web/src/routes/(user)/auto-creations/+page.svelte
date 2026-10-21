@@ -1,6 +1,6 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import { AutoCreationType, runAutoCreation, type AutoCreationStatusDto } from '$lib/services/homeroll-api';
+  import { AutoCreationType, runAutoCreation } from '$lib/services/homeroll-api';
   import { Route } from '$lib/route';
   import { handleError } from '$lib/utils/handle-error';
   import { Button, Icon, toastManager } from '@immich/ui';
@@ -48,7 +48,8 @@
   ];
 
   let running: AutoCreationType | null = $state(null);
-  let lastResults: Record<string, AutoCreationStatusDto | undefined> = $state({});
+  /** Queued creation types — presence is all the UI needs (honest shape, see anti-vibe audit M4). */
+  let queued: Set<AutoCreationType> = $state(new Set());
 
   const run = async (card: CreationCard) => {
     if (running) {
@@ -57,8 +58,8 @@
 
     running = card.type;
     try {
-      const status = await runAutoCreation(card.type);
-      lastResults = { ...lastResults, [card.type]: status };
+      await runAutoCreation(card.type);
+      queued = new Set(queued).add(card.type);
       toastManager.primary($t('auto_creations_queued', { values: { type: $t(card.titleKey) } }));
     } catch (error) {
       handleError(error, $t('auto_creations_failed'));
@@ -92,8 +93,8 @@
             </Button>
           </div>
 
-          {#if lastResults[card.type]}
-            <p class="mt-3 flex items-center gap-1 text-xs text-subtle">
+          {#if queued.has(card.type)}
+            <p class="mt-3 flex items-center gap-1 text-sm text-subtle" aria-live="polite">
               <Icon icon={mdiCheckCircleOutline} size="14" aria-hidden />
               {$t('auto_creations_result_hint')}
             </p>
@@ -103,8 +104,8 @@
     </ul>
 
     <div class="mt-4 flex flex-wrap gap-4 text-sm">
-      <a class="text-primary hover:underline" href={Route.archive()}>{$t('archive')}</a>
-      <a class="text-primary hover:underline" href={Route.albums()}>{$t('albums')}</a>
+      <a class="text-[#774A0C] hover:underline dark:text-immich-dark-primary" href={Route.archive()}>{$t('archive')}</a>
+      <a class="text-[#774A0C] hover:underline dark:text-immich-dark-primary" href={Route.albums()}>{$t('albums')}</a>
     </div>
   </div>
 </UserPageLayout>

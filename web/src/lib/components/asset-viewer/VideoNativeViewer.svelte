@@ -482,7 +482,7 @@
             {#if extendedControls}
               <button
                 type="button"
-                class="shrink-0 rounded-full p-2 outline-none"
+                class="shrink-0 rounded-full p-2.5 outline-none focus-visible:ring-2 focus-visible:ring-white"
                 aria-label={$t('trim_video')}
                 title={$t('trim_video')}
                 onclick={() => (showTrimPanel = !showTrimPanel)}

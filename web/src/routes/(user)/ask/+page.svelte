@@ -22,11 +22,9 @@
 
   // the page scrolls the document, so the viewer's visible window is the
   // browser viewport — binding the (content-driven) section height here would
-  // be circular and could stay 0
+  // be circular and could stay 0. Bound to the window so resize/orientation
+  // changes keep the virtualization window fresh (anti-vibe audit M1).
   const viewport: { width: number; height: number } = $state({ width: 0, height: 0 });
-  $effect(() => {
-    viewport.height = window.innerHeight;
-  });
 
   let question = $state('');
   let isLoading = $state(false);
@@ -76,9 +74,12 @@
   };
 </script>
 
+<svelte:window bind:innerWidth={viewport.width} bind:innerHeight={viewport.height} />
+
 <UserPageLayout title={data.meta.title} description={$t('ask_description')}>
   <section class="mx-auto w-full max-w-3xl px-4">
     <form
+      role="search"
       class="flex items-center gap-2 rounded-xl border border-subtle bg-subtle p-2"
       onsubmit={(event) => {
         event.preventDefault();
@@ -90,15 +91,17 @@
       <input
         id="ask-input"
         type="text"
-        class="w-full bg-transparent px-2 py-2 text-base outline-none placeholder:text-subtle"
+        class="w-full bg-transparent px-2 py-2 text-base outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-primary"
         placeholder={$t('ask_placeholder')}
         autocomplete="off"
+        enterkeyhint="send"
         bind:value={question}
         onkeydown={onKeydown}
       />
       <button
         type="submit"
-        class="flex shrink-0 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-light disabled:opacity-50 dark:bg-immich-dark-primary dark:text-immich-dark-gray"
+        aria-label={$t('ask')}
+        class="flex shrink-0 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-[#2B1C07] disabled:opacity-50 dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         disabled={isLoading || question.trim().length === 0}
       >
         {#if isLoading}
@@ -111,14 +114,16 @@
     </form>
   </section>
 
-  <section class="mx-auto mt-6 w-full max-w-7xl px-4">
+  <section class="mx-auto mt-6 w-full max-w-7xl px-4" aria-live="polite" aria-atomic="false">
     {#if isLoading}
       <div class="flex flex-col items-center justify-center py-16" role="status">
         <LoadingSpinner size="giant" />
         <p class="mt-4 text-sm text-subtle">{$t('ask_thinking')}</p>
       </div>
     {:else if hasError}
-      <EmptyPlaceholder title={$t('error')} text={$t('ask_failed')} class="mx-auto mt-10" />
+      <div role="alert">
+        <EmptyPlaceholder title={$t('error')} text={$t('ask_failed')} class="mx-auto mt-10" />
+      </div>
     {:else if result}
       <div class="rounded-xl border border-subtle bg-subtle p-4">
         <p class="text-base">{$t('ask_answer')}</p>
@@ -132,7 +137,7 @@
           <div class="mt-3 flex flex-wrap items-center gap-2">
             {#each chips as chip (chip.key)}
               <span
-                class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary ring-1 ring-primary/15 dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary dark:ring-immich-dark-primary/20"
+                class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs text-[#774A0C] ring-1 ring-primary/15 dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary dark:ring-immich-dark-primary/20"
               >
                 <span class="font-medium">{$t(chip.label)}</span>
                 <span class="max-w-40 truncate">{chip.value}</span>
@@ -140,7 +145,7 @@
             {/each}
             <button
               type="button"
-              class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs text-primary outline-offset-2 outline-primary hover:underline focus-visible:outline-2 dark:text-immich-dark-primary dark:outline-immich-dark-primary"
+              class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs text-[#774A0C] outline-offset-2 outline-primary hover:underline focus-visible:outline-2 dark:text-immich-dark-primary dark:outline-immich-dark-primary"
               onclick={onSearchTheseFilters}
             >
               <Icon icon={mdiMagnify} size="14" aria-hidden />

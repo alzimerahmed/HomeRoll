@@ -2299,7 +2299,7 @@
   "trim_preview": "Preview",
   "trim_requested": "Trim requested — the trimmed copy will appear in your archive",
   "trim_start": "Trim start",
-  "trim_unavailable": "Video trimming is not available on this server yet",
+  "trim_failed": "Video trimming failed. Please try again.",
   "trim_video": "Trim video",
   "trip_highlights": "Trip highlights",
   "troubleshoot": "Troubleshoot",
