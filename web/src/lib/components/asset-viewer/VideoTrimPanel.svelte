@@ -50,7 +50,7 @@
         return;
       }
       const first = focusables[0]!;
-      const last = focusables[focusables.length - 1]!;
+      const last = focusables.at(-1)!;
       const active = document.activeElement;
       if (event.shiftKey && (active === first || !panelEl.contains(active))) {
         event.preventDefault();

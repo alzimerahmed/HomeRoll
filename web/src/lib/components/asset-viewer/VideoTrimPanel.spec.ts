@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
+import { init, register, waitLocale } from 'svelte-i18n';
 import VideoTrimPanel from '$lib/components/asset-viewer/VideoTrimPanel.svelte';
 import { clampTrimRange, formatTrimTime, isValidTrimRange } from '$lib/utils/video-trim-utils';
 
@@ -19,6 +20,12 @@ const makeVideo = (duration: number) =>
   }) as unknown as HTMLVideoElement;
 
 describe('VideoTrimPanel', () => {
+  beforeAll(async () => {
+    await init({ fallbackLocale: 'en-US' });
+    register('en-US', () => import('$i18n/en.json'));
+    await waitLocale('en-US');
+  });
+
   it('renders the trim controls with a11y labels', () => {
     render(VideoTrimPanel, {
       props: { video: makeVideo(60), assetId: 'asset-1', onClose: () => {} },

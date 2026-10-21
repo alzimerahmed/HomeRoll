@@ -12,8 +12,8 @@ describe('clampTrimRange', () => {
   });
 
   it('handles unknown duration (NaN) — collapses to a degenerate range that isValidTrimRange rejects', () => {
-    expect(clampTrimRange({ start: 1, end: 2 }, Number.NaN)).toEqual({ start: 0, end: 0 });
-    expect(isValidTrimRange(clampTrimRange({ start: 1, end: 2 }, Number.NaN), Number.NaN)).toBe(false);
+    expect(clampTrimRange({ start: 1, end: 2 }, NaN)).toEqual({ start: 0, end: 0 });
+    expect(isValidTrimRange(clampTrimRange({ start: 1, end: 2 }, NaN), NaN)).toBe(false);
   });
 });
 
@@ -38,7 +38,7 @@ describe('formatTrimTime', () => {
   });
 
   it('handles invalid input', () => {
-    expect(formatTrimTime(Number.NaN)).toBe('0:00');
+    expect(formatTrimTime(NaN)).toBe('0:00');
     expect(formatTrimTime(-3)).toBe('0:00');
   });
 });

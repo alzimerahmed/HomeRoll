@@ -4,6 +4,7 @@ import { askHomeRoll, AutoCreationType, runAutoCreation, trimVideo } from '$lib/
 
 vitest.mock('@immich/sdk', () => ({
   getBaseUrl: vitest.fn().mockReturnValue(''),
+  getAssetInfo: vitest.fn(),
 }));
 
 const okResponse = (body: unknown) =>

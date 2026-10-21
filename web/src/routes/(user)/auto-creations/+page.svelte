@@ -6,6 +6,7 @@
   import { Button, Icon, toastManager } from '@immich/ui';
   import { mdiAnimationOutline, mdiCheckCircleOutline, mdiCollage, mdiMapMarkerRadiusOutline } from '@mdi/js';
   import { t, type Translations } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
 
   interface Props {
@@ -44,7 +45,7 @@
 
   let running: AutoCreationType | null = $state(null);
   /** Queued creation types — presence is all the UI needs (honest shape, see anti-vibe audit M4). */
-  let queued: Set<AutoCreationType> = $state(new Set());
+  const queued = new SvelteSet<AutoCreationType>();
 
   const run = async (card: CreationCard) => {
     if (running) {
@@ -54,7 +55,7 @@
     running = card.type;
     try {
       await runAutoCreation(card.type);
-      queued = new Set(queued).add(card.type);
+      queued.add(card.type);
       toastManager.primary($t('auto_creations_queued', { values: { type: $t(card.titleKey) } }));
     } catch (error) {
       handleError(error, $t('auto_creations_failed'));

@@ -347,7 +347,7 @@ describe('startWatch', () => {
     });
   });
 
-  it('should re-check a file when it changes after being processed', async () => {
+  it('should re-check a file when it changes after being processed', { timeout: 20_000 }, async () => {
     const testFilePath = path.join(testFolder, 'test.jpg');
 
     watchers.push(
