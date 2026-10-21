@@ -73,8 +73,9 @@ export const EnvSchema = z
     IMMICH_VAPID_PRIVATE_KEY: z.string().optional(),
     IMMICH_VAPID_SUBJECT: z.string().optional(),
 
-    // HomeRoll FG-13 "Ask HomeRoll": OpenAI-compatible LLM endpoint (optional; unset = structured answers only)
-    IMMICH_ASK_LLM_BASE_URL: z.string().optional(),
+    // HomeRoll FG-13 "Ask HomeRoll": OpenAI-compatible LLM endpoint (optional; unset = structured answers only).
+    // http(s) only — the fetch carries an optional bearer key, so arbitrary schemes/hosts would leak it.
+    IMMICH_ASK_LLM_BASE_URL: z.url({ protocol: /^https?$/ }).optional(),
     IMMICH_ASK_LLM_API_KEY: z.string().optional(),
     IMMICH_ASK_LLM_MODEL: z.string().optional(),
     IMMICH_ASK_LLM_TIMEOUT_MS: z.coerce.number().int().min(1000).max(300_000).optional(),

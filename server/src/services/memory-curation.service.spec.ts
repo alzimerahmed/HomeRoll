@@ -84,7 +84,7 @@ describe(MemoryCurationService.name, () => {
         { id: 'memory-1', createdAt: new Date(), assets: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }] },
       ] as never);
       qualityService.getOverallScores.mockResolvedValue(new Map());
-      qualityService.scoreAsset.mockResolvedValue(false);
+      qualityService.scoreAssets.mockResolvedValue(new Set());
 
       await sut.handleMemoryCurate();
 

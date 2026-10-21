@@ -208,7 +208,7 @@ export const parseAskQuery = (input: string): ParsedAskQuery => {
   }
 
   // places: "in Paris" / "at the beach in France" — capitalized proper noun after a place preposition
-  const place = text.consume(/\b(?:in|at|around|near|from)\s+((?:[A-Z][\p{L}''-]+[ \t]?)+"?\s?)+/u);
+  const place = text.consume(/\b(?:in|at|around|near|from)\s+((?:[A-Z][\p{L}'’-]+[ \t]?)+"?\s?)+/u);
   if (place) {
     const candidate = strip(place[1].replaceAll(/["\u201c\u201d]/g, ''));
     // multi-word captures like "the beach" are not places; require a capitalized token

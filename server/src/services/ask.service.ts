@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { mapAsset, type MapAsset } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { AskDto, AskResponseDto } from 'src/dtos/ask.dto.js';
@@ -13,9 +13,16 @@ import { isSmartSearchEnabled } from 'src/utils/misc.js';
 const MAX_ASSETS = 500;
 /** How many asset summaries the LLM sees. */
 const LLM_CONTEXT_ASSETS = 40;
+/** How many assets the response carries — search may match more, the payload stays bounded. */
+const MAX_RESPONSE_ASSETS = 100;
+/** Per-user ask rate limit: a token bucket of RATE_BURST requests refilling RATE_PER_MINUTE/minute. */
+const RATE_BURST = 10;
+const RATE_PER_MINUTE = 10;
+/** Idle buckets are pruned once the map grows past this many users. */
+const RATE_BUCKET_PRUNE_THRESHOLD = 1000;
 
 const SYSTEM_PROMPT = [
-  'You are Ask HomeRoll, a assistant that answers questions about a user\'s personal photo library.',
+  'You are Ask HomeRoll, an assistant that answers questions about a user\'s personal photo library.',
   'You are given a structured interpretation of the question and a list of matching photos/videos with their metadata.',
   'Answer in the user\'s language in 1-3 short sentences. Reference concrete details (places, dates, people counts, text found in photos).',
   'Never invent assets, dates or places that are not in the context. If the context does not answer the question, say so.',
@@ -43,19 +50,23 @@ export class AskService extends BaseService {
   @Inject(LlmService)
   private readonly llmService!: LlmService;
 
+  /** Per-user token bucket (in-process; single API instance is the norm for this deployment). */
+  #rateBuckets = new Map<string, { tokens: number; refilledAt: number }>();
+
   async ask(auth: AuthDto, dto: AskDto): Promise<AskResponseDto> {
-    const { machineLearning } = await this.getConfig({ withCache: false });
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isSmartSearchEnabled(machineLearning)) {
       throw new BadRequestException('Smart search is not enabled');
     }
 
+    this.consumeRateToken(auth.user.id);
     const parsed = parseAskQuery(dto.query);
     const userIds = await this.getUserIdsToSearch(auth);
 
     const embedding = await this.machineLearningRepository
       .encodeText(parsed.query ?? dto.query, { modelName: machineLearning.clip.modelName })
-      .catch((error: Error | any) => {
-        this.logger.warn(`Ask embedding failed: ${error}`);
+      .catch((error: unknown) => {
+        this.logger.warn(`Ask embedding failed: ${error instanceof Error ? error.message : String(error)}`);
         throw new ServiceUnavailableException('Machine learning service is unavailable');
       });
 
@@ -93,11 +104,13 @@ export class AskService extends BaseService {
           answer,
           provider: 'llm',
           interpretation: this.toInterpretation(parsed),
-          assets: candidates.map(({ asset }) => asset),
+          assets: candidates.slice(0, MAX_RESPONSE_ASSETS).map(({ asset }) => asset),
           total,
         };
-      } catch (error: Error | any) {
-        this.logger.warn(`Ask LLM provider failed, falling back to structured answer: ${error}`);
+      } catch (error: unknown) {
+        this.logger.warn(
+          `Ask LLM provider failed, falling back to structured answer: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -105,9 +118,34 @@ export class AskService extends BaseService {
       answer: this.structuredAnswer(dto.query, parsed, total, hasNextPage, candidates),
       provider: 'structured',
       interpretation: this.toInterpretation(parsed),
-      assets: candidates.map(({ asset }) => asset),
+      assets: candidates.slice(0, MAX_RESPONSE_ASSETS).map(({ asset }) => asset),
       total,
     };
+  }
+
+  /**
+   * Token-bucket rate limit: each user gets a burst of RATE_BURST requests that
+   * refill linearly to RATE_PER_MINUTE per minute. Deliberately in-process and
+   * dependency-free — the API is single-instance in this deployment; a shared
+   * Redis limiter is only needed if the API ever scales horizontally.
+   */
+  private consumeRateToken(userId: string): void {
+    if (this.#rateBuckets.size > RATE_BUCKET_PRUNE_THRESHOLD) {
+      const stale = Date.now() - (RATE_BURST / RATE_PER_MINUTE) * 60_000;
+      for (const [id, bucket] of this.#rateBuckets) {
+        if (bucket.refilledAt < stale) {
+          this.#rateBuckets.delete(id);
+        }
+      }
+    }
+
+    const now = Date.now();
+    const bucket = this.#rateBuckets.get(userId) ?? { tokens: RATE_BURST, refilledAt: now };
+    const tokens = Math.min(RATE_BURST, bucket.tokens + ((now - bucket.refilledAt) / 60_000) * RATE_PER_MINUTE);
+    if (tokens < 1) {
+      throw new HttpException('Too many ask requests — slow down a little', HttpStatus.TOO_MANY_REQUESTS);
+    }
+    this.#rateBuckets.set(userId, { tokens: tokens - 1, refilledAt: now });
   }
 
   private toCandidates(items: MapAsset[]): AskCandidate[] {
@@ -200,7 +238,7 @@ export class AskService extends BaseService {
     const qualifier = scope.length > 0 ? ` ${scope.join(' ')}` : '';
     const sample = candidates[0]?.summary;
     const suffix = sample ? ` Best match: ${sample}.` : '';
-    const count = hasMore ? `at least ${total - 1}+` : `${total}`;
+    const count = hasMore ? `${total}+` : `${total}`;
     return `Found ${count} matching asset${total === 1 ? '' : 's'}${qualifier}.${suffix}`;
   }
 

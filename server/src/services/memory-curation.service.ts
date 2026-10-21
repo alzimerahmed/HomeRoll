@@ -51,8 +51,8 @@ export class MemoryCurationService extends BaseService {
     for (const user of users) {
       try {
         await this.curateUser(user.id, cutoff);
-      } catch (error: Error | any) {
-        this.logger.warn(`Memory curation failed for user ${user.id}: ${error}`, error?.stack);
+      } catch (error: unknown) {
+        this.logger.warn(`Memory curation failed for user ${user.id}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -95,19 +95,21 @@ export class MemoryCurationService extends BaseService {
     }
   }
 
-  /** Scores any candidate without an `asset_quality` row; null when ML is unavailable. */
+  /**
+   * Scores any candidate without an `asset_quality` row; null when ML is unavailable.
+   * Per-asset failures are logged and skipped — one unscorable asset must not
+   * silently drop the whole memory.
+   */
   private async ensureScores(assetIds: string[]): Promise<Map<string, number> | null> {
     let scores = await this.qualityService.getOverallScores(assetIds);
 
     const missing = assetIds.filter((id) => !scores.has(id));
-    for (const id of missing) {
-      const scored = await this.qualityService.scoreAsset(id).catch(() => false);
-      if (!scored) {
-        return null;
-      }
-    }
-
     if (missing.length > 0) {
+      const scored = await this.qualityService.scoreAssets(missing);
+      const failed = missing.filter((id) => !scored.has(id));
+      if (failed.length > 0) {
+        this.logger.warn(`Failed to score ${failed.length} asset(s); curation proceeds with the rest`);
+      }
       scores = await this.qualityService.getOverallScores(assetIds);
     }
 
