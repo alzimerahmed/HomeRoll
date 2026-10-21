@@ -16,6 +16,7 @@
     mdiArchiveArrowDownOutline,
     mdiCards,
     mdiCardsOutline,
+    mdiChatQuestionOutline,
     mdiEyeOff,
     mdiEyeOffOutline,
     mdiFolderOutline,
@@ -47,6 +48,8 @@
   <NavbarItem title={$t('photos')} href={Route.photos()} icon={mdiImageMultipleOutline} activeIcon={mdiImageMultiple} />
 
   <NavbarItem title={$t('explore')} href={Route.explore()} icon={mdiMagnify} />
+
+  <NavbarItem title={$t('ask')} href={Route.ask()} icon={mdiChatQuestionOutline} />
 
   {#if featureFlagsManager.value.map}
     <NavbarItem title={$t('map')} href={Route.map()} icon={mdiMapOutline} activeIcon={mdiMap} />

@@ -110,6 +110,10 @@ export const Route = {
     return `/search` + asQueryString({ query });
   },
 
+  // ask (FG-13) + auto-creations (FG-14) — HomeRoll additions
+  ask: () => '/ask',
+  autoCreations: () => '/auto-creations',
+
   // sharing
   sharing: () => '/sharing',
 
