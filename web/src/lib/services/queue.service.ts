@@ -21,6 +21,7 @@ import {
   mdiImageSearch,
   mdiLibraryShelves,
   mdiOcr,
+  mdiPackageVariant,
   mdiPause,
   mdiPencil,
   mdiPlay,
@@ -249,6 +250,10 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     [QueueName.Editor]: {
       icon: mdiPencil,
       title: $t('editor'),
+    },
+    [QueueName.Takeout]: {
+      icon: mdiPackageVariant,
+      title: $t('takeout'),
     },
   };
 

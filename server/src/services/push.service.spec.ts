@@ -167,7 +167,7 @@ describe(PushService.name, () => {
       );
       const init = fetchMock.mock.calls[0][1];
       expect(init.headers.Authorization).toMatch(/^vapid t=/);
-      expect(Buffer.isBuffer(init.body)).toBe(true);
+      expect(init.body).toBeInstanceOf(Uint8Array);
     });
 
     it('deletes dead subscriptions on 404/410', async () => {

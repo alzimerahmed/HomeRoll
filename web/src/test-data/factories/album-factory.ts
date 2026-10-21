@@ -1,11 +1,14 @@
 import { faker } from '@faker-js/faker';
-import { AssetOrder, type AlbumResponseDto } from '@immich/sdk';
+import { AlbumType, AssetOrder, type AlbumResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const albumFactory = Sync.makeFactory<AlbumResponseDto>({
   albumName: Sync.each(() => faker.commerce.product()),
   description: '',
   albumThumbnailAssetId: null,
+  albumType: AlbumType.Manual,
+  parentId: null,
+  rules: null,
   assetCount: Sync.each((index) => index % 5),
   createdAt: Sync.each(() => faker.date.past().toISOString()),
   updatedAt: Sync.each(() => faker.date.past().toISOString()),

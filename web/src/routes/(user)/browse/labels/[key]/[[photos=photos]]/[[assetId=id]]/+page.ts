@@ -1,14 +1,12 @@
 import { getBrowseLabelAssets, getBrowseLabels, isHttpError, type BrowseLabelAssetsResponseDto } from '@immich/sdk';
 import { error } from '@sveltejs/kit';
 import { authenticate } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export type BrowseLabelPageError = 'disabled' | 'unreachable' | 'error' | undefined;
 
 export const load = (async ({ params, url }) => {
   await authenticate(url);
-  const $t = await getFormatter();
   const key = params.key;
 
   let firstPage: BrowseLabelAssetsResponseDto | undefined;
@@ -22,11 +20,11 @@ export const load = (async ({ params, url }) => {
     }
     if (isHttpError(error_) && error_.status === 400) {
       loadError = 'disabled';
-    } else if (isHttpError(e) && e.status === 503) {
+    } else if (isHttpError(error_) && error_.status === 503) {
       loadError = 'unreachable';
     } else {
       loadError = 'error';
-      console.error('[browse] failed to load label assets', e);
+      console.error('[browse] failed to load label assets', error_);
     }
   }
 

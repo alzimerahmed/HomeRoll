@@ -24,7 +24,11 @@
     valid?: boolean;
   };
 
-  let { rules = $bindable({}), valid = $bindable() }: Props = $props();
+  let {
+    rules = $bindable({}),
+    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
+    valid = $bindable(false),
+  }: Props = $props();
 
   /**
    * `fields` = the enabled rule rows (each field may appear at most once, the

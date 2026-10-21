@@ -455,7 +455,11 @@ describe(SharedLinkService.name, () => {
     it('honors showMetadata/allowDownload flags', async () => {
       const asset = AssetFactory.from({ originalFileName: 'IMG_0001.jpg' }).exif().build();
       const sharedLink = {
-        ...getForSharedLink(SharedLinkFactory.from({ showExif: false, allowDownload: false }).asset().build()),
+        ...getForSharedLink(
+          SharedLinkFactory.from({ showExif: false, allowDownload: false })
+            .asset({}, (builder) => builder.exif())
+            .build(),
+        ),
         showExif: false,
         allowDownload: false,
         assets: [{ ...asset, exifInfo: { description: 'secret location' } }],

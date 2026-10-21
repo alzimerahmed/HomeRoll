@@ -21,11 +21,11 @@ export const getNotificationPermission = (): NotificationPermission | undefined 
 };
 
 /** Decode a base64url VAPID public key into bytes for `PushManager.subscribe()`. */
-export const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
+export const urlBase64ToUint8Array = (base64String: string): Uint8Array<ArrayBuffer> => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = `${base64String}${padding}`.replaceAll('-', '+').replaceAll('_', '/');
   const rawData = atob(base64);
-  const bytes = new Uint8Array(rawData.length);
+  const bytes = new Uint8Array(new ArrayBuffer(rawData.length));
   for (const [index, character] of [...rawData].entries()) {
     bytes[index] = character.codePointAt(0) ?? 0;
   }

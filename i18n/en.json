@@ -2215,6 +2215,7 @@
   "tag_updated": "Updated tag: {tag}",
   "tagged_assets": "Tagged {count, plural, one {# asset} other {# assets}}",
   "tags": "Tags",
+  "takeout": "Takeout",
   "tap_to_run_job": "Tap to run job",
   "template": "Template",
   "text_recognition": "Text recognition",

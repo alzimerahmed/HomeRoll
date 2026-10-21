@@ -31,6 +31,11 @@ export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
     sidebarWeb: false,
     updateStrategy: PersonUpdateStrategy.Everyone,
   },
+  pushNotifications: {
+    albumInvite: false,
+    albumUpdate: false,
+    enabled: false,
+  },
   purchase: {
     hideBuyButtonUntil: '',
     showSupportBadge: false,
