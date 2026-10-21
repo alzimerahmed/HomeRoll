@@ -57,6 +57,29 @@ export class QualityRepository {
       .executeTakeFirst();
   }
 
+  /** Batched variant of `getForQualityJob` — one query per scoring batch. */
+  getForQualityJobBatch(ids: string[]) {
+    if (ids.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return this.db
+      .selectFrom('asset')
+      .select((eb) => [
+        'asset.id',
+        'asset.visibility',
+        eb
+          .selectFrom('asset_file')
+          .select('asset_file.path')
+          .whereRef('asset_file.assetId', '=', 'asset.id')
+          .where('asset_file.type', '=', AssetFileType.Preview)
+          .limit(1)
+          .as('previewFile'),
+      ])
+      .where('asset.id', 'in', ids)
+      .execute();
+  }
+
   /** Detected faces for an asset — the ML subject signal is computed from these. */
   getFaces(assetId: string) {
     return this.db
@@ -65,6 +88,29 @@ export class QualityRepository {
       .where('asset_face.assetId', '=', assetId)
       .where('asset_face.deletedAt', 'is', null)
       .execute();
+  }
+
+  /** Faces for a batch of assets, grouped by assetId — one query per scoring batch. */
+  async getFacesForAssets(assetIds: string[]) {
+    const map = new Map<string, { boundingBoxX1: number; boundingBoxY1: number; boundingBoxX2: number; boundingBoxY2: number; score: number }[]>();
+    if (assetIds.length === 0) {
+      return map;
+    }
+
+    const rows = await this.db
+      .selectFrom('asset_face')
+      .select(['asset_face.assetId', 'boundingBoxX1', 'boundingBoxY1', 'boundingBoxX2', 'boundingBoxY2', 'score'])
+      .where('asset_face.assetId', 'in', assetIds)
+      .where('asset_face.deletedAt', 'is', null)
+      .execute();
+
+    for (const row of rows) {
+      const { assetId, ...face } = row;
+      const list = map.get(assetId) ?? [];
+      list.push(face);
+      map.set(assetId, list);
+    }
+    return map;
   }
 
   async upsert(assetId: string, quality: Omit<Insertable<DB['asset_quality']>, 'assetId' | 'id'>) {

@@ -36,6 +36,11 @@ from .models.transforms import decode_pil
 _BLUR_VARIANCE_CEILING = 600.0
 # Fraction of pixels allowed to be clipped before exposure starts dropping.
 _EXPOSURE_TOLERANCE = 0.02
+# Score penalty applied per unit of clipped fraction beyond the tolerance.
+_EXPOSURE_PENALTY_SCALE = 4.0
+# Grayscale clip thresholds bounding the "well-exposed" range.
+_CLIP_LO = 0.02
+_CLIP_HI = 0.98
 # A face covering more than this fraction of the frame dominates the subject score.
 _FACE_AREA_CEILING = 0.25
 
@@ -65,9 +70,8 @@ def to_grayscale(image: NDArray[np.uint8]) -> NDArray[np.uint8]:
     return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
 
-def blur_score(image: NDArray[np.uint8]) -> float:
+def blur_score(gray: NDArray[np.uint8]) -> float:
     """Normalized variance of the Laplacian, downscaled for stable statistics."""
-    gray = to_grayscale(image)
     height, width = gray.shape[:2]
     scale = 512 / max(height, width)
     if scale < 1:
@@ -77,13 +81,13 @@ def blur_score(image: NDArray[np.uint8]) -> float:
     return float(min(1.0, variance / _BLUR_VARIANCE_CEILING))
 
 
-def exposure_score(image: NDArray[np.uint8]) -> float:
+def exposure_score(gray: NDArray[np.uint8]) -> float:
     """1 minus the share of clipped pixels (beyond a small tolerance band)."""
-    gray = to_grayscale(image).astype(np.float32) / 255.0
-    shadows = float(np.mean(gray < 0.02))
-    highlights = float(np.mean(gray > 0.98))
+    normalized = gray.astype(np.float32) / 255.0
+    shadows = float(np.mean(normalized < _CLIP_LO))
+    highlights = float(np.mean(normalized > _CLIP_HI))
     clipped = max(0.0, shadows + highlights - _EXPOSURE_TOLERANCE)
-    return float(max(0.0, 1.0 - clipped * 4))
+    return float(max(0.0, 1.0 - clipped * _EXPOSURE_PENALTY_SCALE))
 
 
 def subject_score(faces: list[QualityFace], width: int, height: int) -> float:
@@ -111,9 +115,10 @@ def subject_score(faces: list[QualityFace], width: int, height: int) -> float:
 
 def assess_quality(image: NDArray[np.uint8], faces: list[QualityFace] | None = None) -> dict[str, Any]:
     height, width = image.shape[:2]
+    gray = to_grayscale(image)  # computed once — blur and exposure share it
     return {
-        "blurScore": round(blur_score(image), 4),
-        "exposureScore": round(exposure_score(image), 4),
+        "blurScore": round(blur_score(gray), 4),
+        "exposureScore": round(exposure_score(gray), 4),
         "subjectScore": round(subject_score(faces or [], width, height), 4),
         "eyesOpenScore": None,
     }
@@ -127,26 +132,42 @@ def create_quality_router(run: Callable[[Callable[[], Any]], Any]) -> APIRouter:
 
     @router.post("/quality")
     async def score_quality(
-        image: bytes = File(),
+        images: list[bytes] = File(),
         faces: str | None = Form(default=None),
     ) -> Any:
-        """Score image quality signals for memory curation (FG-12)."""
-        try:
-            decoded = await run(lambda: decode_pil(image))
-        except Exception as e:
-            raise HTTPException(400, f"Failed to decode image: {e}") from e
+        """Score image quality signals for memory curation (FG-12).
 
-        if decoded.width == 0 or decoded.height == 0:
-            raise HTTPException(400, "Image has zero width or height")
+        Batched: the server sends N previews in one request; the response is a
+        list of QualityResponse aligned with the input order. `faces`, when
+        present, is a JSON array of per-image face lists (same length).
+        """
+        if not images:
+            raise HTTPException(400, "At least one image is required")
 
-        array = np.asarray(decoded)
-        parsed_faces: list[QualityFace] | None = None
+        parsed_faces: list[list[QualityFace] | None] | None = None
         if faces:
             try:
-                parsed_faces = _FACES_ADAPTER.validate_json(faces)
+                parsed_faces = TypeAdapter(list[list[QualityFace] | None]).validate_json(faces)
             except ValidationError as e:
                 raise HTTPException(422, f"Invalid faces payload: {e}") from e
+            if len(parsed_faces) != len(images):
+                raise HTTPException(422, "faces payload length must match the number of images")
 
-        return QualityResponse(**assess_quality(array, parsed_faces))
+        decoded: list[NDArray[np.uint8]] = []
+        for index, image in enumerate(images):
+            try:
+                decoded_image = await run(lambda image=image: decode_pil(image))
+            except Exception as e:
+                raise HTTPException(400, f"Failed to decode image {index}: {e}") from e
+
+            if decoded_image.width == 0 or decoded_image.height == 0:
+                raise HTTPException(400, f"Image {index} has zero width or height")
+
+            decoded.append(np.asarray(decoded_image))
+
+        return [
+            QualityResponse(**assess_quality(array, parsed_faces[index] if parsed_faces else None))
+            for index, array in enumerate(decoded)
+        ]
 
     return router

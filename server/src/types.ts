@@ -350,6 +350,11 @@ export interface IAutoCreationJob extends IEntityJob {
   type: 'collage' | 'animation' | 'trip-highlights';
 }
 
+/** FG-12: quality scoring is batched — one job carries several asset ids. */
+export interface IQualityScoreJob {
+  assetIds: string[];
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -480,11 +485,12 @@ export type JobItem =
 
   // HomeRoll FG-12: image quality signals for memory curation
   | { name: JobName.QualityScoreQueueAll; data: IBaseJob }
-  | { name: JobName.QualityScore; data: IEntityJob }
+  | { name: JobName.QualityScore; data: IQualityScoreJob }
   | { name: JobName.MemoryCurate; data?: IBaseJob }
 
   // HomeRoll FG-14: auto-creations
-  | { name: JobName.AutoCreationGenerate; data: IAutoCreationJob };
+  | { name: JobName.AutoCreationGenerate; data: IAutoCreationJob }
+
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

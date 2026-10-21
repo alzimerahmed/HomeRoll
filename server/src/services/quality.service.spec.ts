@@ -16,12 +16,14 @@ describe(QualityService.name, () => {
     ({ sut, mocks } = newTestService(QualityService));
     Object.assign(sut, { qualityRepository });
     qualityRepository.resetAllMocks();
-    mocks.machineLearning.assessQuality.mockResolvedValue({
-      blurScore: 0.8,
-      exposureScore: 0.9,
-      subjectScore: 0.5,
-      eyesOpenScore: null,
-    });
+    mocks.machineLearning.assessQualityBatch.mockResolvedValue([
+      {
+        blurScore: 0.8,
+        exposureScore: 0.9,
+        subjectScore: 0.5,
+        eyesOpenScore: null,
+      },
+    ]);
   });
 
   it('should work', () => {
@@ -29,16 +31,16 @@ describe(QualityService.name, () => {
   });
 
   describe('handleQualityScore', () => {
-    it('should score an asset and persist the weighted overall', async () => {
-      qualityRepository.getForQualityJob.mockResolvedValue({ id: 'asset-1', previewFile: '/preview.jpg' });
-      qualityRepository.getFaces.mockResolvedValue([
-        { boundingBoxX1: 0, boundingBoxY1: 0, boundingBoxX2: 100, boundingBoxY2: 100, score: 0.9 },
-      ]);
+    it('should score a batch and persist the weighted overall', async () => {
+      qualityRepository.getForQualityJobBatch.mockResolvedValue([{ id: 'asset-1', previewFile: '/preview.jpg' }]);
+      qualityRepository.getFacesForAssets.mockResolvedValue(
+        new Map([['asset-1', [{ boundingBoxX1: 0, boundingBoxY1: 0, boundingBoxX2: 100, boundingBoxY2: 100, score: 0.9 }]]]),
+      );
 
-      await expect(sut.handleQualityScore({ id: 'asset-1' })).resolves.toBe(JobStatus.Success);
+      await expect(sut.handleQualityScore({ assetIds: ['asset-1'] })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.machineLearning.assessQuality).toHaveBeenCalledWith('/preview.jpg', [
-        { boundingBox: [0, 0, 100, 100], score: 0.9 },
+      expect(mocks.machineLearning.assessQualityBatch).toHaveBeenCalledWith([
+        { imagePath: '/preview.jpg', faces: [{ boundingBox: [0, 0, 100, 100], score: 0.9 }] },
       ]);
       expect(qualityRepository.upsert).toHaveBeenCalledWith('asset-1', {
         blur: 0.8,
@@ -49,24 +51,24 @@ describe(QualityService.name, () => {
       });
     });
 
-    it('should skip when the asset has no preview', async () => {
-      qualityRepository.getForQualityJob.mockResolvedValue({ id: 'asset-1', previewFile: null });
+    it('should skip when no asset in the batch has a preview', async () => {
+      qualityRepository.getForQualityJobBatch.mockResolvedValue([{ id: 'asset-1', previewFile: null }]);
 
-      await expect(sut.handleQualityScore({ id: 'asset-1' })).resolves.toBe(JobStatus.Skipped);
-      expect(mocks.machineLearning.assessQuality).not.toHaveBeenCalled();
+      await expect(sut.handleQualityScore({ assetIds: ['asset-1'] })).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.machineLearning.assessQualityBatch).not.toHaveBeenCalled();
     });
 
     it('should reject when the ML service is down (transient — BullMQ retries)', async () => {
-      qualityRepository.getForQualityJob.mockResolvedValue({ id: 'asset-1', previewFile: '/preview.jpg' });
-      qualityRepository.getFaces.mockResolvedValue([]);
-      mocks.machineLearning.assessQuality.mockRejectedValue(new Error('ML down'));
+      qualityRepository.getForQualityJobBatch.mockResolvedValue([{ id: 'asset-1', previewFile: '/preview.jpg' }]);
+      qualityRepository.getFacesForAssets.mockResolvedValue(new Map());
+      mocks.machineLearning.assessQualityBatch.mockRejectedValue(new Error('ML down'));
 
-      await expect(sut.handleQualityScore({ id: 'asset-1' })).rejects.toThrow('ML down');
+      await expect(sut.handleQualityScore({ assetIds: ['asset-1'] })).rejects.toThrow('ML down');
     });
   });
 
   describe('handleQueueQuality', () => {
-    it('should queue a scoring job per unscored asset', async () => {
+    it('should queue batched scoring jobs (50 assets per job)', async () => {
       qualityRepository.streamForQualityJob.mockReturnValue(
         (async function* () {
           yield [{ id: 'a' }, { id: 'b' }];
@@ -75,10 +77,7 @@ describe(QualityService.name, () => {
 
       await expect(sut.handleQueueQuality({ force: false })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.QualityScore, data: { id: 'a' } },
-        { name: JobName.QualityScore, data: { id: 'b' } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.QualityScore, data: { assetIds: ['a', 'b'] } }]);
     });
 
     it('should skip when machine learning is disabled', async () => {

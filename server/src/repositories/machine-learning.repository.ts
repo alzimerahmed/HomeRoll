@@ -238,13 +238,20 @@ export class MachineLearningRepository {
    * HomeRoll FG-12: image quality signals for memory curation. Served by the
    * standalone `/quality` endpoint (no pipeline entry — the scorer has no model
    * session). Falls through the same healthy-URL rotation as /predict.
+   * Batched: one HTTP round-trip scores N previews, amortizing decode/transport.
    */
-  async assessQuality(imagePath: string, faces: QualityFacePayload[] = []): Promise<QualityResponse> {
-    const fileBuffer = await readFile(imagePath);
+  async assessQualityBatch(items: { imagePath: string; faces: QualityFacePayload[] }[]): Promise<QualityResponse[]> {
+    if (items.length === 0) {
+      return [];
+    }
+
     const formData = new FormData();
-    formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
-    if (faces.length > 0) {
-      formData.append('faces', JSON.stringify(faces));
+    for (const { imagePath } of items) {
+      const fileBuffer = await readFile(imagePath);
+      formData.append('images', new Blob([new Uint8Array(fileBuffer)]));
+    }
+    if (items.some(({ faces }) => faces.length > 0)) {
+      formData.append('faces', JSON.stringify(items.map(({ faces }) => faces)));
     }
 
     for (const url of [
