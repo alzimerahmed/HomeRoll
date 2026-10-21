@@ -360,6 +360,7 @@ export interface IVideoTrimJob extends IEntityJob {
   ownerId: string;
   startSeconds: number;
   endSeconds: number;
+  targetAssetId: string;
 }
 
 export interface JobCounts {
@@ -498,6 +499,8 @@ export type JobItem =
   // HomeRoll FG-14: auto-creations
   | { name: JobName.AutoCreationGenerate; data: IAutoCreationJob }
 
+  // HomeRoll FG-15: video trim
+  | { name: JobName.VideoTrim; data: IVideoTrimJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

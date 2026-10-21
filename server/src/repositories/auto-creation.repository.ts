@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { type Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database.js';
-import { AssetFileType, AssetType, AssetVisibility } from 'src/enum.js';
+import { AlbumUserRole, AssetFileType, AssetType, AssetVisibility } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
 
 /**
@@ -81,7 +81,7 @@ export class AutoCreationRepository {
       // bound the album to the qualifying day — without this it would pull
       // every photo ever taken in that city
       .where('asset.localDateTime', '>=', day)
-      .where('asset.localDateTime', '<', sql`date_trunc('day', ${sql.lit(day)} at time zone 'UTC') + interval '1 day'`)
+      .where('asset.localDateTime', '<', sql<Date>`date_trunc('day', ${sql.lit(day)} at time zone 'UTC') + interval '1 day'`)
       .orderBy('asset.localDateTime', 'asc')
       .limit(limit)
       .execute();
@@ -91,8 +91,13 @@ export class AutoCreationRepository {
   getAlbumByName(ownerId: string, albumName: string) {
     return this.db
       .selectFrom('album')
+      .innerJoin('album_user', (join) =>
+        join
+          .onRef('album_user.albumId', '=', 'album.id')
+          .on('album_user.userId', '=', ownerId)
+          .on('album_user.role', '=', AlbumUserRole.Owner),
+      )
       .selectAll('album')
-      .where('album.ownerId', '=', ownerId)
       .where('album.albumName', '=', albumName)
       .where('album.deletedAt', 'is', null)
       .executeTakeFirst();

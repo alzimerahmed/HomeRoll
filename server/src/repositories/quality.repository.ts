@@ -63,14 +63,23 @@ export class QualityRepository {
 
   /** Faces for a batch of assets, grouped by assetId — one query per scoring batch. */
   async getFacesForAssets(assetIds: string[]) {
-    const map = new Map<string, { boundingBoxX1: number; boundingBoxY1: number; boundingBoxX2: number; boundingBoxY2: number; score: number }[]>();
+    const map = new Map<
+      string,
+      { boundingBoxX1: number; boundingBoxY1: number; boundingBoxX2: number; boundingBoxY2: number }[]
+    >();
     if (assetIds.length === 0) {
       return map;
     }
 
     const rows = await this.db
       .selectFrom('asset_face')
-      .select(['asset_face.assetId', 'boundingBoxX1', 'boundingBoxY1', 'boundingBoxX2', 'boundingBoxY2', 'score'])
+      .select([
+        'asset_face.assetId',
+        'asset_face.boundingBoxX1',
+        'asset_face.boundingBoxY1',
+        'asset_face.boundingBoxX2',
+        'asset_face.boundingBoxY2',
+      ])
       .where('asset_face.assetId', 'in', assetIds)
       .where('asset_face.deletedAt', 'is', null)
       .execute();

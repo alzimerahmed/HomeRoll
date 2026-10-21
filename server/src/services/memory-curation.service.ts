@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OnEvent } from 'src/decorators.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
 import { JobName, JobStatus, QueueName } from 'src/enum.js';
 import { MemoryRepository } from 'src/repositories/memory.repository.js';
 import { UserRepository } from 'src/repositories/user.repository.js';

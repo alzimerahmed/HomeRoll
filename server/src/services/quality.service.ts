@@ -93,7 +93,9 @@ export class QualityService extends BaseService {
         imagePath: previewFile!,
         faces: (facesByAsset.get(id) ?? []).map((face) => ({
           boundingBox: [face.boundingBoxX1, face.boundingBoxY1, face.boundingBoxX2, face.boundingBoxY2],
-          score: Number(face.score),
+          // detection confidence is not persisted on asset_face — every stored
+          // face is already an ML detection, so treat them as full-confidence
+          score: 1,
         })),
       })),
     );

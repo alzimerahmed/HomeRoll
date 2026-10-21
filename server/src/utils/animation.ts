@@ -37,7 +37,9 @@ export async function createAnimation(inputs: string[], output: string, options:
     }
 
     command
-      .on('error', (error: Error, _stdout: unknown, stderr: string) => reject(new Error(stderr || error.message)))
+      .on('error', (error: Error, _stdout: string | null, stderr: string | null) =>
+        reject(new Error(stderr || error.message)),
+      )
       .on('end', () => resolve())
       .complexFilter([
         // scale every input to a common square canvas, then concat

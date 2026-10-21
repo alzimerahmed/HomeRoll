@@ -1,4 +1,4 @@
-import sharp from 'sharp';
+import sharp, { OverlayOptions } from 'sharp';
 
 /**
  * FG-14 (HomeRoll): collage composition for auto-creations.
@@ -26,7 +26,7 @@ export async function createCollage(inputs: CollageInput[], output: string): Pro
   const cell = cells.length === 1 ? CELL_SIZE * 2 : CELL_SIZE;
   const canvasSize = cells.length === 1 ? cell : cell * 2 + GAP;
 
-  const composites: sharp.OverlayOptions[] = [];
+  const composites: OverlayOptions[] = [];
   for (let index = 0; index < cells.length; index++) {
     const resized = await sharp(cells[index].path)
       .resize(cell, cell, { fit: 'cover', position: 'attention' })

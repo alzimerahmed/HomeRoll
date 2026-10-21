@@ -125,14 +125,13 @@ export class AutoCreationService extends BaseService {
         continue;
       }
 
-      const assets = await this.autoCreationRepository.getAssetsForTrip(ownerId, candidate.city, candidate.country, candidate.day as Date, TRIP_ALBUM_ASSET_LIMIT);
+      const assets = await this.autoCreationRepository.getAssetsForTrip(ownerId, candidate.city, candidate.country, new Date(candidate.day), TRIP_ALBUM_ASSET_LIMIT);
       if (assets.length === 0) {
         continue;
       }
 
       const album = await this.albumRepository.create(
         {
-          ownerId,
           // album names are titles, not file paths — filename sanitization would
           // mangle legitimate characters (anti-vibe audit m4); trim only
           albumName: albumName.trim(),

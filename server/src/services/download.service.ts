@@ -108,7 +108,7 @@ export class DownloadService extends BaseService {
       metadataMap = await this.downloadRepository.getExportMetadata(dto.assetIds);
     }
     // default lives in the DTO (zod .default) — no second fallback here
-    const sidecarFormat: SidecarFormat = dto.sidecarFormat;
+    const sidecarFormat: SidecarFormat = dto.sidecarFormat ?? 'both';
 
     for (const assetId of dto.assetIds) {
       const asset = assetMap.get(assetId);

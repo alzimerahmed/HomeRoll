@@ -20,7 +20,9 @@ export async function trimVideoFile(input: string, output: string, options: Vide
 
   await new Promise<void>((resolve, reject) => {
     ffmpeg(input)
-      .on('error', (error: Error, _stdout: unknown, stderr: string) => reject(new Error(stderr || error.message)))
+      .on('error', (error: Error, _stdout: string | null, stderr: string | null) =>
+        reject(new Error(stderr || error.message)),
+      )
       .on('end', () => resolve())
       .outputOptions([
         // input seeking before decoding, then a precise window via -t
