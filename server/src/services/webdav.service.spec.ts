@@ -122,6 +122,50 @@ describe(WebDavService.name, () => {
     it('should 404 on too-deep paths', async () => {
       await expect(sut.propfind(auth, [DAV_LIBRARIES, 'a', 'b', 'c'], 1)).rejects.toBeInstanceOf(NotFoundException);
     });
+
+    it('should not expose libraries owned by other users', async () => {
+      mocks.library.getAll.mockResolvedValue([
+        { id: libraryId, name: 'Not Mine', ownerId: 'someone-else', createdAt: new Date(), updatedAt: new Date() },
+      ] as never);
+
+      // depth-1 listing only contains the root collection itself
+      const resources = await sut.propfind(auth, [DAV_LIBRARIES], 1);
+      expect(resources).toHaveLength(1);
+      expect(resources.map((r) => r.name)).toEqual([DAV_LIBRARIES]);
+
+      // and the collection itself cannot be addressed
+      await expect(sut.propfind(auth, [DAV_LIBRARIES, 'Not Mine'], 1)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.getFile(auth, [DAV_LIBRARIES, 'Not Mine', 'IMG_0001.jpg'])).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('should list assets of an album collection at depth 1', async () => {
+      mocks.album.getAll.mockResolvedValue([
+        { id: albumId, albumName: 'Shared', createdAt: new Date(), updatedAt: new Date() },
+      ] as never);
+      webdavRepository.getAssetsByAlbumId.mockResolvedValue([assetRow] as never);
+
+      const resources = await sut.propfind(auth, [DAV_ALBUMS, 'Shared'], 1);
+      expect(resources).toHaveLength(2);
+      expect(resources[1]).toMatchObject({
+        name: 'IMG_0001.jpg',
+        isCollection: false,
+        segments: [DAV_ALBUMS, 'Shared', 'IMG_0001.jpg'],
+      });
+      expect(webdavRepository.getAssetsByAlbumId).toHaveBeenCalledWith(auth.user.id, albumId);
+    });
+
+    it('should not leak assets from albums the caller cannot see', async () => {
+      // albumRepository.getAll is scoped to the caller — an album owned by
+      // another user simply never appears, so the collection name cannot be
+      // probed for existence either
+      mocks.album.getAll.mockResolvedValue([]);
+      await expect(sut.propfind(auth, [DAV_ALBUMS, 'Hidden'], 1)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.getFile(auth, [DAV_ALBUMS, 'Hidden', 'IMG_0001.jpg'])).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
   });
 
   describe('getFile', () => {
@@ -169,6 +213,15 @@ describe(WebDavService.name, () => {
       await expect(sut.getFile(auth, [DAV_LIBRARIES, 'My Library', 'IMG_0001.jpg'])).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+
+    it('should 404 on an album asset the caller may list but not download', async () => {
+      // the album is visible (caller is a member) but the access layer denies
+      // the asset download — defense-in-depth check must still 404
+      mocks.album.getAll.mockResolvedValue([{ id: albumId, albumName: 'Shared' }] as never);
+      webdavRepository.getAssetsByAlbumId.mockResolvedValue([assetRow] as never);
+      // access mocks return empty sets by default
+      await expect(sut.getFile(auth, [DAV_ALBUMS, 'Shared', 'IMG_0001.jpg'])).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('should 404 when the file name does not exist', async () => {

@@ -24,6 +24,15 @@ describe('takeout json utils', () => {
     it('should return null for non-json files', () => {
       expect(getSidecarMediaName('IMG_1234.jpg')).toBeNull();
     });
+
+    it('should handle an uppercase .JSON suffix', () => {
+      expect(getSidecarMediaName('IMG_1234.JPG.SUPPLEMENTAL-METADATA.JSON')).toBe('IMG_1234.JPG');
+    });
+
+    it('should return the base name for album-level metadata.json docs', () => {
+      // parsed like any JSON but carries no per-asset media name
+      expect(getSidecarMediaName('metadata.json')).toBe('metadata');
+    });
   });
 
   describe('getSidecarCandidates', () => {
@@ -75,6 +84,16 @@ describe('takeout json utils', () => {
       expect(findSidecarJson('IMG_1234.jpg', new Set(['other.jpg.json']))).toBeUndefined();
       expect(findSidecarJson('IMG_1234.jpg', [])).toBeUndefined();
     });
+
+    it('should resolve the duplicate-numbering quirk (IMG(1).jpg ↔ IMG.jpg(1).json)', () => {
+      const jsons = new Set(['IMG_1234.jpg(1).json']);
+      expect(findSidecarJson('IMG_1234(1).jpg', jsons)).toBe('IMG_1234.jpg(1).json');
+    });
+
+    it('should not confuse an album-level metadata.json with an asset sidecar', () => {
+      // 'metadata' is not a prefix of the media name, so it must not match
+      expect(findSidecarJson('IMG_1234.jpg', new Set(['metadata.json']))).toBeUndefined();
+    });
   });
 
   describe('parseTakeoutJson', () => {
@@ -125,6 +144,39 @@ describe('takeout json utils', () => {
       });
 
       expect(metadata?.geo).toBeUndefined();
+    });
+
+    it('should ignore non-positive timestamps', () => {
+      const metadata = parseTakeoutJson({
+        photoTakenTime: { timestamp: '-42' },
+        creationTime: { timestamp: 'not-a-number' },
+        title: 'photo.jpg',
+      });
+
+      expect(metadata?.takenAt).toBeUndefined();
+      expect(metadata?.title).toBe('photo.jpg');
+    });
+
+    it('should drop people entries without a name', () => {
+      const metadata = parseTakeoutJson({
+        photoTakenTime: { timestamp: '1600000000' },
+        people: [{ name: 'Alice' }, { role: 'owner' }, {}, { name: 7 }],
+      });
+
+      expect(metadata?.people).toEqual(['Alice']);
+    });
+
+    it('should ignore a non-array people field', () => {
+      const metadata = parseTakeoutJson({
+        photoTakenTime: { timestamp: '1600000000' },
+        people: 'Alice',
+      });
+
+      expect(metadata?.people).toBeUndefined();
+    });
+
+    it('should keep a description-only document', () => {
+      expect(parseTakeoutJson({ description: 'hello' })).toEqual({ description: 'hello' });
     });
 
     it('should return null for documents without usable metadata', () => {
